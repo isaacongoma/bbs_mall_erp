@@ -1,0 +1,46 @@
+import { PluginKey } from '@tiptap/pm/state'
+import { type BaseSuggestionItem, createSuggestionExtension } from '../suggestion/createSuggestionExtension'
+import { filterByQuery } from '../shared/suggestion-helpers'
+import { EmojiList } from '../../components/EmojiList'
+import _EMOJIS from './emojis.json'
+
+const EMOJIS = _EMOJIS as EmojiItem[]
+
+export interface EmojiItem extends BaseSuggestionItem {
+  name: string
+  emoji: string
+}
+
+export default createSuggestionExtension<EmojiItem>({
+  name: 'emoji',
+  char: ':',
+  pluginKey: new PluginKey('emojiSuggestion'),
+  items: ({ query }: { query: string }) => {
+    return filterByQuery(EMOJIS, query, 'name')
+      .sort((a, b) => {
+        const aName = a.name.toLowerCase()
+        const bName = b.name.toLowerCase()
+        const queryLower = query.toLowerCase()
+
+        if (aName === queryLower && bName !== queryLower) return -1
+        if (bName === queryLower && aName !== queryLower) return 1
+
+        if (aName.startsWith(queryLower) && !bName.startsWith(queryLower)) return -1
+        if (bName.startsWith(queryLower) && !aName.startsWith(queryLower)) return 1
+
+        return aName.length - bName.length
+      })
+      .slice(0, 5)
+  },
+  command: ({ editor, range, props: item }) => {
+    if (item && item.emoji) {
+      editor.chain().focus().deleteRange(range).insertContent(item.emoji).run()
+    } else {
+      console.error(
+        'Emoji command execution error: emoji property not found on selected item or item is invalid.',
+        item,
+      )
+    }
+  },
+  component: EmojiList,
+})

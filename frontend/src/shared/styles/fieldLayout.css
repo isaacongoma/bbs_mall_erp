@@ -1,0 +1,13 @@
+.field-layout .section:not(:has(.field)) {
+  display: none;
+}
+
+.field-layout .section:has(.field):nth-child(1 of .section:has(.field)) {
+  border-top: none;
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.field-layout .field .form-control.prefix select {
+  padding-left: 2rem;
+}

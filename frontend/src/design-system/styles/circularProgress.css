@@ -1,0 +1,55 @@
+@property --progress {
+  syntax: '<length-percentage>';
+  inherits: true;
+  initial-value: 0%;
+}
+
+.progressbar {
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  position: relative;
+  font-size: var(--font-size);
+}
+
+.progressbar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: conic-gradient(var(--color-progress) var(--progress), var(--color-remaining-circle) 0%);
+  transition: --progress 500ms linear;
+  aspect-ratio: 1 / 1;
+  align-self: center;
+}
+
+.progressbar::after {
+  content: '';
+  position: absolute;
+  background: white;
+  border-radius: inherit;
+  z-index: 1;
+  width: calc(100% - var(--bar-width));
+  aspect-ratio: 1 / 1;
+}
+
+.progressbar > div {
+  z-index: 2;
+  position: relative;
+}
+
+.progressbar.completed:not(.fillOuter)::after {
+  background: var(--color-complete);
+}
+
+.progressbar.completed.fillOuter::before {
+  background: var(--color-complete);
+}
+
+.progressbar .check-icon {
+  z-index: 3;
+  width: var(--check-icon-size);
+  height: var(--check-icon-size);
+}

@@ -1,0 +1,41 @@
+li:has(> .hierarchy-tree-row) {
+  position: relative;
+}
+
+li:has(> .hierarchy-tree-row)::before {
+  content: '';
+  position: absolute;
+  left: -18px;
+  top: -8px;
+  bottom: -4px;
+  border-left: 1px solid var(--outline-elevation-2);
+}
+
+li:has(> .hierarchy-tree-row)::after {
+  content: '';
+  position: absolute;
+  left: -18px;
+  top: 20px;
+  width: 42px;
+  border-bottom: 1px solid var(--outline-elevation-2);
+}
+
+li:has(> [data-has-children='true'])::after {
+  width: 16px;
+}
+
+li:has(> .hierarchy-tree-row):last-child::before {
+  bottom: auto;
+  height: 30px;
+  width: 16px;
+  border-bottom: 1px solid var(--outline-elevation-2);
+  border-bottom-left-radius: 6px;
+}
+
+li:has(> [data-has-children='false']):last-child::before {
+  width: 42px;
+}
+
+li:has(> .hierarchy-tree-row):last-child::after {
+  display: none;
+}

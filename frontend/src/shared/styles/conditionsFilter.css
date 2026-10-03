@@ -1,0 +1,41 @@
+.condition-group {
+  container-type: inline-size;
+}
+
+@container (max-width: 420px) {
+  .condition-row {
+    position: relative;
+    display: block;
+  }
+
+  .condition-main {
+    display: block;
+  }
+
+  .condition-conjunction {
+    margin-bottom: 0.5rem;
+    padding-right: 2rem;
+  }
+
+  .condition-fields {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .condition-operator,
+  .condition-value {
+    width: 100%;
+  }
+
+  .condition-operator > *,
+  .condition-value > * {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .condition-actions {
+    position: absolute;
+    top: -0.25rem;
+    right: -0.25rem;
+  }
+}

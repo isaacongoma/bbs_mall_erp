@@ -1,0 +1,11 @@
+-r base.txt
+django-debug-toolbar>=4.4
+pytest>=8.2
+pytest-django>=4.8
+factory-boy>=3.3
+ruff>=0.6
+# Dev-only in-process Redis wire-protocol server: this Windows dev box has no real Redis
+# server available (no Docker/WSL), and CELERY_BROKER_URL/REDIS_URL already point at one --
+# `python manage.py runfakeredis` serves the same protocol locally so Celery/Channels have
+# something to talk to. Production must run a real Redis instance instead.
+fakeredis>=2.30

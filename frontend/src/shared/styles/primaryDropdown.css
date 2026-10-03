@@ -1,0 +1,10 @@
+.dropdown-button {
+  border-color: transparent;
+  background: transparent;
+  min-width: 0;
+}
+
+.dropdown-button > span {
+  min-width: 0;
+  flex: 1;
+}

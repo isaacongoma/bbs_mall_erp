@@ -1,0 +1,4 @@
+[data-slot='item']:hover .view-action-btn,
+[data-slot='item'][data-highlighted] .view-action-btn {
+  opacity: 1;
+}

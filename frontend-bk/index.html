@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BBS-ERP</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>
+      // Frappe's real desk page has this set by the server (Jinja) before
+      // any bundle loads. We have no such server-rendered pass, and a lot of
+      // ported code calls the bare global __() at module-eval time (e.g.
+      // module-level constant arrays in Settings/WorkflowAutomations/*),
+      // which runs before main.js's own translationPlugin install (ES
+      // module imports are evaluated before the importing module's body).
+      // This is a passthrough placeholder; translation.js's plugin replaces
+      // it with the real (parameterized) implementation once the app boots.
+      window.__ = function (message) {
+        return message
+      }
+      // router.js uses createWebHistory('/crm') -- matching the original,
+      // where Frappe's desk owns '/' and the CRM SPA is mounted under
+      // '/crm'. We have no separate desk claiming '/', so a bare visit to
+      // it would sit outside the router's history base and never resolve to
+      // a route. Send it into that base once, the same way a fresh visit to
+      // the real site lands you somewhere under /crm rather than at a bare
+      // domain root.
+      if (window.location.pathname === '/') {
+        window.location.replace('/crm/')
+      }
+    </script>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

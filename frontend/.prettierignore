@@ -1,0 +1,4 @@
+dist
+node_modules
+src/design-system/styles/theme.css
+src/design-system/styles/fonts

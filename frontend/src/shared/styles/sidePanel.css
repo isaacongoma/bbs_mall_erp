@@ -1,0 +1,49 @@
+.side-panel .form-control {
+  margin: 2px;
+}
+
+.side-panel .form-control input,
+.side-panel textarea.form-control,
+.side-panel .form-control button,
+.side-panel .attach-control,
+.side-panel .geolocation-control,
+.side-panel .dropdown-button {
+  border-color: transparent;
+  background: transparent;
+}
+
+.side-panel .form-control input,
+.side-panel textarea.form-control {
+  border-width: 1px;
+  border-color: transparent;
+}
+
+.side-panel .form-control button {
+  gap: 0;
+}
+
+.side-panel button.select-control:hover,
+.side-panel button.select-control:focus {
+  background-color: var(--surface-gray-1);
+}
+
+.side-panel input.checkbox-control {
+  margin-left: 9px;
+  cursor: pointer;
+}
+
+.side-panel .form-control button > div {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.side-panel .form-control button svg {
+  color: white;
+  width: 0;
+}
+
+.side-panel .dropdown-button {
+  padding-left: 9px !important;
+  padding-right: 9px !important;
+}

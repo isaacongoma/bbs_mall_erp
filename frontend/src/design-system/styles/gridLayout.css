@@ -1,0 +1,42 @@
+.vgl-layout {
+  --vgl-placeholder-bg: #b1b1b1;
+  --vgl-placeholder-opacity: 15%;
+  --vgl-placeholder-z-index: 2;
+  --vgl-resizer-size: 10px;
+  --vgl-resizer-border-color: #444;
+  --vgl-resizer-border-width: 2px;
+}
+
+.vgl-layout .react-grid-placeholder {
+  z-index: var(--vgl-placeholder-z-index, 2);
+  user-select: none;
+  background-color: var(--vgl-placeholder-bg);
+  opacity: var(--vgl-placeholder-opacity);
+  transition-duration: 100ms;
+  border-radius: 0.5rem;
+}
+
+.vgl-layout .react-resizable-handle {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  box-sizing: border-box;
+  width: var(--vgl-resizer-size);
+  height: var(--vgl-resizer-size);
+  padding: 0;
+  background: none;
+  cursor: se-resize;
+}
+
+.vgl-layout .react-resizable-handle::after {
+  display: none;
+}
+
+.vgl-layout .react-resizable-handle::before {
+  position: absolute;
+  inset: 0 3px 3px 0;
+  content: '';
+  border: 0 solid var(--vgl-resizer-border-color);
+  border-right-width: var(--vgl-resizer-border-width);
+  border-bottom-width: var(--vgl-resizer-border-width);
+}

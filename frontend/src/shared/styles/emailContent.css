@@ -1,0 +1,129 @@
+:root {
+  --bg-surface-gray-3: #ededed;
+  --bg-surface-gray-4: #e2e2e2;
+  --email-ink: #171717;
+  --email-border: #ededed;
+  --email-surface-gray-2: #f3f3f3;
+}
+
+[data-theme='dark'] {
+  --bg-surface-gray-3: #343434;
+  --bg-surface-gray-4: #424242;
+  --email-ink: #ededed;
+  --email-border: #343434;
+  --email-surface-gray-2: #232323;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--email-ink);
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.prose-f {
+  max-width: none;
+  word-break: break-all;
+}
+
+.prose-f code {
+  word-break: break-all;
+  white-space: pre-wrap;
+}
+
+.prose-f img {
+  max-width: 100%;
+  border: 1px solid var(--email-border);
+  border-radius: 8px;
+}
+
+.prose-f table {
+  table-layout: fixed;
+}
+
+.prose-f td,
+.prose-f th {
+  position: relative;
+  padding: 8px;
+  border: 1px solid var(--email-border);
+}
+
+.prose-f th {
+  background: var(--email-surface-gray-2);
+}
+
+.replied-content .collapse {
+  display: flex;
+  visibility: visible;
+  width: 23px;
+  height: 12px;
+  margin: 10px 0;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  background: var(--bg-surface-gray-3);
+  font-size: larger;
+  font-weight: 700;
+  line-height: 0.1;
+}
+
+.replied-content .collapse:hover {
+  background: var(--bg-surface-gray-4);
+}
+
+.replied-content .collapse + input,
+.replied-content .collapse + input + div {
+  display: none;
+}
+
+.replied-content .collapse + input:checked + div {
+  display: block;
+}
+
+.email-content {
+  word-break: break-word;
+}
+
+.email-content table {
+  width: unset;
+  margin-top: unset;
+  margin-bottom: unset;
+  table-layout: auto;
+  text-align: unset;
+  font-size: unset;
+  line-height: unset;
+}
+
+.email-content tbody tr {
+  border-bottom-width: 0;
+  border-bottom-color: transparent;
+}
+
+.email-content td {
+  position: unset;
+  border-width: 0;
+  border-color: transparent;
+  padding: 0;
+  vertical-align: revert;
+}
+
+.email-content img {
+  border-width: 0;
+  margin: 0;
+}
+
+.email-content blockquote p:first-of-type::before,
+.email-content blockquote p:last-of-type::after {
+  content: none;
+}

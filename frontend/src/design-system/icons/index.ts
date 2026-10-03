@@ -1,0 +1,5 @@
+export { FeatherIcon, type FeatherIconProps } from './FeatherIcon'
+export { Icon, type IconProps } from './Icon'
+export { isEmojiIconString, isLucideIconString } from '../utils/iconString'
+export { LucideIcon, type LucideIconProps } from './LucideIcon'
+export type { IconComponent, IconComponentProps, IconSource } from '../types/icons'

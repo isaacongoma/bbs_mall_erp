@@ -1,0 +1,55 @@
+# Third-party source clones used as porting references (each is its own git repo; re-clone, do not commit)
+vendor/
+
+# Throwaway feasibility spike and scratch output
+spike/
+logs/
+
+# Safety archives and database dumps
+BBS-ERP-archive/
+*.dump
+*.sql.gz
+*.bak
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Django / Celery
+backend/.env
+backend/media/
+backend/staticfiles/
+backend/celerybeat-schedule*
+backend/db.sqlite3
+*.log
+
+# Node / frontend
+node_modules/
+dist/
+.vite/
+coverage/
+*.tsbuildinfo
+.eslintcache
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local Claude Code state
+.claude/

@@ -1,0 +1,16 @@
+.wf-drag-fallback {
+  opacity: 0 !important;
+}
+
+.wf-tabs > div {
+  overflow: visible;
+}
+
+.wf-tabs [role='tablist'] {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding-left: 0;
+  padding-right: 0;
+  background-color: var(--surface-elevation-2);
+}

@@ -1,0 +1,50 @@
+.grid-row input:not([type='checkbox']),
+.grid-row textarea {
+  border: none;
+  border-radius: 0;
+  height: 38px;
+}
+
+.grid-row input:focus,
+.grid-row input:hover,
+.grid-row textarea:focus,
+.grid-row textarea:hover {
+  box-shadow: none;
+}
+
+.grid-row input:focus-within,
+.grid-row textarea:focus-within {
+  border: 1px solid var(--outline-gray-2);
+}
+
+.grid-row select {
+  border: none;
+  border-radius: 0;
+  height: 38px;
+}
+
+.grid-row button:not(.button-control):not(.rating-star),
+.grid-row .combobox > div > div {
+  border: none;
+  border-radius: 0;
+  background-color: var(--surface-base);
+  height: 38px;
+}
+
+.grid-row:last-child .grid-row-checkbox {
+  border-bottom-left-radius: 7px;
+}
+
+.grid-row .edit-row button {
+  border-bottom-right-radius: 7px;
+}
+
+.grid-row button:focus,
+.grid-row button:hover {
+  box-shadow: none;
+  background-color: var(--surface-base);
+}
+
+.grid-row button:focus-within:not(.rating-star):not(.button-control) {
+  border: 1px solid var(--outline-gray-2);
+}

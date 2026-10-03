@@ -1,0 +1,69 @@
+.editor-popover {
+  animation: editor-popover-in 90ms ease-out;
+  transform-origin: center;
+}
+
+@keyframes editor-popover-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.editor-link-shake {
+  animation: editor-link-shake 160ms ease-in-out;
+}
+
+@keyframes editor-link-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-3px);
+  }
+  75% {
+    transform: translateX(3px);
+  }
+}
+
+.table-menu-enter {
+  animation: table-menu-in 90ms ease-out;
+  transform-origin: center bottom;
+}
+
+@keyframes table-menu-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.table-of-contents-node li {
+  transition: color 0.2s ease;
+}
+
+.toc-item p {
+  transition: all 0.2s ease;
+}
+
+.toc-item p:hover {
+  color: var(--ink-gray-9);
+  text-decoration: underline;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .editor-popover,
+  .editor-link-shake,
+  .table-menu-enter {
+    animation: none;
+  }
+}

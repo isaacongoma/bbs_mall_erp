@@ -1,0 +1,36 @@
+[data-slot='content'][data-state='closed'] {
+  pointer-events: none;
+}
+
+[data-highlighted],
+[data-state='checked'] {
+  outline: none !important;
+}
+
+[data-slot='item'] [data-slot='item-list-row'] {
+  background-color: transparent;
+}
+
+.select-trigger-sizer::after {
+  content: attr(data-width-text);
+  display: block;
+  height: 0;
+  overflow: hidden;
+  white-space: pre;
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot='chevron'] {
+    transition-duration: 0ms !important;
+  }
+}
+
+.multi-select-trigger-sizer::after {
+  content: attr(data-width-text);
+  display: block;
+  height: 0;
+  overflow: hidden;
+  white-space: pre;
+  visibility: hidden;
+}

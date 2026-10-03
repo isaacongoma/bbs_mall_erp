@@ -1,0 +1,245 @@
+import { Extension, Node, type Extensions } from '@tiptap/core'
+import type { ComponentType } from 'react'
+import type { ReactNodeViewProps } from '@tiptap/react'
+import type { MaybeGetter } from './utils/maybeGetter'
+import { Bold } from '@tiptap/extension-bold'
+import { Italic } from '@tiptap/extension-italic'
+import { Paragraph } from '@tiptap/extension-paragraph'
+import { Strike } from '@tiptap/extension-strike'
+import { Text } from '@tiptap/extension-text'
+import { Underline } from '@tiptap/extension-underline'
+import { Gapcursor, UndoRedo } from '@tiptap/extensions'
+import type { HeadingOptions } from '@tiptap/extension-heading'
+import type { LinkOptions } from '@tiptap/extension-link'
+import {
+  Placeholder,
+  Link,
+  StarterKit,
+  Code,
+  CodeBlock,
+  Image,
+  ImageGroup,
+  ImageViewer,
+  Video,
+  Attachment,
+  MediaDrop,
+  ContentPaste,
+  Emoji,
+  Mention,
+  Tag,
+  Table,
+  TableRow,
+  TableCell,
+  TableHeader,
+  TableNavigation,
+  TableCellColor,
+  TableSelectionOverlay,
+  TaskList,
+  TaskItem,
+  Iframe,
+  Toc,
+  SlashCommands,
+  TextStyle,
+  Color,
+  Highlight,
+  Typography,
+  TextAlign,
+  StyleClipboard,
+  EditorDropcursor,
+  type StarterKitOptions,
+  type MentionSuggestionItem,
+  type TagSuggestionItem,
+} from './extensions'
+
+type Member<O> = Partial<O> | false
+type CustomMember = Record<string, any> | false
+type MentionMember =
+  | {
+      items?: MaybeGetter<MentionSuggestionItem[]> | null
+      component?: ComponentType<ReactNodeViewProps>
+    }
+  | false
+type TagMember = { items?: MaybeGetter<TagSuggestionItem[]> | null } | false
+
+function starterKitBase(
+  starter: Partial<StarterKitOptions> | false,
+  heading: Partial<HeadingOptions> | false,
+): Extensions {
+  if (starter === false) return []
+  return [
+    StarterKit.configure({
+      ...starter,
+      heading: heading as StarterKitOptions['heading'],
+    }),
+    Code,
+    CodeBlock,
+  ]
+}
+
+function pushMember(list: Extensions, ext: { configure: (o: any) => any }, option: unknown) {
+  if (option !== false) list.push(ext.configure(option ?? {}))
+}
+
+export interface CommentKitOptions {
+  starterKit: Partial<StarterKitOptions> | false
+  heading: Member<HeadingOptions>
+  placeholder: CustomMember
+  link: Member<LinkOptions>
+  image: CustomMember
+  imageGroup: CustomMember
+  imageViewer: CustomMember
+  video: CustomMember
+  attachment: CustomMember
+  table: CustomMember
+  contentPaste: CustomMember
+  emoji: CustomMember
+  mention: MentionMember
+  tag: TagMember
+}
+
+const commentKitDefaults = (): CommentKitOptions => ({
+  starterKit: {},
+  heading: {},
+  placeholder: {},
+  link: {},
+  image: {},
+  imageGroup: {},
+  imageViewer: {},
+  video: {},
+  attachment: {},
+  table: false,
+  contentPaste: {},
+  emoji: {},
+  mention: {},
+  tag: {},
+})
+
+function commentMembers(options: CommentKitOptions): Extensions {
+  const list: Extensions = [...starterKitBase(options.starterKit, options.heading)]
+  pushMember(list, Placeholder, options.placeholder)
+  pushMember(list, Link, options.link)
+  pushMember(list, Image, options.image)
+  if (options.image !== false) pushMember(list, ImageGroup, options.imageGroup)
+  if (options.image !== false) pushMember(list, ImageViewer, options.imageViewer)
+  pushMember(list, Video, options.video)
+  pushMember(list, Attachment, options.attachment)
+  if (options.image !== false || options.video !== false || options.attachment !== false) list.push(MediaDrop)
+  if (options.table !== false) {
+    list.push(
+      Table.configure(options.table),
+      TableRow,
+      TableCell,
+      TableHeader,
+      TableNavigation,
+      TableCellColor,
+      TableSelectionOverlay,
+    )
+  }
+  pushMember(list, ContentPaste, options.contentPaste)
+  pushMember(list, Emoji, options.emoji)
+  pushMember(list, Mention, options.mention)
+  pushMember(list, Tag, options.tag)
+  return list
+}
+
+export const CommentKit = Extension.create<CommentKitOptions>({
+  name: 'commentKit',
+  addOptions() {
+    return commentKitDefaults()
+  },
+  addExtensions() {
+    return commentMembers(this.options)
+  },
+})
+
+export interface RichTextKitOptions extends CommentKitOptions {
+  table: CustomMember
+  taskList: CustomMember
+  iframe: CustomMember
+  toc: CustomMember
+  slashCommands: CustomMember
+  color: CustomMember
+  highlight: CustomMember
+  typography: CustomMember
+  textAlign: CustomMember
+  styleClipboard: CustomMember
+}
+
+export const RichTextKit = Extension.create<RichTextKitOptions>({
+  name: 'richTextKit',
+  addOptions() {
+    return {
+      ...commentKitDefaults(),
+      table: {},
+      taskList: {},
+      iframe: {},
+      toc: {},
+      slashCommands: {},
+      color: {},
+      highlight: {},
+      typography: {},
+      textAlign: {},
+      styleClipboard: {},
+    }
+  },
+  addExtensions() {
+    const options = this.options
+    const list: Extensions = commentMembers(options)
+
+    if (options.taskList !== false) {
+      list.push(TaskList.configure(options.taskList), TaskItem)
+    }
+    pushMember(list, Iframe, options.iframe)
+    pushMember(list, Toc, options.toc)
+    if (options.slashCommands !== false) list.push(SlashCommands.configure(options.slashCommands))
+    if (options.color !== false) {
+      list.push(TextStyle, Color.configure(options.color))
+    }
+    pushMember(list, Highlight, options.highlight)
+    pushMember(list, Typography, options.typography)
+    pushMember(list, TextAlign, options.textAlign)
+    pushMember(list, StyleClipboard, options.styleClipboard)
+    return list
+  },
+})
+
+export interface InlineKitOptions {
+  starterKit: Partial<StarterKitOptions> | false
+  placeholder: CustomMember
+  link: Member<LinkOptions>
+}
+
+const OneLineDocument = Node.create({
+  name: 'doc',
+  topNode: true,
+  content: 'block',
+})
+
+export const InlineKit = Extension.create<InlineKitOptions>({
+  name: 'inlineKit',
+  addOptions() {
+    return {
+      starterKit: {},
+      placeholder: {},
+      link: {},
+    }
+  },
+  addExtensions() {
+    const options = this.options
+    const list: Extensions = []
+    if (options.starterKit !== false) {
+      list.push(OneLineDocument, Text, Paragraph)
+      if (options.starterKit.bold !== false) list.push(Bold)
+      if (options.starterKit.italic !== false) list.push(Italic)
+      if (options.starterKit.strike !== false) list.push(Strike)
+      if (options.starterKit.underline !== false) list.push(Underline)
+      if (options.starterKit.code !== false) list.push(Code)
+      if (options.starterKit.dropcursor !== false) list.push(EditorDropcursor)
+      if (options.starterKit.gapcursor !== false) list.push(Gapcursor)
+      if (options.starterKit.undoRedo !== false) list.push(UndoRedo)
+    }
+    pushMember(list, Placeholder, options.placeholder)
+    pushMember(list, Link, options.link)
+    return list
+  },
+})

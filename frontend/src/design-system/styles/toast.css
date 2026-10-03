@@ -1,0 +1,15 @@
+[data-sonner-toast][data-mounted='true'][data-expanded='true'] {
+  height: auto;
+}
+
+[data-sonner-toast][data-expanded='false'][data-front='false'] > * {
+  opacity: 0;
+}
+
+.sonner-loading-wrapper {
+  position: static;
+}
+
+.sonner-loading-bar {
+  background-color: var(--surface-gray-1);
+}
