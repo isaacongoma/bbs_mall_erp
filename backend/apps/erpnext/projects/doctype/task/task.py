@@ -319,9 +319,9 @@ class Task(NestedSet):
 
     def update_status(self):
         if self.status not in ("Cancelled", "Completed") and self.exp_end_date:
-            from datetime import datetime
+            from frappe.utils import getdate, nowdate
 
-            if self.exp_end_date < datetime.now():
+            if getdate(self.exp_end_date) < getdate(nowdate()):
                 self.db_set("status", "Overdue", update_modified=False)
                 self.update_project()
 

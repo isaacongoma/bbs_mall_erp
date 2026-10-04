@@ -37,6 +37,15 @@ def install_base_fixtures(country="Kenya"):
                 "create_custom_company_links",
             ):
                 getattr(erpnext_install, step)()
+            from apps.core.crm_custom_fields import install_crm_custom_fields
+
+            install_crm_custom_fields()
+            try:
+                from hrms.install import after_install as install_hrms
+
+                install_hrms()
+            except Exception:
+                pass
     finally:
         frappe.flags.in_install = False
         frappe.session.user = previous_user

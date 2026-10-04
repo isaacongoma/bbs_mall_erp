@@ -235,6 +235,37 @@ rights = (
 )
 
 
+def add_permission(doctype, role, permlevel=0, ptype=None):
+    import frappe
+
+    from apps.frappe.models import DocPerm
+
+    row, _created = DocPerm.objects.get_or_create(
+        parent=doctype,
+        role=role,
+        permlevel=permlevel,
+        defaults={
+            "name": frappe.generate_hash(length=10),
+            "parentfield": "permissions",
+            "parenttype": "DocType",
+        },
+    )
+    if ptype:
+        update_permission_property(doctype, role, permlevel, ptype, 1)
+    return row
+
+
+def update_permission_property(doctype, role, permlevel, ptype, value):
+    from apps.frappe.models import DocPerm
+
+    fieldname = "import_data" if ptype == "import" else ptype
+    if fieldname not in {field.name for field in DocPerm._meta.fields}:
+        return
+    row = add_permission(doctype, role, permlevel)
+    setattr(row, fieldname, value)
+    row.save(update_fields=[fieldname])
+
+
 def get_rights(doctype=None):
     return rights
 

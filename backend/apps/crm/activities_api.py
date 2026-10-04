@@ -53,36 +53,46 @@ def _status_change_activities(doctype: str, name: str) -> list:
 
 
 def _comment_activities(doctype: str, name: str) -> list:
-    from apps.core.models import Comment
+    from apps.core.identity import user_pks_by_email
+    from apps.erpnext.registry import get_model
 
+    comments = list(
+        get_model("Comment")
+        .objects.filter(comment_type="Comment", reference_doctype=doctype, reference_name=name)
+        .order_by("creation")
+    )
+    owners = user_pks_by_email(c.owner for c in comments)
     return [
         {
-            "name": str(c.pk),
+            "name": c.name,
             "activity_type": "comment",
             "creation": c.creation,
-            "owner": c.owner_id,
+            "owner": owners.get(c.owner),
             "content": c.content,
-            "attachments": _attachments("Comment", str(c.pk)),
+            "attachments": _attachments("Comment", c.name),
             "is_lead": doctype == "CRM Lead",
         }
-        for c in Comment.objects.filter(reference_doctype=doctype, reference_name=name).order_by("creation")
+        for c in comments
     ]
 
 
 def _attachments(doctype: str, name: str) -> list:
-    from apps.core.models import FileAttachment
+    from apps.core.identity import user_pks_by_email
+    from apps.erpnext.registry import get_model
 
+    files = list(get_model("File").objects.filter(attached_to_doctype=doctype, attached_to_name=name))
+    owners = user_pks_by_email(f.owner for f in files)
     return [
         {
-            "name": str(f.pk),
+            "name": f.name,
             "file_name": f.file_name,
             "file_url": f.file_url,
-            "file_size": f.file.size if f.file else 0,
-            "is_private": f.is_private,
+            "file_size": f.file_size or 0,
+            "is_private": bool(f.is_private),
             "creation": f.creation,
-            "owner": f.owner_id,
+            "owner": owners.get(f.owner),
         }
-        for f in FileAttachment.objects.filter(attached_to_doctype=doctype, attached_to_name=name)
+        for f in files
     ]
 
 

@@ -20,7 +20,7 @@ class CRMNotification(models.Model):
     )
     type = models.CharField(max_length=20, choices=TYPE_CHOICES, default="Mention")
     comment = models.ForeignKey(
-        "core.Comment", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+        "erpnext.Comment", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
     read = models.BooleanField(default=False)
     message = models.TextField(blank=True)

@@ -14,6 +14,21 @@ ORACLE = json.loads(
 )
 
 
+SCENARIOS = json.loads(
+    (Path(__file__).resolve().parents[3] / "tests" / "oracle" / "si_scenarios.json").read_text(encoding="utf-8")
+)
+TOTAL_FIELDS = (
+    "total",
+    "net_total",
+    "total_taxes_and_charges",
+    "grand_total",
+    "base_grand_total",
+    "rounded_total",
+    "rounding_adjustment",
+    "outstanding_amount",
+)
+
+
 def money(value):
     return Decimal(str(value)).quantize(Decimal("0.01"))
 
@@ -214,3 +229,79 @@ class SalesInvoiceParity(TestCase):
         self.assertEqual(money(get_doc("Sales Invoice", credit_note.name).outstanding_amount), money(-116000))
         reloaded = get_doc("Sales Invoice", invoice.name)
         self.assertEqual(money(reloaded.outstanding_amount), money(116000))
+
+
+    def assert_totals(self, document, expected):
+        for fieldname in TOTAL_FIELDS:
+            self.assertEqual(money(document.get(fieldname) or 0), money(expected[fieldname] or 0), fieldname)
+        self.assertEqual(money(document.get("discount_amount") or 0), money(expected["discount_amount"] or 0))
+
+    def ledger(self, voucher_no):
+        return sorted(
+            (row.account, money(row.debit), money(row.credit))
+            for row in get_model("GL Entry").objects.filter(voucher_no=voucher_no, is_cancelled=0)
+        )
+
+    def expected_ledger(self, rows):
+        return sorted((row["account"], money(row["debit"]), money(row["credit"])) for row in rows)
+
+    def test_oracle_inclusive_tax(self):
+        self.assert_totals(self.make_invoice(rate=116000, included=1), SCENARIOS["inclusive"]["totals"])
+
+    def test_oracle_discount(self):
+        invoice = self.make_invoice(discount_percent=10)
+        self.assert_totals(invoice, SCENARIOS["discount"]["totals"])
+        invoice.submit()
+        self.assertEqual(self.ledger(invoice.name), self.expected_ledger(SCENARIOS["discount"]["gl"]))
+
+    def test_oracle_quantity(self):
+        self.assert_totals(self.make_invoice(rate=2500, qty=4), SCENARIOS["quantity"]["totals"])
+
+    def pay(self, invoice, amount=None):
+        from apps.erpnext.accounts.doctype.payment_entry.payment_entry import get_payment_entry
+
+        payment = get_payment_entry("Sales Invoice", invoice.name, bank_account="Cash - BML")
+        if amount:
+            payment.paid_amount = amount
+            payment.received_amount = amount
+            payment.references[0].allocated_amount = amount
+        payment.reference_no = "CHQ-ORACLE"
+        payment.reference_date = "2026-10-03"
+        payment.insert()
+        payment.submit()
+        return payment
+
+    def test_oracle_full_payment(self):
+        invoice = self.make_invoice()
+        invoice.submit()
+        payment = self.pay(invoice)
+        reloaded = get_doc("Sales Invoice", invoice.name)
+        expected = SCENARIOS["full_payment"]
+        self.assertEqual(reloaded.status, expected["si"]["status"])
+        self.assertEqual(money(reloaded.outstanding_amount), money(expected["si"]["outstanding_amount"]))
+        self.assertEqual(self.ledger(payment.name), self.expected_ledger(expected["gl"]))
+
+    def test_oracle_partial_payment(self):
+        invoice = self.make_invoice()
+        invoice.submit()
+        payment = self.pay(invoice, 16000)
+        reloaded = get_doc("Sales Invoice", invoice.name)
+        expected = SCENARIOS["partial_payment"]
+        self.assertEqual(reloaded.status, expected["si"]["status"])
+        self.assertEqual(money(reloaded.outstanding_amount), money(expected["si"]["outstanding_amount"]))
+        self.assertEqual(self.ledger(payment.name), self.expected_ledger(expected["gl"]))
+
+    def test_oracle_credit_note(self):
+        from apps.erpnext.accounts.doctype.sales_invoice.mapper import make_sales_return
+
+        invoice = self.make_invoice()
+        invoice.submit()
+        credit_note = make_sales_return(invoice.name)
+        credit_note.insert()
+        credit_note.submit()
+        expected = SCENARIOS["credit_note"]
+        reloaded_credit_note = get_doc("Sales Invoice", credit_note.name)
+        self.assert_totals(reloaded_credit_note, expected["credit_note"])
+        self.assertEqual(reloaded_credit_note.status, expected["credit_note"]["status"])
+        self.assertEqual(get_doc("Sales Invoice", invoice.name).status, expected["original"]["status"])
+        self.assertEqual(self.ledger(credit_note.name), self.expected_ledger(expected["gl"]))

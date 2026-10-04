@@ -24,7 +24,7 @@ class SystemSettings(models.Model):
 
     id = models.PositiveSmallIntegerField(primary_key=True, default=1, editable=False)
     currency = models.ForeignKey(
-        "crm.Currency", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+        "erpnext.Currency", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
     currency_precision = models.CharField(max_length=2, choices=CURRENCY_PRECISION_CHOICES, blank=True)
     float_precision = models.CharField(max_length=2, choices=FLOAT_PRECISION_CHOICES, blank=True)

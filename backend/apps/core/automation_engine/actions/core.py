@@ -191,16 +191,12 @@ def resolve_recipients(recipients: list, doc) -> list:
 def _assignees(doc) -> list:
     if doc is None:
         return []
-    from apps.core.doctype.todo.todo import ToDo
+    from apps.core.assignments import assigned_user_pks
 
     doctype = getattr(doc, "doctype_label", None)
     if not doctype:
         return []
-    return list(
-        ToDo.objects.filter(reference_type=doctype, reference_name=doc.pk, status="Open").values_list(
-            "allocated_to_id", flat=True
-        )
-    )
+    return assigned_user_pks(doctype, doc.pk)
 
 
 class SendNotification(AutomationAction):
@@ -277,17 +273,15 @@ class AssignToUser(AutomationAction):
             raise AutomationParamError("At least one assignee is required", fieldname="assign_to")
 
     def execute(self, doc, params, context):
-        from apps.core.doctype.todo.todo import ToDo
+        from apps.core.assignments import create_assignment, has_open_assignment
 
         _require_doc(doc, self.label)
         doctype = getattr(doc, "doctype_label", "")
         users = _as_list(params.get("assign_to"))
         description = render_value(params.get("description"), doc, context) or doctype
         for user_id in users:
-            ToDo.objects.get_or_create(
-                reference_type=doctype, reference_name=str(doc.pk), allocated_to_id=user_id, status="Open",
-                defaults={"description": description},
-            )
+            if not has_open_assignment(doctype, doc.pk, user_id):
+                create_assignment(doctype, doc.pk, user_id, description=description)
         return f"Assigned to {', '.join(str(u) for u in users)}"
 
 

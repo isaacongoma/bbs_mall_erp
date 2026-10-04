@@ -31,10 +31,10 @@ def _pct_delta(current, previous):
 
 
 def get_base_currency_symbol() -> str:
-    from apps.crm.doctype.currency.currency import Currency
+    from apps.erpnext.registry import get_model
 
     base_currency = FCRMSettings.get_solo().currency or "USD"
-    return Currency.objects.filter(pk=base_currency).values_list("symbol", flat=True).first() or ""
+    return get_model("Currency").objects.filter(pk=base_currency).values_list("symbol", flat=True).first() or ""
 
 
 def get_chart_options() -> dict:

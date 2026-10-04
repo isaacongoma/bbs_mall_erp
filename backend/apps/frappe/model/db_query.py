@@ -80,6 +80,14 @@ def _tree_q(model, fieldname, operator, value):
 def condition_q(model, fieldname, operator, value):
     fieldname = _real_field(model, fieldname)
     _check_field(model, fieldname) if fieldname != "pk" else None
+    if hasattr(model, "_meta"):
+        try:
+            f = model._meta.get_field(fieldname)
+            if getattr(f, "is_relation", False) and getattr(f, "related_model", None) and getattr(f.related_model._meta, "model_name", "") == "user":
+                if isinstance(value, str) and not value.isdigit():
+                    fieldname = f"{fieldname}__email"
+        except Exception:
+            pass
     operator = str(operator).strip().lower()
     if operator == "=":
         if value is None or (value == "" and _is_text(model, fieldname)):

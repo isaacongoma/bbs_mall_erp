@@ -59,7 +59,7 @@ Counts are the status column of the table below. `naming.py` is `ported`. `delet
 
 ## HRMS Port
 
-Updated: 2026-10-03. Baseline `manage.py check` and `makemigrations --check --dry-run` were clean before HRMS edits. Baseline `manage.py test --noinput` was not green before HRMS edits: it ran 223 tests, failed with 150 errors and 1 failure, and then could not drop `test_bbs_erp` because another database session was still connected. After that run, `.venv\Scripts\python.exe` and its configured base executable became inaccessible from PowerShell, so HRMS migrations/tests/checks could not be executed in this turn.
+Updated: 2026-10-04. `backend\.venv\Scripts\python.exe` still cannot run because its base interpreter under the user profile returns `Access is denied`. Verification used readable Python 3.13 from `C:\Program Files\pgAdmin 4\python\python.exe` with `backend\.venv\Lib\site-packages` and `backend` inserted into `sys.path`, and `TEST_DATABASE_NAME=test_bbs_erp_codex`. `manage.py check` passed, `makemigrations --check --dry-run` reported no changes, HRMS Stage 1 tests ran 6 tests OK, and full `manage.py test --noinput` discovered 349 tests but failed with 17 errors in newly added Projects/Employee tests outside HRMS Stage 1.
 
 ### HRMS Stage 1 Setup Masters
 
@@ -76,8 +76,8 @@ Updated: 2026-10-03. Baseline `manage.py check` and `makemigrations --check --dr
 | vendor/hrms/hrms/hr/doctype/shift_type/shift_type.json | backend/apps/hrms/hr/doctype/shift_type | generated | JSON copied and generated model created. Full controller is deferred to Attendance/Shift stage because upstream imports Attendance, Employee Checkin and Shift Assignment. |
 | vendor/hrms/hrms/hr/doctype/identification_document_type/identification_document_type.json | backend/apps/hrms/hr/doctype/identification_document_type | generated | JSON copied, generated model and controller stub created. Upstream controller is pass-only. |
 | vendor/hrms/hrms/hr/doctype/interest/interest.json | backend/apps/hrms/hr/doctype/interest | generated | JSON copied, generated model and controller stub created. Upstream controller is pass-only. |
-| HRMS Stage 1 migration | backend/apps/hrms/migrations/0001_initial.py | generated | Manual additive migration for the eight table-backed Stage 1 doctypes. `HR Settings` is `issingle`, so it uses `tabSingles`. Created manually because the Python executable became inaccessible after the pre-change baseline test run. |
-| HRMS Stage 1 tests | backend/apps/hrms/tests/test_stage1_setup.py | generated | Tests added for meta/model registration, HR Settings single-doctype behavior, hook merge and Leave Type validations. Not run because Python executable was inaccessible. |
+| HRMS Stage 1 migration | backend/apps/hrms/migrations/0001_initial.py | generated | Django-generated migration for the eight table-backed Stage 1 doctypes. `HR Settings` is `issingle`, so it uses `tabSingles`. Manual-vs-generated diff was structural only: Django expanded helper field lists and changed generation ordering/formatting without changing fields or table options. |
+| HRMS Stage 1 tests | backend/apps/hrms/tests/test_stage1_setup.py | tested | 6 tests passed on 2026-10-04, covering meta/model registration, HR Settings single-doctype behavior, registered-doctype hook filtering and Leave Type validations. |
 
 ### HRMS Exclusions
 

@@ -2,7 +2,7 @@ from django.test import TestCase
 
 from apps.erpnext.registry import get_controller, get_meta, get_model, list_doctypes
 from apps.frappe import exceptions, new_doc
-from apps.frappe.runtime import get_hooks
+from apps.frappe.runtime import SKIPPED_UNREGISTERED_HOOK_DOCTYPES, get_hooks
 
 
 class HrmsStage1SetupTests(TestCase):
@@ -34,7 +34,8 @@ class HrmsStage1SetupTests(TestCase):
     def test_hrms_hooks_are_merged(self):
         self.assertIn("Employee", get_hooks("override_doctype_class"))
         self.assertIn("daily_long", get_hooks("scheduler_events"))
-        self.assertIn("Expense Claim", get_hooks("invoice_doctypes"))
+        self.assertNotIn("Expense Claim", get_hooks("invoice_doctypes"))
+        self.assertIn(("invoice_doctypes", "Expense Claim"), SKIPPED_UNREGISTERED_HOOK_DOCTYPES)
 
     def test_leave_type_compensatory_and_earned_leave_are_mutually_exclusive(self):
         doc = new_doc("Leave Type")

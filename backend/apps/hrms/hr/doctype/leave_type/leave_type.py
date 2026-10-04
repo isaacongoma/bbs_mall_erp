@@ -2,7 +2,6 @@ import frappe
 from frappe import _, bold
 from frappe.model.document import Document
 from frappe.utils import today
-from apps.frappe.runtime import resolve_hook_handler
 
 
 class LeaveType(Document):
@@ -62,7 +61,7 @@ class LeaveType(Document):
                 )
 
     def clear_cache(self):
-        handler = resolve_hook_handler("hrms.payroll.doctype.salary_slip.salary_slip.LEAVE_TYPE_MAP")
-        if handler:
-            frappe.cache().delete_value(handler)
+        from hrms.payroll.doctype.salary_slip.salary_slip import LEAVE_TYPE_MAP
+
+        frappe.cache().delete_value(LEAVE_TYPE_MAP)
         return super().clear_cache()

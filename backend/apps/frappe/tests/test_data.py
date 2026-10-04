@@ -4,6 +4,8 @@ from apps.frappe.utils import cast, cint, comma_and, evaluate_filters, flt, roun
 
 
 class DataUtilsTests(SimpleTestCase):
+    databases = {"default"}
+
     def test_flt_parses_strings_and_ignores_invalid_input(self):
         self.assertEqual(flt(None), 0)
         self.assertEqual(flt("what"), 0)

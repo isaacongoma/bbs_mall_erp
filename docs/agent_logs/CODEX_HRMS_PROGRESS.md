@@ -23,3 +23,24 @@ Known gaps:
 - Holiday List Assignment controller waits for Payroll/leave-assignment dependencies.
 - HRMS install fixtures/custom fields are scaffolded only; upstream install records are not ported yet.
 - Kenya payroll not started.
+
+## 2026-10-04 Stage 1 Verification
+
+Done:
+- Re-tested `backend\.venv\Scripts\python.exe --version`; it still fails because the venv points at `C:\Users\ongom\AppData\Local\Programs\Python\Python313\python.exe`, which returns `Access is denied`.
+- Tested readable Python alternatives. `C:\Program Files\pgAdmin 4\python\python.exe` is Python 3.13 and can run the backend when `backend\.venv\Lib\site-packages` and `backend` are inserted into `sys.path`; it cannot create `.venv-codex` because the embedded distribution has no `venv` module.
+- Replaced the hand-written HRMS migration with Django-generated `apps.hrms 0001_initial`.
+- Fixed HRMS Stage 1 hook expectation to assert that unregistered `Expense Claim` is filtered from hook consumer lists and recorded in `SKIPPED_UNREGISTERED_HOOK_DOCTYPES`.
+- Made `generate_doctypes` skip identical JSON/generated-model writes so the idempotency test no longer rewrites files during the suite.
+
+Verified:
+- `manage.py check`: `System check identified no issues (0 silenced)`.
+- `manage.py makemigrations --check --dry-run`: `No changes detected`.
+- `apps.hrms.tests.test_stage1_setup --noinput`: 6 tests, OK.
+- `apps.erpnext.tests.test_foundation.ErpnextFoundationTests.test_generate_doctypes_is_idempotent_for_pilot_set --noinput`: 1 test, OK.
+- `apps.erpnext.accounts.doctype.journal_entry.test_journal_entry_parity --noinput`: 6 tests, OK.
+- Full `manage.py test --noinput` from `backend` using `TEST_DATABASE_NAME=test_bbs_erp_codex`: 349 tests discovered, 17 errors.
+
+Blocked:
+- Full-suite errors are in newly added Projects/Employee tests outside the HRMS Stage 1 slice: missing upstream test helper modules for Sales Order, Sales Invoice, Stock Entry and User Permission; missing `_Test Employee` fixture rows for Activity Cost; Task assignment/overdue/report expectations; and `User` metadata not registered for Employee user-creation tests.
+- Stage 2 Leaves was not started because the full suite is not green.

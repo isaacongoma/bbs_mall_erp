@@ -717,6 +717,8 @@ def get_meta(doctype, cached=True, **kwargs):
 def _loaded_value(value):
     import decimal
 
+    if hasattr(value, "email") and hasattr(value, "_meta") and getattr(value._meta, "model_name", "") == "user":
+        return value.email
     return float(value) if isinstance(value, decimal.Decimal) else value
 
 
@@ -1295,20 +1297,16 @@ def resolve_model(doctype):
 
 
 def _extra_models():
-    from apps.core.doctype.comment.comment import Comment
     from apps.core.doctype.docshare.docshare import DocShare
-    from apps.core.doctype.todo.todo import ToDo
     from apps.frappe.models import DocPerm, HasRole, Role, Series, Singles, UserPermission
 
     return {
-        "Comment": Comment,
         "DocPerm": DocPerm,
         "DocShare": DocShare,
         "Has Role": HasRole,
         "Role": Role,
         "Series": Series,
         "Singles": Singles,
-        "ToDo": ToDo,
         "User Permission": UserPermission,
     }
 
@@ -1728,12 +1726,16 @@ class Database:
         if isinstance(name, (dict, list, tuple)):
             filters, name = name, None
         if name is not None and name != "":
-            qs = qs.filter(pk=name)
+            if doctype == "User" and isinstance(name, str) and not name.isdigit():
+                qs = qs.filter(email=name)
+            else:
+                qs = qs.filter(pk=name)
         elif filters:
             qs = apply_filters(qs, filters)
         elif name is None and filters is None:
             return None
-        match = qs.values_list("pk", flat=True).first()
+        match_field = "email" if doctype == "User" else "pk"
+        match = qs.values_list(match_field, flat=True).first()
         return match
 
     def count(self, doctype=None, filters=None, dt=None, **kwargs):
@@ -1750,6 +1752,28 @@ class Database:
         if percent:
             text = text.replace("%", "%%")
         return "'" + text.replace("'", "''") + "'"
+
+    def _pgcode(self, exc):
+        current = exc
+        for _ in range(6):
+            if current is None:
+                return None
+            code = getattr(current, "pgcode", None) or getattr(current, "sqlstate", None)
+            if code:
+                return code
+            current = getattr(current, "__cause__", None)
+        return None
+
+    def is_missing_column(self, exc):
+        return self._pgcode(exc) == "42703"
+
+    def is_table_missing(self, exc):
+        from apps.frappe.exceptions import DoesNotExistError
+
+        return self._pgcode(exc) == "42P01" or isinstance(exc, (DoesNotExistError, LookupError))
+
+    def is_missing_table_or_column(self, exc):
+        return self.is_missing_column(exc) or self.is_table_missing(exc)
 
     def is_duplicate_entry(self, exc):
         current = exc

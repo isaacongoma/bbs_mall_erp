@@ -39,6 +39,9 @@ DatetimeTypes = datetime.date | datetime.datetime | datetime.time | datetime.tim
 
 
 def _db_field_value(field, value):
+    if getattr(field, "is_relation", False) and getattr(field, "related_model", None) and getattr(field.related_model._meta, "model_name", "") == "user":
+        if isinstance(value, str) and not value.isdigit():
+            return field.related_model.objects.filter(email=value).first()
     if value is None and field.empty_strings_allowed:
         return ""
     if isinstance(value, str) and value == "" and not field.empty_strings_allowed:
@@ -423,6 +426,9 @@ class Document:
         self.run_method("on_change")
 
     def submit(self):
+        return self._submit()
+
+    def _submit(self):
         from apps.erpnext.registry import get_meta
         if not get_meta(self.doctype).get("is_submittable"):
             from apps.frappe import exceptions
@@ -436,6 +442,9 @@ class Document:
         return self
 
     def cancel(self):
+        return self._cancel()
+
+    def _cancel(self):
         from apps.erpnext.registry import get_meta
         if not get_meta(self.doctype).get("is_submittable"):
             from apps.frappe import exceptions
@@ -775,7 +784,18 @@ class Document:
                 model = get_model(field["options"])
             except LookupError:
                 continue
-            if not model.objects.filter(pk=value).exists():
+            if field.get("options") == "User":
+                if value in ("Administrator", "Guest"):
+                    exists = True
+                elif hasattr(value, "email"):
+                    exists = model.objects.filter(pk=value.pk).exists()
+                else:
+                    from django.db.models import Q
+
+                    exists = model.objects.filter(Q(email=value) | Q(username=value)).exists()
+            else:
+                exists = model.objects.filter(pk=getattr(value, "pk", value)).exists()
+            if not exists:
                 raise exceptions.LinkValidationError("Could not find {0}: {1}".format(field["options"], value))
 
     def validate_unique(self):
@@ -880,9 +900,11 @@ class Document:
 
         if not getattr(self, "name", None) or self.is_single():
             return
-        stored = get_model(self.doctype).objects.filter(pk=self.name).values_list("modified", flat=True).first()
-        if stored is not None:
-            self.modified = stored
+        model = get_model(self.doctype)
+        if any(f.name == "modified" for f in model._meta.fields):
+            stored = model.objects.filter(pk=self.name).values_list("modified", flat=True).first()
+            if stored is not None:
+                self.modified = stored
 
     def db_set(self, fieldname, value=None, update_modified=True, notify=False, commit=False):
         values = dict(fieldname) if isinstance(fieldname, dict) else {fieldname: value}
@@ -959,6 +981,9 @@ class Document:
             try:
                 child_model = get_model(field["options"])
             except LookupError:
+                continue
+            child_field_names = {f.name for f in child_model._meta.fields}
+            if not {"parent", "parentfield", "parenttype"}.issubset(child_field_names):
                 continue
             child_model.objects.filter(parent=self.name, parentfield=field["fieldname"], parenttype=self.doctype).delete()
             if not rows:

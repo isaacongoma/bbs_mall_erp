@@ -2,7 +2,6 @@ from django.contrib import admin
 
 from apps.crm.doctype.call_log.call_log import CRMCallLog
 from apps.crm.doctype.communication_status.communication_status import CRMCommunicationStatus
-from apps.crm.doctype.currency.currency import Currency
 from apps.crm.doctype.dashboard.dashboard import CRMDashboard
 from apps.crm.doctype.deal.deal import CRMDeal
 from apps.crm.doctype.deal_status.deal_status import CRMDealStatus
@@ -56,7 +55,6 @@ admin.site.register(CRMLostReason)
 admin.site.register(CRMCommunicationStatus)
 admin.site.register(CRMServiceLevelAgreement)
 admin.site.register(CRMHolidayList)
-admin.site.register(Currency)
 admin.site.register(FCRMSettings)
 admin.site.register(CRMTask)
 admin.site.register(FCRMNote)

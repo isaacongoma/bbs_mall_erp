@@ -9,8 +9,8 @@ from __future__ import annotations
 
 from rest_framework import serializers, viewsets
 
-from apps.core.doctype.address.address import Address
 from apps.core.doctype.gender.gender import Gender
+from apps.erpnext.registry import get_model
 from apps.core.doctype.salutation.salutation import Salutation
 from apps.crm.doctype.communication_status.communication_status import CRMCommunicationStatus
 from apps.crm.doctype.deal_status.deal_status import CRMDealStatus
@@ -96,12 +96,45 @@ class GenderViewSet(viewsets.ModelViewSet):
     serializer_class = GenderSerializer
 
 
-class AddressSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Address
-        fields = "__all__"
+class AddressSerializer(serializers.Serializer):
+    name = serializers.CharField(read_only=True)
+    address_title = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    address_type = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    address_line1 = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    address_line2 = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    city = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    state = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    country = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    pincode = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        return {key: (value if value is not None else "") for key, value in data.items()}
+
+    def create(self, validated_data):
+        from django.utils import timezone
+
+        from apps.core.identity import user_email
+        from apps.frappe.utils import generate_hash
+
+        now = timezone.now()
+        email = user_email(getattr(self.context.get("request"), "user", None)) or ""
+        return get_model("Address").objects.create(
+            name=generate_hash(length=10), owner=email, modified_by=email, creation=now, modified=now, **validated_data
+        )
+
+    def update(self, instance, validated_data):
+        from django.utils import timezone
+
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+        instance.modified = timezone.now()
+        instance.save()
+        return instance
 
 
 class AddressViewSet(viewsets.ModelViewSet):
-    queryset = Address.objects.all()
     serializer_class = AddressSerializer
+
+    def get_queryset(self):
+        return get_model("Address").objects.all().order_by("name")

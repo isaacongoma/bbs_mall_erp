@@ -16,10 +16,8 @@ class HRSettings(Document):
         PROCEED_WITH_FREQUENCY_CHANGE = False
 
     def set_naming_series(self):
-        try:
-            from erpnext.utilities.naming import set_by_naming_series
-        except ModuleNotFoundError:
-            return
+        from erpnext.utilities.naming import set_by_naming_series
+
         set_by_naming_series(
             "Employee",
             "employee_number",

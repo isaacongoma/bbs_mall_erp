@@ -139,9 +139,12 @@ class PermissionType(Document):
 
 @site_cache
 def get_doctype_ptype_map():
-    ptypes = frappe.get_all(
-        "Permission Type", fields=["perm_type", "doc_type"], order_by="perm_type", limit=0
-    )
+    try:
+        ptypes = frappe.get_all(
+            "Permission Type", fields=["perm_type", "doc_type"], order_by="perm_type", limit=0
+        )
+    except LookupError:
+        return {}
 
     doctype_ptype_map = defaultdict(list)
     for pt in ptypes:

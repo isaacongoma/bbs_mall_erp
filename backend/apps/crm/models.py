@@ -4,7 +4,6 @@
 from apps.crm.doctype.call_log.call_log import CRMCallLog  # noqa: F401
 from apps.crm.doctype.call_log_link.call_log_link import CallLogLink  # noqa: F401
 from apps.crm.doctype.communication_status.communication_status import CRMCommunicationStatus  # noqa: F401
-from apps.crm.doctype.currency.currency import Currency  # noqa: F401
 from apps.crm.doctype.dashboard.dashboard import CRMDashboard  # noqa: F401
 from apps.crm.doctype.deal.deal import CRMDeal  # noqa: F401
 from apps.crm.doctype.deal_contacts.deal_contacts import CRMDealContact  # noqa: F401

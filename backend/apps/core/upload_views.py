@@ -11,7 +11,12 @@ from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from apps.core.models import FileAttachment
+from django.core.files.storage import default_storage
+from django.utils import timezone
+
+from apps.core.identity import user_email
+from apps.erpnext.registry import get_model
+from apps.frappe.utils import generate_hash
 
 
 @api_view(["POST"])
@@ -22,21 +27,29 @@ def upload_file(request):
     if upload is None:
         return Response({"message": "No file provided"}, status=400)
 
-    doc = FileAttachment.objects.create(
+    now = timezone.now()
+    stored_path = default_storage.save(f"uploads/{now:%Y/%m}/{upload.name}", upload)
+    email = user_email(request.user) or ""
+    doc = get_model("File").objects.create(
+        name=generate_hash(length=10),
         file_name=upload.name,
-        file=upload,
-        is_private=request.data.get("is_private", "1") == "1",
+        file_url=default_storage.url(stored_path),
+        file_size=upload.size,
+        is_private=1 if request.data.get("is_private", "1") == "1" else 0,
         folder=request.data.get("folder") or "Home",
         attached_to_doctype=request.data.get("doctype") or "",
         attached_to_name=request.data.get("docname") or "",
         attached_to_field=request.data.get("fieldname") or "",
-        owner=request.user,
+        owner=email,
+        modified_by=email,
+        creation=now,
+        modified=now,
     )
     return Response({
         "message": {
-            "name": str(doc.pk),
+            "name": doc.name,
             "file_name": doc.file_name,
             "file_url": doc.file_url,
-            "is_private": doc.is_private,
+            "is_private": bool(doc.is_private),
         }
     })

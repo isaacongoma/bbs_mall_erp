@@ -63,7 +63,7 @@ class CRMDeal(ChildRowBufferMixin, AssignableMixin, BaseDocument):
     territory = models.ForeignKey(
         "crm.CRMTerritory", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
-    currency = models.ForeignKey("crm.Currency", on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    currency = models.ForeignKey("erpnext.Currency", on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
     exchange_rate = models.FloatField(default=1)
     annual_revenue = models.DecimalField(max_digits=18, decimal_places=2, default=0)
     industry = models.ForeignKey(

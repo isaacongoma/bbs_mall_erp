@@ -4,6 +4,7 @@ from django.db import models
 
 
 class DocShare(models.Model):
+    doctype = "DocShare"
     name = models.CharField(max_length=140, primary_key=True, editable=False)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, related_name="+"

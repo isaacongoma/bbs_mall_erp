@@ -3,21 +3,18 @@
 # fields, the enrichment mapper, ToDo/DocShare reference_type, kanban
 # column-field resolution) and needs to resolve it back to a real model at runtime.
 def _registry() -> dict:
-    from apps.core.doctype.address.address import Address
     from apps.core.doctype.assignment_rule.assignment_rule import AssignmentRule
     from apps.core.doctype.automation_flow.automation_flow import AutomationFlow
     from apps.core.doctype.background_task.background_task import BackgroundTask
     from apps.core.doctype.contact.contact import Contact
     from apps.core.doctype.data_import.data_import import DataImport
-    from apps.core.doctype.email_account.email_account import EmailAccount
-    from apps.core.doctype.email_template.email_template import EmailTemplate
     from apps.core.doctype.gender.gender import Gender
     from apps.core.doctype.salutation.salutation import Salutation
     from apps.core.doctype.system_settings.system_settings import SystemSettings
     from apps.core.models import User
     from apps.crm.doctype.call_log.call_log import CRMCallLog
     from apps.crm.doctype.communication_status.communication_status import CRMCommunicationStatus
-    from apps.crm.doctype.currency.currency import Currency
+    from apps.erpnext.registry import get_model
     from apps.crm.doctype.deal.deal import CRMDeal
     from apps.crm.doctype.deal_status.deal_status import CRMDealStatus
     from apps.crm.doctype.industry.industry import CRMIndustry
@@ -56,9 +53,9 @@ def _registry() -> dict:
         "CRM Territory": CRMTerritory,
         "Salutation": Salutation,
         "Gender": Gender,
-        "Address": Address,
+        "Address": get_model("Address"),
         "User": User,
-        "Currency": Currency,
+        "Currency": get_model("Currency"),
         "System Settings": SystemSettings,
         "Assignment Rule": AssignmentRule,
         "CRM Service Level Agreement": CRMServiceLevelAgreement,
@@ -66,8 +63,8 @@ def _registry() -> dict:
         "Automation Flow": AutomationFlow,
         "Background Task": BackgroundTask,
         "Data Import": DataImport,
-        "Email Account": EmailAccount,
-        "Email Template": EmailTemplate,
+        "Email Account": get_model("Email Account"),
+        "Email Template": get_model("Email Template"),
         
         # BBS-ERP Modules
         "Mall": Mall,

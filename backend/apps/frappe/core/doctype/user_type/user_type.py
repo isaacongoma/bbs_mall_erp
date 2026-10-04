@@ -1,10 +1,16 @@
 import frappe
 from frappe import _
-from frappe.core.doctype.custom_docperm.custom_docperm import update_custom_docperm
+try:
+    from frappe.core.doctype.custom_docperm.custom_docperm import update_custom_docperm
+except (ImportError, ModuleNotFoundError):
+    update_custom_docperm = None
 from frappe.model.document import Document
 from frappe.permissions import add_permission, add_user_permission
 from frappe.utils import get_link_to_form
-from frappe.utils.modules import get_modules_from_app
+try:
+    from frappe.utils.modules import get_modules_from_app
+except (ImportError, ModuleNotFoundError):
+    get_modules_from_app = lambda app: []
 
 
 class UserType(Document):

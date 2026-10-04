@@ -140,16 +140,13 @@ def _virtual_field_values(doctype: str, names: list, want: set) -> dict:
     """{name: {"_assign": [...], "_liked_by": [...], ...}} for the rows we're
     about to return -- these aren't real columns, so they're computed
     separately and merged in, same as Frappe injects them onto every doc."""
+    from apps.core.assignments import assignees_by_name
     from apps.core.doctype.liked_document.liked_document import LikedDocument
-    from apps.core.doctype.todo.todo import ToDo
 
     out = {n: {} for n in names}
     if "_assign" in want:
-        rows = ToDo.objects.filter(
-            reference_type=doctype, reference_name__in=names, status="Open"
-        ).values_list("reference_name", "allocated_to_id")
-        for name, user_id in rows:
-            out[name].setdefault("_assign", []).append(user_id)
+        for name, user_ids in assignees_by_name(doctype, names).items():
+            out[name]["_assign"] = list(user_ids)
         for n in names:
             out[n]["_assign"] = json.dumps(out[n].get("_assign", []))
     if "_liked_by" in want:
@@ -420,14 +417,9 @@ def get_views(doctype: str, user=None) -> list:
 
 
 def get_assigned_users(doctype: str, name: str) -> list:
-    from apps.core.doctype.todo.todo import ToDo
+    from apps.core.assignments import assigned_user_pks
 
-    return list(
-        ToDo.objects.filter(reference_type=doctype, reference_name=name)
-        .exclude(status__in=["Closed", "Cancelled"])
-        .values_list("allocated_to_id", flat=True)
-        .distinct()
-    )
+    return assigned_user_pks(doctype, name, statuses=None, excluding=("Closed", "Cancelled"))
 
 
 def add_seen(doctype: str, name: str, user):
@@ -523,19 +515,17 @@ def rename_doc(doctype: str, old_name: str, new_name: str) -> dict:
 # assign_agent/unassign_agent but works directly off reference_type/name so
 # bulk multi-doctype calls don't need to load each model instance.
 def assign_to_add(doctype: str, name: str, assign_to: list, bulk_assign: bool = False, re_assign: bool = False) -> None:
-    from apps.core.doctype.todo.todo import ToDo
+    from apps.core.assignments import create_assignment, has_open_assignment
     from apps.core.middleware import get_current_user
 
     assigned_by = get_current_user()
     for user_id in assign_to:
-        if ToDo.objects.filter(
-            reference_type=doctype, reference_name=name, allocated_to_id=user_id, status="Open"
-        ).exists():
+        if has_open_assignment(doctype, name, user_id):
             continue
-        ToDo.objects.create(
-            allocated_to_id=user_id, reference_type=doctype, reference_name=name,
-            description=f"Assignment for {doctype} {name}", status="Open",
+        create_assignment(
+            doctype, name, user_id,
             assigned_by=assigned_by if assigned_by and getattr(assigned_by, "is_authenticated", False) else None,
+            description=f"Assignment for {doctype} {name}",
         )
         from apps.crm.notifications_api import notify_assignment
 
@@ -549,19 +539,17 @@ def assign_to_add_multiple(doctype: str, name, assign_to: list, bulk_assign: boo
 
 
 def remove_assignments(doctype: str, name: str, assignees) -> None:
-    from apps.core.doctype.todo.todo import ToDo
+    from apps.core.assignments import set_assignment_status
 
     names = json.loads(assignees) if isinstance(assignees, str) else assignees
-    ToDo.objects.filter(
-        reference_type=doctype, reference_name=name, allocated_to_id__in=names, status="Open"
-    ).update(status="Cancelled")
+    set_assignment_status(doctype, name, "Open", "Cancelled", users=names)
 
 
 def assign_to_remove_multiple(doctype: str, names, ignore_permissions: bool = True) -> None:
-    from apps.core.doctype.todo.todo import ToDo
+    from apps.core.assignments import set_assignment_status_many
 
     docnames = json.loads(names) if isinstance(names, str) else names
-    ToDo.objects.filter(reference_type=doctype, reference_name__in=docnames, status="Open").update(status="Cancelled")
+    set_assignment_status_many(doctype, docnames, "Open", "Cancelled")
 
 
 # Ported from frappe.desk.doctype.bulk_update.bulk_update.submit_cancel_or_update_docs

@@ -20,10 +20,10 @@ class CRMOrganization(models.Model):
     territory = models.ForeignKey(
         "crm.CRMTerritory", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
-    currency = models.ForeignKey("crm.Currency", on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    currency = models.ForeignKey("erpnext.Currency", on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
     exchange_rate = models.FloatField(default=1)
     address = models.ForeignKey(
-        "core.Address", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+        "erpnext.Address", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
     company_description = models.TextField(blank=True)
     linkedin = models.CharField(max_length=255, blank=True)

@@ -67,7 +67,6 @@ class BaseDocument(models.Model):
 
 # Re-exported so Django's app registry discovers them (their real source
 # lives next to each doctype definition, same convention as apps/crm).
-from apps.core.doctype.address.address import Address  # noqa: E402,F401
 from apps.core.doctype.assignment_rule.assignment_rule import (  # noqa: E402,F401
     AssignmentRule, AssignmentRuleDay, AssignmentRuleUser,
 )
@@ -80,19 +79,14 @@ from apps.core.doctype.automation_trigger_queue.automation_trigger_queue import 
     AutomationTriggerQueue,
 )
 from apps.core.doctype.background_task.background_task import BackgroundTask  # noqa: E402,F401
-from apps.core.doctype.comment.comment import Comment  # noqa: E402,F401
 from apps.core.doctype.contact.contact import Contact  # noqa: E402,F401
 from apps.core.doctype.data_import.data_import import DataImport, DataImportLog  # noqa: E402,F401
 from apps.core.doctype.contact_email.contact_email import ContactEmail  # noqa: E402,F401
 from apps.core.doctype.contact_phone.contact_phone import ContactPhone  # noqa: E402,F401
 from apps.core.doctype.docshare.docshare import DocShare  # noqa: E402,F401
-from apps.core.doctype.email_account.email_account import EmailAccount  # noqa: E402,F401
-from apps.core.doctype.email_template.email_template import EmailTemplate  # noqa: E402,F401
-from apps.core.doctype.file_attachment.file_attachment import FileAttachment  # noqa: E402,F401
 from apps.core.doctype.gender.gender import Gender  # noqa: E402,F401
 from apps.core.doctype.liked_document.liked_document import LikedDocument  # noqa: E402,F401
 from apps.core.doctype.salutation.salutation import Salutation  # noqa: E402,F401
 from apps.core.doctype.seen_document.seen_document import SeenDocument  # noqa: E402,F401
 from apps.core.doctype.system_settings.system_settings import SystemSettings  # noqa: E402,F401
-from apps.core.doctype.todo.todo import ToDo  # noqa: E402,F401
 from apps.core.doctype.web_form.web_form import GuestLinkAccess, WebForm, WebFormField  # noqa: E402,F401

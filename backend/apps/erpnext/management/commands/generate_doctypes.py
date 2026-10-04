@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import re
-import shutil
 from pathlib import Path
 
 from django.conf import settings
@@ -243,6 +242,46 @@ def module_for(meta):
     return module_name(meta.get("module") or "core")
 
 
+def copy_if_changed(source, target):
+    data = source.read_bytes()
+    if target.exists() and target.read_bytes() == data:
+        return
+    target.write_bytes(data)
+
+
+def write_text_if_changed(path, text):
+    if path.exists() and path.read_text(encoding="utf-8") == text:
+        return
+    path.write_text(text, encoding="utf-8")
+
+
+def generated_classes(target_root):
+    rows = []
+    for path in sorted(target_root.glob("*/doctype/*/*.json")):
+        with path.open(encoding="utf-8") as handle:
+            meta = json.load(handle)
+        if meta.get("issingle"):
+            continue
+        doctype = meta["name"]
+        if doctype in HAND_DEFINED:
+            continue
+        mod = path.parts[-4]
+        dt_module = path.parent.name
+        if not (path.parent / f"{dt_module}_generated.py").exists():
+            continue
+        rows.append(
+            (
+                doctype,
+                mod,
+                dt_module,
+                class_name(doctype),
+                meta.get("sort_field") or "modified",
+                meta.get("sort_order") or "DESC",
+            )
+        )
+    return rows
+
+
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("module", nargs="?", default="pilot")
@@ -295,7 +334,7 @@ class Command(BaseCommand):
             dt_module = module_name(doctype)
             out_dir = target_root / mod / "doctype" / dt_module
             out_dir.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(source, out_dir / f"{dt_module}.json")
+            copy_if_changed(source, out_dir / f"{dt_module}.json")
             for package_init in (out_dir / "__init__.py", out_dir.parent / "__init__.py", out_dir.parent.parent / "__init__.py"):
                 if not package_init.exists():
                     package_init.write_text("", encoding="utf-8")
@@ -324,10 +363,11 @@ class Command(BaseCommand):
             fields.append("\n    class Meta:\n")
             fields.append("        abstract = True\n")
             generated = out_dir / f"{dt_module}_generated.py"
-            generated.write_text("".join(fields), encoding="utf-8")
+            write_text_if_changed(generated, "".join(fields))
             classes_by_app[app_name].append((doctype, mod, dt_module, class_name(doctype), meta.get("sort_field") or "modified", meta.get("sort_order") or "DESC"))
 
         for app_name, classes in classes_by_app.items():
+            classes = generated_classes(target_roots[app_name])
             if not classes:
                 continue
             target_root = target_roots[app_name]
@@ -343,5 +383,5 @@ class Command(BaseCommand):
                 lines.append(f"        verbose_name = {doctype!r}\n")
                 lines.append(f"        ordering = [{ordering!r}]\n")
                 lines.append("\n\n")
-            (target_root / "generated_models.py").write_text("".join(lines), encoding="utf-8")
+            write_text_if_changed(target_root / "generated_models.py", "".join(lines))
         self.stdout.write(self.style.SUCCESS(f"Generated {sum(len(classes) for classes in classes_by_app.values())} doctypes"))

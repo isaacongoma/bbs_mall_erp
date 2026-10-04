@@ -101,15 +101,12 @@ def get_user_round_robin(rule) -> str | None:
 
 
 def get_user_load_balancing(rule) -> str | None:
-    from apps.core.doctype.todo.todo import ToDo
+    from apps.core.assignments import open_assignment_count
 
     users = list(rule.user_rows.filter(table_field="users").order_by("idx").values_list("user_id", flat=True))
     if not users:
         return None
-    counts = [
-        (user_id, ToDo.objects.filter(reference_type=rule.document_type, allocated_to_id=user_id, status="Open").count())
-        for user_id in users
-    ]
+    counts = [(user_id, open_assignment_count(rule.document_type, user_id)) for user_id in users]
     counts.sort(key=lambda c: c[1])
     return counts[0][0]
 
@@ -150,34 +147,31 @@ def get_user_for_rule(rule, doc: dict) -> str | None:
 
 
 def get_open_assignments(doctype: str, name: str):
-    from apps.core.doctype.todo.todo import ToDo
+    from apps.core.assignments import assignments_for
 
-    return list(ToDo.objects.filter(reference_type=doctype, reference_name=str(name)).exclude(status="Cancelled")[:5])
+    return assignments_for(doctype, name)
 
 
 def clear_assignments(doctype: str, name: str):
-    from apps.core.doctype.todo.todo import ToDo
+    from apps.core.assignments import set_assignment_status
 
-    ToDo.objects.filter(reference_type=doctype, reference_name=str(name), status="Open").update(status="Cancelled")
+    set_assignment_status(doctype, name, "Open", "Cancelled")
 
 
 def close_assignments(doctype: str, name: str):
-    from apps.core.doctype.todo.todo import ToDo
+    from apps.core.assignments import set_assignment_status
 
-    ToDo.objects.filter(reference_type=doctype, reference_name=str(name), status="Open").update(status="Closed")
+    set_assignment_status(doctype, name, "Open", "Closed")
 
 
 def reopen_closed_assignments(doctype: str, name: str) -> bool:
-    from apps.core.doctype.todo.todo import ToDo
+    from apps.core.assignments import reopen_closed_assignments as reopen
 
-    qs = ToDo.objects.filter(reference_type=doctype, reference_name=str(name), status="Closed")
-    reopened = qs.exists()
-    qs.update(status="Open")
-    return reopened
+    return reopen(doctype, name)
 
 
 def do_assignment(rule, doc: dict) -> bool:
-    from apps.core.doctype.todo.todo import ToDo
+    from apps.core.assignments import create_assignment
     from apps.crm.notifications_api import notify_assignment
 
     clear_assignments(rule.document_type, doc["name"])
@@ -186,9 +180,8 @@ def do_assignment(rule, doc: dict) -> bool:
     if not user_id:
         return False
 
-    ToDo.objects.create(
-        allocated_to_id=user_id, reference_type=rule.document_type, reference_name=str(doc["name"]),
-        description=rule.description, status="Open", assignment_rule=rule,
+    create_assignment(
+        rule.document_type, doc["name"], user_id, description=rule.description, rule=rule,
         date=doc.get(rule.due_date_based_on) if rule.due_date_based_on else None,
     )
     notify_assignment(None, user_id, rule.document_type, str(doc["name"]), rule.description)

@@ -88,3 +88,12 @@ REST under `/api/erpnext/` per section 5.5 of the brief: list with Frappe filter
 
 ## When to stop
 Stop when items 0 to 7 are done and verified, then write the final Block 1 report. Do not start Block 2. If you hit a blocker you cannot resolve, record it in the report with evidence and continue with the next item.
+
+## One system rule (applies to every agent and every change)
+
+BBS-ERP is one system, not a set of separate ones. Every doctype has exactly one table and one model, every function has exactly one implementation, and every module reads and writes the same records through the same document engine (`apps/frappe`) and registry (`apps/erpnext/registry.py`).
+- Before adding a doctype, model, helper or API, search the tree for an existing one (`apps/core`, `apps/crm`, `apps/frappe`, `apps/erpnext`, `apps/hrms`). Reuse it. Never create a second table or a parallel implementation for something that already exists, and never copy a function into another module; import the single source.
+- The ERPNext/Frappe doctype is the canonical record. Legacy models in `apps/core` and `apps/crm` that duplicate an ERPNext doctype (Address, Contact, Comment, ToDo, File, Email Account, Email Template, Data Import, Assignment Rule, Currency) are being merged into the canonical tables; do not add new code against the legacy copies, and do not edit them except as part of that merge (Claude owns the merge).
+- Cross-module behaviour must go through links and hooks exactly as upstream does (Customer links to Address/Contact, Lead/Opportunity to Customer, Employee to User, Timesheet to Sales Invoice, and so on), so a record created in one module is visible and usable in every other.
+- Unifying storage must never change behaviour: existing API responses, permissions, validation and the existing tests keep passing unchanged. If a unification would change behaviour, stop and report it.
+- Before finishing any task, run `makemigrations --check --dry-run` and the full suite, and confirm you introduced no duplicated table, model or function.

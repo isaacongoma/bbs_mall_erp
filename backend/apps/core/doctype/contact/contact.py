@@ -32,7 +32,7 @@ class Contact(BaseDocument):
     designation = models.CharField(max_length=140, blank=True)
     unsubscribed = models.BooleanField(default=False)
     company_name = models.CharField(max_length=140, blank=True)
-    address = models.ForeignKey("core.Address", on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    address = models.ForeignKey("erpnext.Address", on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
 
     class Meta:
         app_label = "core"

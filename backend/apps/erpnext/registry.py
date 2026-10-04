@@ -116,8 +116,12 @@ def list_doctypes() -> list[str]:
 
 
 def get_model_unsynced(doctype: str):
-    for app_label in ("erpnext", "hrms"):
-        for model in apps.get_app_config(app_label).get_models():
+    for app_label in ("erpnext", "hrms", "core"):
+        try:
+            config = apps.get_app_config(app_label)
+        except LookupError:
+            continue
+        for model in config.get_models():
             if getattr(model, "doctype", None) == doctype or str(model._meta.verbose_name) == doctype:
                 return model
     table = f"tab{doctype}"

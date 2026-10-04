@@ -484,5 +484,7 @@
  "Work Order Additional Item",
  "Workflow",
  "Workflow State",
- "Workspace"
+ "Workspace",
+ "Task Type",
+ "Dependent Task"
 ]
