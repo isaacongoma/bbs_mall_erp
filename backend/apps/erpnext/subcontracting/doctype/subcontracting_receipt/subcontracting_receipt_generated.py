@@ -1,0 +1,57 @@
+from django.db import models
+
+from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+
+
+class SubcontractingReceiptGenerated(FrappeModel):
+    doctype = 'Subcontracting Receipt'
+    title = models.CharField(max_length=140, blank=True, null=True, default='')
+    naming_series = models.CharField(max_length=140, blank=True, null=True, default='')
+    supplier = models.CharField(max_length=140, blank=True, null=True, default='')
+    supplier_name = models.CharField(max_length=140, blank=True, null=True, default='')
+    posting_date = models.DateField(null=True, blank=True)
+    posting_time = models.TimeField(null=True, blank=True)
+    company = models.CharField(max_length=140, blank=True, null=True, default='')
+    supplier_address = models.CharField(max_length=140, blank=True, null=True, default='')
+    contact_person = models.CharField(max_length=140, blank=True, null=True, default='')
+    address_display = models.TextField(blank=True, null=True, default='')
+    contact_display = models.TextField(blank=True, null=True, default='')
+    contact_mobile = models.TextField(blank=True, null=True, default='')
+    contact_email = models.TextField(blank=True, null=True, default='')
+    shipping_address = models.CharField(max_length=140, blank=True, null=True, default='')
+    shipping_address_display = models.TextField(blank=True, null=True, default='')
+    set_warehouse = models.CharField(max_length=140, blank=True, null=True, default='')
+    rejected_warehouse = models.CharField(max_length=140, blank=True, null=True, default='')
+    supplier_warehouse = models.CharField(max_length=140, blank=True, null=True, default='')
+    total_qty = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
+    total = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
+    in_words = models.CharField(max_length=240, blank=True, null=True, default='')
+    bill_no = models.CharField(max_length=140, blank=True, null=True, default='')
+    bill_date = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=140, blank=True, null=True, default='Draft')
+    amended_from = models.CharField(max_length=140, blank=True, null=True, default='')
+    range = models.CharField(max_length=140, blank=True, null=True, default='')
+    auto_repeat = models.CharField(max_length=140, blank=True, null=True, default='')
+    letter_head = models.CharField(max_length=140, blank=True, null=True, default='')
+    select_print_heading = models.CharField(max_length=140, blank=True, null=True, default='')
+    language = models.CharField(max_length=140, blank=True, null=True, default='')
+    instructions = models.TextField(blank=True, null=True, default='')
+    remarks = models.TextField(blank=True, null=True, default='')
+    transporter_name = models.CharField(max_length=140, blank=True, null=True, default='')
+    lr_no = models.CharField(max_length=140, blank=True, null=True, default='')
+    lr_date = models.DateField(null=True, blank=True)
+    billing_address = models.CharField(max_length=140, blank=True, null=True, default='')
+    billing_address_display = models.TextField(blank=True, null=True, default='')
+    represents_company = models.CharField(max_length=140, blank=True, null=True, default='')
+    is_return = models.SmallIntegerField(default=0)
+    return_against = models.CharField(max_length=140, blank=True, null=True, default='')
+    per_returned = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
+    cost_center = models.CharField(max_length=140, blank=True, null=True, default='')
+    project = models.CharField(max_length=140, blank=True, null=True, default='')
+    distribute_additional_costs_based_on = models.CharField(max_length=140, blank=True, null=True, default='Qty')
+    total_additional_costs = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
+    set_posting_time = models.SmallIntegerField(default=0)
+    supplier_delivery_note = models.CharField(max_length=140, blank=True, null=True, default='')
+
+    class Meta:
+        abstract = True

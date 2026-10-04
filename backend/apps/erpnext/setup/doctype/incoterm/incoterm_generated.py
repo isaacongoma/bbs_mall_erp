@@ -1,0 +1,13 @@
+from django.db import models
+
+from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+
+
+class IncotermGenerated(FrappeModel):
+    doctype = 'Incoterm'
+    code = models.CharField(max_length=3, blank=True, null=True, default='')
+    title = models.CharField(max_length=140, blank=True, null=True, default='')
+    description = models.TextField(blank=True, null=True, default='')
+
+    class Meta:
+        abstract = True

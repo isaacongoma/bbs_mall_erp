@@ -1,0 +1,18 @@
+from django.db import models
+
+from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+
+
+class ItemQualityInspectionParameterGenerated(FrappeChildModel):
+    doctype = 'Item Quality Inspection Parameter'
+    specification = models.CharField(max_length=140, blank=True, null=True, default='')
+    value = models.CharField(max_length=140, blank=True, null=True, default='')
+    acceptance_formula = models.TextField(blank=True, null=True, default='')
+    formula_based_criteria = models.SmallIntegerField(default=0)
+    min_value = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
+    max_value = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
+    numeric = models.SmallIntegerField(default=1)
+    parameter_group = models.CharField(max_length=140, blank=True, null=True, default='')
+
+    class Meta:
+        abstract = True

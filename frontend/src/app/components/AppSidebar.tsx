@@ -97,9 +97,7 @@ export function AppSidebar({ mobile = false }: AppSidebarProps) {
         className="border-r border-outline-gray-1"
       >
         <div className="flex h-full flex-col p-2">
-          <UserMenu isCollapsed={isCollapsed} />
-
-          <div className="-mx-2 mt-2 flex flex-1 flex-col gap-1 overflow-y-auto px-2">
+          <div className="-mx-2 flex flex-1 flex-col gap-1 overflow-y-auto px-2">
             {topSlots.map((Slot, index) => (
               <Slot key={index} {...slotProps} />
             ))}
@@ -154,11 +152,9 @@ export function AppSidebar({ mobile = false }: AppSidebarProps) {
             ))}
           </div>
 
-          {!mobile && (
-            <div className="mt-auto flex flex-col gap-1 pt-2">
-              {footerSlots.map((Slot, index) => (
-                <Slot key={index} {...slotProps} />
-              ))}
+          <div className="mt-auto flex flex-col gap-1 pt-2">
+            {!mobile && footerSlots.map((Slot, index) => <Slot key={index} {...slotProps} />)}
+            {!mobile && (
               <SidebarItem
                 label={isCollapsed ? __('Expand') : __('Collapse')}
                 onClick={() => setStoredCollapsed(!storedCollapsed)}
@@ -171,8 +167,9 @@ export function AppSidebar({ mobile = false }: AppSidebarProps) {
                   />
                 }
               />
-            </div>
-          )}
+            )}
+            <UserMenu isCollapsed={isCollapsed} />
+          </div>
         </div>
       </Sidebar>
       {!mobile && panelSlots.map((Slot, index) => <Slot key={index} {...slotProps} />)}

@@ -1,0 +1,57 @@
+from django.db import models
+
+from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+
+
+class JournalEntryGenerated(FrappeModel):
+    doctype = 'Journal Entry'
+    title = models.CharField(max_length=140, blank=True, null=True, default='')
+    voucher_type = models.CharField(max_length=140, blank=True, null=True, default='Journal Entry')
+    naming_series = models.CharField(max_length=140, blank=True, null=True, default='')
+    posting_date = models.DateField(null=True, blank=True)
+    company = models.CharField(max_length=140, blank=True, null=True, default='')
+    finance_book = models.CharField(max_length=140, blank=True, null=True, default='')
+    cheque_no = models.CharField(max_length=140, blank=True, null=True, default='')
+    cheque_date = models.DateField(null=True, blank=True)
+    user_remark = models.TextField(blank=True, null=True, default='')
+    total_debit = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
+    total_credit = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
+    difference = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
+    multi_currency = models.SmallIntegerField(default=0)
+    total_amount_currency = models.CharField(max_length=140, blank=True, null=True, default='')
+    total_amount = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
+    total_amount_in_words = models.CharField(max_length=140, blank=True, null=True, default='')
+    clearance_date = models.DateField(null=True, blank=True)
+    remark = models.TextField(blank=True, null=True, default='')
+    inter_company_journal_entry_reference = models.CharField(max_length=140, blank=True, null=True, default='')
+    bill_no = models.CharField(max_length=140, blank=True, null=True, default='')
+    bill_date = models.DateField(null=True, blank=True)
+    due_date = models.DateField(null=True, blank=True)
+    write_off_based_on = models.CharField(max_length=140, blank=True, null=True, default='Accounts Receivable')
+    write_off_amount = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
+    pay_to_recd_from = models.CharField(max_length=140, blank=True, null=True, default='')
+    letter_head = models.CharField(max_length=140, blank=True, null=True, default='')
+    select_print_heading = models.CharField(max_length=140, blank=True, null=True, default='')
+    mode_of_payment = models.CharField(max_length=140, blank=True, null=True, default='')
+    payment_order = models.CharField(max_length=140, blank=True, null=True, default='')
+    is_opening = models.CharField(max_length=140, blank=True, null=True, default='No')
+    stock_entry = models.CharField(max_length=140, blank=True, null=True, default='')
+    auto_repeat = models.CharField(max_length=140, blank=True, null=True, default='')
+    amended_from = models.CharField(max_length=140, blank=True, null=True, default='')
+    from_template = models.CharField(max_length=140, blank=True, null=True, default='')
+    tax_withholding_category = models.CharField(max_length=140, blank=True, null=True, default='')
+    apply_tds = models.SmallIntegerField(default=0)
+    reversal_of = models.CharField(max_length=140, blank=True, null=True, default='')
+    process_deferred_accounting = models.CharField(max_length=140, blank=True, null=True, default='')
+    is_system_generated = models.SmallIntegerField(default=0)
+    periodic_entry_difference_account = models.CharField(max_length=140, blank=True, null=True, default='')
+    for_all_stock_asset_accounts = models.SmallIntegerField(default=1)
+    stock_asset_account = models.CharField(max_length=140, blank=True, null=True, default='')
+    party_not_required = models.SmallIntegerField(default=0)
+    tax_withholding_group = models.CharField(max_length=140, blank=True, null=True, default='')
+    ignore_tax_withholding_threshold = models.SmallIntegerField(default=0)
+    override_tax_withholding_entries = models.SmallIntegerField(default=0)
+    custom_remark = models.SmallIntegerField(default=0)
+
+    class Meta:
+        abstract = True

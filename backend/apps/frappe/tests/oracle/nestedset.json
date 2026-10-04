@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Root Node",
+    "lft": 1,
+    "rgt": 12
+  },
+  {
+    "name": "Parent 1",
+    "lft": 2,
+    "rgt": 7
+  },
+  {
+    "name": "Child 1",
+    "lft": 3,
+    "rgt": 4
+  },
+  {
+    "name": "Child 2",
+    "lft": 5,
+    "rgt": 6
+  },
+  {
+    "name": "Parent 2",
+    "lft": 8,
+    "rgt": 11
+  },
+  {
+    "name": "Child 3",
+    "lft": 9,
+    "rgt": 10
+  }
+]

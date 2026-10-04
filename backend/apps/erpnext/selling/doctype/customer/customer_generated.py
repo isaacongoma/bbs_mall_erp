@@ -1,0 +1,56 @@
+from django.db import models
+
+from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+
+
+class CustomerGenerated(FrappeModel):
+    doctype = 'Customer'
+    naming_series = models.CharField(max_length=140, blank=True, null=True, default='')
+    customer_name = models.CharField(max_length=140, blank=True, null=True, default='')
+    gender = models.CharField(max_length=140, blank=True, null=True, default='')
+    customer_type = models.CharField(max_length=140, blank=True, null=True, default='Company')
+    default_bank_account = models.CharField(max_length=140, blank=True, null=True, default='')
+    lead_name = models.CharField(max_length=140, blank=True, null=True, default='')
+    image = models.TextField(blank=True, null=True, default='')
+    account_manager = models.CharField(max_length=140, blank=True, null=True, default='')
+    customer_group = models.CharField(max_length=140, blank=True, null=True, default='')
+    territory = models.CharField(max_length=140, blank=True, null=True, default='')
+    tax_id = models.CharField(max_length=140, blank=True, null=True, default='')
+    tax_category = models.CharField(max_length=140, blank=True, null=True, default='')
+    disabled = models.SmallIntegerField(default=0)
+    is_internal_customer = models.SmallIntegerField(default=0)
+    represents_company = models.CharField(max_length=140, blank=True, null=True, default='')
+    default_currency = models.CharField(max_length=140, blank=True, null=True, default='')
+    default_price_list = models.CharField(max_length=140, blank=True, null=True, default='')
+    language = models.CharField(max_length=140, blank=True, null=True, default='')
+    website = models.CharField(max_length=140, blank=True, null=True, default='')
+    customer_primary_contact = models.CharField(max_length=140, blank=True, null=True, default='')
+    mobile_no = models.CharField(max_length=140, blank=True, null=True, default='')
+    email_id = models.CharField(max_length=140, blank=True, null=True, default='')
+    customer_primary_address = models.CharField(max_length=140, blank=True, null=True, default='')
+    primary_address = models.TextField(blank=True, null=True, default='')
+    payment_terms = models.CharField(max_length=140, blank=True, null=True, default='')
+    customer_details = models.TextField(blank=True, null=True, default='')
+    market_segment = models.CharField(max_length=140, blank=True, null=True, default='')
+    industry = models.CharField(max_length=140, blank=True, null=True, default='')
+    is_frozen = models.SmallIntegerField(default=0)
+    on_hold = models.SmallIntegerField(default=0)
+    release_date = models.DateField(null=True, blank=True)
+    loyalty_program = models.CharField(max_length=140, blank=True, null=True, default='')
+    loyalty_program_tier = models.CharField(max_length=140, blank=True, null=True, default='')
+    default_sales_partner = models.CharField(max_length=140, blank=True, null=True, default='')
+    default_commission_rate = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
+    customer_pos_id = models.CharField(max_length=140, blank=True, null=True, default='')
+    so_required = models.SmallIntegerField(default=0)
+    dn_required = models.SmallIntegerField(default=0)
+    tax_withholding_category = models.CharField(max_length=140, blank=True, null=True, default='')
+    opportunity_name = models.CharField(max_length=140, blank=True, null=True, default='')
+    restrict_to_companies = models.SmallIntegerField(default=0)
+    prospect_name = models.CharField(max_length=140, blank=True, null=True, default='')
+    first_name = models.CharField(max_length=140, blank=True, null=True, default='')
+    last_name = models.CharField(max_length=140, blank=True, null=True, default='')
+    tax_withholding_group = models.CharField(max_length=140, blank=True, null=True, default='')
+    alias = models.CharField(max_length=140, blank=True, null=True, default='')
+
+    class Meta:
+        abstract = True

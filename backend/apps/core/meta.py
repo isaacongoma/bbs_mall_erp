@@ -73,7 +73,18 @@ def get_doctype_meta(doctype_label: str) -> dict | None:
 
     model = get_doctype_model(doctype_label)
     if model is None:
-        return None
+        try:
+            from apps.erpnext.registry import get_meta as get_erpnext_meta
+
+            meta = get_erpnext_meta(doctype_label)
+            return {
+                **meta,
+                "doctype": doctype_label,
+                "name_field": "name",
+                "fields": meta.get("fields", []),
+            }
+        except Exception:
+            return None
 
     standard_filter_fields = _standard_filter_fieldnames(doctype_label)
 

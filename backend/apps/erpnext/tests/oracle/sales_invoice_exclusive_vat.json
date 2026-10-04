@@ -1,0 +1,68 @@
+{
+ "invoices": [
+  {
+   "name": "ACC-SINV-2026-00001",
+   "grand_total": "116000.000000000",
+   "base_grand_total": "116000.000000000",
+   "net_total": "100000.000000000",
+   "total_taxes_and_charges": "16000.000000000",
+   "outstanding_amount": "116000.000000000",
+   "status": "Unpaid",
+   "rounded_total": "116000.000000000",
+   "rounding_adjustment": "0E-9"
+  }
+ ],
+ "gl": [
+  {
+   "voucher_no": "ACC-SINV-2026-00001",
+   "account": "Debtors - BML",
+   "debit": "116000.000000000",
+   "credit": "0E-9",
+   "party_type": "Customer",
+   "party": "Tenant One",
+   "against": "Sales - BML",
+   "cost_center": "None",
+   "is_opening": "No"
+  },
+  {
+   "voucher_no": "ACC-SINV-2026-00001",
+   "account": "VAT - BML",
+   "debit": "0E-9",
+   "credit": "16000.000000000",
+   "party_type": "None",
+   "party": "None",
+   "against": "Tenant One",
+   "cost_center": "Main - BML",
+   "is_opening": "No"
+  },
+  {
+   "voucher_no": "ACC-SINV-2026-00001",
+   "account": "Sales - BML",
+   "debit": "0E-9",
+   "credit": "100000.000000000",
+   "party_type": "None",
+   "party": "None",
+   "against": "Tenant One",
+   "cost_center": "Main - BML",
+   "is_opening": "No"
+  }
+ ],
+ "taxes": [
+  {
+   "name": "ld2d9fcqd7",
+   "account_head": "VAT - BML",
+   "rate": "16.000000000",
+   "tax_amount": "0E-9",
+   "total": "0E-9",
+   "charge_type": "On Net Total"
+  },
+  {
+   "name": "liuhj5kb1p",
+   "account_head": "VAT - BML",
+   "rate": "16.000000000",
+   "tax_amount": "16000.000000000",
+   "total": "116000.000000000",
+   "charge_type": "On Net Total"
+  }
+ ]
+}

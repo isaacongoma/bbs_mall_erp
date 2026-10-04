@@ -1,0 +1,14 @@
+[
+  {
+    "series": "TEST-.YYYY.-.#####",
+    "output": "TEST-2026-00001"
+  },
+  {
+    "series": "TEST-.YYYY.-.#####",
+    "output": "TEST-2026-00002"
+  },
+  {
+    "series": "ABC.###",
+    "output": "ABC001"
+  }
+]

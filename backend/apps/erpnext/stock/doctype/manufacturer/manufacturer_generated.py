@@ -1,0 +1,16 @@
+from django.db import models
+
+from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+
+
+class ManufacturerGenerated(FrappeModel):
+    doctype = 'Manufacturer'
+    short_name = models.CharField(max_length=140, blank=True, null=True, default='')
+    full_name = models.CharField(max_length=140, blank=True, null=True, default='')
+    website = models.CharField(max_length=140, blank=True, null=True, default='')
+    country = models.CharField(max_length=140, blank=True, null=True, default='')
+    logo = models.TextField(blank=True, null=True, default='')
+    notes = models.TextField(blank=True, null=True, default='')
+
+    class Meta:
+        abstract = True

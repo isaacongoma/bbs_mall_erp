@@ -1,0 +1,58 @@
+import frappe
+from frappe import _
+from frappe.model.document import Document
+
+
+class ItemTaxTemplate(Document):
+
+
+    doctype = 'Item Tax Template'
+
+    def validate(self):
+        self.set_zero_rate_for_not_applicable_tax()
+        self.validate_tax_accounts()
+
+    def set_zero_rate_for_not_applicable_tax(self):
+        """Ensure tax_rate is 0 for any row marked as not applicable."""
+        for row in self.get("taxes"):
+            if row.not_applicable:
+                row.tax_rate = 0
+
+    def autoname(self):
+        if self.company and self.title:
+            abbr = frappe.get_cached_value("Company", self.company, "abbr")
+            self.name = f"{self.title} - {abbr}"
+
+    def validate_tax_accounts(self):
+        """Check whether Tax Rate is not entered twice for same Tax Type"""
+        check_list = []
+        for d in self.get("taxes"):
+            if d.tax_type:
+                account_type, account_company = frappe.get_cached_value(
+                    "Account", d.tax_type, ["account_type", "company"]
+                )
+
+                if account_company != self.company:
+                    frappe.throw(
+                        _("Item Tax Row {0}: Account must belong to Company - {1}").format(
+                            d.idx, frappe.bold(self.company)
+                        )
+                    )
+
+                if account_type not in [
+                    "Tax",
+                    "Chargeable",
+                    "Income Account",
+                    "Expense Account",
+                    "Expenses Included In Valuation",
+                ]:
+                    frappe.throw(
+                        _(
+                            "Item Tax Row {0} must have account of type Tax or Income or Expense or Chargeable"
+                        ).format(d.idx)
+                    )
+                else:
+                    if d.tax_type in check_list:
+                        frappe.throw(_("{0} entered twice in Item Tax").format(d.tax_type))
+                    else:
+                        check_list.append(d.tax_type)

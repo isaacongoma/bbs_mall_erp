@@ -1,0 +1,57 @@
+[
+  {
+    "value": 0.5,
+    "rounded": 0.0,
+    "flt_2": 0.5
+  },
+  {
+    "value": 1.5,
+    "rounded": 2.0,
+    "flt_2": 1.5
+  },
+  {
+    "value": 2.5,
+    "rounded": 2.0,
+    "flt_2": 2.5
+  },
+  {
+    "value": 3.5,
+    "rounded": 4.0,
+    "flt_2": 3.5
+  },
+  {
+    "value": 2.675,
+    "rounded": 3.0,
+    "flt_2": 2.68
+  },
+  {
+    "value": -0.5,
+    "rounded": 0.0,
+    "flt_2": -0.5
+  },
+  {
+    "value": -1.5,
+    "rounded": -2.0,
+    "flt_2": -1.5
+  },
+  {
+    "value": -2.5,
+    "rounded": -2.0,
+    "flt_2": -2.5
+  },
+  {
+    "value": -3.5,
+    "rounded": -4.0,
+    "flt_2": -3.5
+  },
+  {
+    "value": 1.25,
+    "rounded": 1.0,
+    "flt_2": 1.25
+  },
+  {
+    "value": 1.35,
+    "rounded": 1.0,
+    "flt_2": 1.35
+  }
+]

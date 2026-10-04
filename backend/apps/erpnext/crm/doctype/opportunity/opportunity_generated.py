@@ -1,0 +1,57 @@
+from django.db import models
+
+from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+
+
+class OpportunityGenerated(FrappeModel):
+    doctype = 'Opportunity'
+    naming_series = models.CharField(max_length=140, blank=True, null=True, default='')
+    opportunity_from = models.CharField(max_length=140, blank=True, null=True, default='')
+    party_name = models.CharField(max_length=140, blank=True, null=True, default='')
+    customer_name = models.CharField(max_length=140, blank=True, null=True, default='')
+    title = models.CharField(max_length=140, blank=True, null=True, default='')
+    opportunity_type = models.CharField(max_length=140, blank=True, null=True, default='')
+    status = models.CharField(max_length=140, blank=True, null=True, default='Open')
+    order_lost_reason = models.TextField(blank=True, null=True, default='')
+    expected_closing = models.DateField(null=True, blank=True)
+    currency = models.CharField(max_length=140, blank=True, null=True, default='')
+    opportunity_amount = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
+    sales_stage = models.CharField(max_length=140, blank=True, null=True, default='Prospecting')
+    probability = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
+    customer_address = models.CharField(max_length=140, blank=True, null=True, default='')
+    address_display = models.TextField(blank=True, null=True, default='')
+    territory = models.CharField(max_length=140, blank=True, null=True, default='')
+    customer_group = models.CharField(max_length=140, blank=True, null=True, default='')
+    contact_person = models.CharField(max_length=140, blank=True, null=True, default='')
+    contact_display = models.TextField(blank=True, null=True, default='')
+    contact_email = models.CharField(max_length=140, blank=True, null=True, default='')
+    contact_mobile = models.CharField(max_length=140, blank=True, null=True, default='')
+    company = models.CharField(max_length=140, blank=True, null=True, default='')
+    transaction_date = models.DateField(null=True, blank=True)
+    amended_from = models.CharField(max_length=140, blank=True, null=True, default='')
+    first_response_time = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
+    language = models.CharField(max_length=140, blank=True, null=True, default='')
+    base_opportunity_amount = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
+    base_total = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
+    total = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
+    conversion_rate = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
+    no_of_employees = models.CharField(max_length=140, blank=True, null=True, default='')
+    annual_revenue = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
+    industry = models.CharField(max_length=140, blank=True, null=True, default='')
+    market_segment = models.CharField(max_length=140, blank=True, null=True, default='')
+    opportunity_owner = models.CharField(max_length=140, blank=True, null=True, default='')
+    website = models.CharField(max_length=140, blank=True, null=True, default='')
+    whatsapp = models.CharField(max_length=140, blank=True, null=True, default='')
+    phone = models.CharField(max_length=140, blank=True, null=True, default='')
+    phone_ext = models.CharField(max_length=140, blank=True, null=True, default='')
+    job_title = models.CharField(max_length=140, blank=True, null=True, default='')
+    city = models.CharField(max_length=140, blank=True, null=True, default='')
+    state = models.CharField(max_length=140, blank=True, null=True, default='')
+    country = models.CharField(max_length=140, blank=True, null=True, default='')
+    utm_source = models.CharField(max_length=140, blank=True, null=True, default='')
+    utm_campaign = models.CharField(max_length=140, blank=True, null=True, default='')
+    utm_medium = models.CharField(max_length=140, blank=True, null=True, default='')
+    utm_content = models.CharField(max_length=140, blank=True, null=True, default='')
+
+    class Meta:
+        abstract = True

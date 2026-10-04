@@ -1,0 +1,22 @@
+[
+  {
+    "action": "insert",
+    "docstatus": 0,
+    "title": "Draft"
+  },
+  {
+    "action": "save",
+    "docstatus": 0,
+    "title": "Draft Saved"
+  },
+  {
+    "action": "submit",
+    "docstatus": 1,
+    "title": "Draft Saved"
+  },
+  {
+    "action": "cancel",
+    "docstatus": 2,
+    "title": "Draft Saved"
+  }
+]

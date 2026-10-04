@@ -1,0 +1,199 @@
+import frappe
+from frappe import _
+from apps.frappe.custom.doctype.property_setter.property_setter import make_property_setter
+from apps.frappe.model.document import Document
+from apps.frappe.utils import cint
+
+from apps.erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
+    get_accounting_dimensions,
+)
+from apps.erpnext.accounts.utils import sync_auto_reconcile_config
+
+SELLING_DOCTYPES = [
+    "Sales Invoice",
+    "Sales Order",
+    "Delivery Note",
+    "Quotation",
+    "Sales Invoice Item",
+    "Sales Order Item",
+    "Delivery Note Item",
+    "Quotation Item",
+    "POS Invoice",
+    "POS Invoice Item",
+]
+
+BUYING_DOCTYPES = [
+    "Purchase Invoice",
+    "Purchase Order",
+    "Purchase Receipt",
+    "Purchase Invoice Item",
+    "Purchase Order Item",
+    "Purchase Receipt Item",
+]
+
+
+class AccountsSettings(Document):
+    doctype = "Accounts Settings"
+
+    def validate(self):
+        self.validate_auto_tax_settings()
+        old_doc = self.get_doc_before_save()
+        clear_cache = False
+
+        if old_doc.add_taxes_from_item_tax_template != self.add_taxes_from_item_tax_template:
+            frappe.db.set_default(
+                "add_taxes_from_item_tax_template", self.get("add_taxes_from_item_tax_template", 0)
+            )
+            clear_cache = True
+
+        if old_doc.enable_common_party_accounting != self.enable_common_party_accounting:
+            frappe.db.set_default(
+                "enable_common_party_accounting", self.get("enable_common_party_accounting", 0)
+            )
+            clear_cache = True
+
+        self.validate_stale_days()
+
+        if old_doc.show_payment_schedule_in_print != self.show_payment_schedule_in_print:
+            self.enable_payment_schedule_in_print()
+
+        if old_doc.enable_accounting_dimensions != self.enable_accounting_dimensions:
+            toggle_accounting_dimension_sections(not self.enable_accounting_dimensions)
+            clear_cache = True
+
+        if old_doc.enable_discounts_and_margin != self.enable_discounts_and_margin:
+            toggle_sales_discount_section(not self.enable_discounts_and_margin)
+            clear_cache = True
+
+        if old_doc.enable_loyalty_point_program != self.enable_loyalty_point_program:
+            toggle_loyalty_point_program_section(not self.enable_loyalty_point_program)
+            clear_cache = True
+
+        if old_doc.enable_subscription != self.enable_subscription:
+            toggle_subscription_sections(not self.enable_subscription)
+            clear_cache = True
+
+        if old_doc.enable_overdue_billing_threshold != self.enable_overdue_billing_threshold:
+            toggle_overdue_billing_threshold_field(not self.enable_overdue_billing_threshold)
+            clear_cache = True
+
+        if clear_cache:
+            frappe.clear_cache()
+
+        self.validate_and_sync_auto_reconcile_config()
+        self.update_property_for_accounting_dimension()
+
+    def validate_stale_days(self):
+        if not self.allow_stale and cint(self.stale_days) <= 0:
+            frappe.msgprint(
+                _("Stale Days should start from 1."), title="Error", indicator="red", raise_exception=1
+            )
+
+    def enable_payment_schedule_in_print(self):
+        show_in_print = cint(self.show_payment_schedule_in_print)
+        for doctype in ("Sales Order", "Sales Invoice", "Purchase Order", "Purchase Invoice"):
+            make_property_setter(
+                doctype, "due_date", "print_hide", show_in_print, "Check", validate_fields_for_doctype=False
+            )
+            make_property_setter(
+                doctype,
+                "payment_schedule",
+                "print_hide",
+                0 if show_in_print else 1,
+                "Check",
+                validate_fields_for_doctype=False,
+            )
+
+    def validate_and_sync_auto_reconcile_config(self):
+        if self.has_value_changed("auto_reconciliation_job_trigger"):
+            if (
+                cint(self.auto_reconciliation_job_trigger) > 0
+                and cint(self.auto_reconciliation_job_trigger) < 60
+            ):
+                sync_auto_reconcile_config(self.auto_reconciliation_job_trigger)
+            else:
+                frappe.throw(_("Cron Interval should be between 1 and 59 Min"))
+
+        if self.has_value_changed("reconciliation_queue_size"):
+            if cint(self.reconciliation_queue_size) < 5 or cint(self.reconciliation_queue_size) > 100:
+                frappe.throw(_("Queue Size should be between 5 and 100"))
+
+    def validate_auto_tax_settings(self):
+        if self.add_taxes_from_item_tax_template and self.add_taxes_from_taxes_and_charges_template:
+            frappe.throw(
+                _("You cannot enable both the settings '{0}' and '{1}'.").format(
+                    frappe.bold(self.meta.get_translated_label("add_taxes_from_item_tax_template")),
+                    frappe.bold(self.meta.get_translated_label("add_taxes_from_taxes_and_charges_template")),
+                ),
+                title=_("Auto Tax Settings Error"),
+            )
+
+    def update_property_for_accounting_dimension(self):
+        doctypes = [entry.document_type for entry in self.repost_allowed_types]
+        if not doctypes:
+            return
+
+        from apps.erpnext.accounts.doctype.repost_accounting_ledger.repost_accounting_ledger import get_child_docs
+
+        doctypes += get_child_docs(doctypes)
+
+        set_allow_on_submit_for_dimension_fields(doctypes)
+
+
+@frappe.whitelist(methods=["POST"])
+def get_posting_date_confirmation() -> int:
+    return cint(
+        frappe.db.get_single_value("Accounts Settings", "confirm_before_resetting_posting_date", cache=False)
+    )
+
+
+def toggle_accounting_dimension_sections(hide):
+    accounting_dimension_doctypes = frappe.get_hooks("accounting_dimension_doctypes")
+    for doctype in accounting_dimension_doctypes:
+        create_property_setter_for_hiding_field(doctype, "accounting_dimensions_section", hide)
+
+
+def toggle_sales_discount_section(hide):
+    for doctype in SELLING_DOCTYPES + BUYING_DOCTYPES:
+        meta = frappe.get_meta(doctype)
+        if meta.has_field("additional_discount_section"):
+            create_property_setter_for_hiding_field(doctype, "additional_discount_section", hide)
+        if meta.has_field("discount_and_margin"):
+            create_property_setter_for_hiding_field(doctype, "discount_and_margin", hide)
+
+
+def toggle_loyalty_point_program_section(hide):
+    for doctype in SELLING_DOCTYPES:
+        meta = frappe.get_meta(doctype)
+        if meta.has_field("loyalty_points_redemption"):
+            create_property_setter_for_hiding_field(doctype, "loyalty_points_redemption", hide)
+
+
+def toggle_subscription_sections(hide):
+    subscription_doctypes = frappe.get_hooks("subscription_doctypes")
+    for doctype in subscription_doctypes:
+        create_property_setter_for_hiding_field(doctype, "subscription_section", hide)
+
+
+def toggle_overdue_billing_threshold_field(hide):
+    create_property_setter_for_hiding_field("Customer Credit Limit", "overdue_billing_threshold", hide)
+
+
+def create_property_setter_for_hiding_field(doctype, field_name, hide):
+    make_property_setter(
+        doctype,
+        field_name,
+        "hidden",
+        hide,
+        "Check",
+        validate_fields_for_doctype=False,
+    )
+
+
+def set_allow_on_submit_for_dimension_fields(doctypes):
+    for dt in doctypes:
+        meta = frappe.get_meta(dt)
+        for dimension in get_accounting_dimensions():
+            df = meta.get_field(dimension)
+            if df and not df.allow_on_submit:
+                frappe.db.set_value("Custom Field", dt + "-" + dimension, "allow_on_submit", 1)

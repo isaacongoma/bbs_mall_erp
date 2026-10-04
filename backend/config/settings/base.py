@@ -2,10 +2,60 @@
 
 from datetime import timedelta
 from pathlib import Path
+import sys
 
 import environ
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+APPS_DIR = BASE_DIR / "apps"
+if str(APPS_DIR) not in sys.path:
+    sys.path.insert(0, str(APPS_DIR))
+
+import importlib.abc
+import importlib.machinery
+
+
+class _PackageAliasLoader:
+    def __init__(self, target):
+        self.target = target
+
+    def create_module(self, spec):
+        return sys.modules.get(self.target)
+
+    def exec_module(self, module):
+        return None
+
+
+class _FrappeErpnextAliasFinder(importlib.abc.MetaPathFinder):
+    def find_spec(self, fullname, path, target=None):
+        alt = None
+        for prefix in ("frappe", "erpnext", "hrms"):
+            apps_name = "apps." + prefix
+            if fullname == prefix or fullname.startswith(prefix + "."):
+                alt = "apps." + fullname
+                break
+            if fullname == apps_name or fullname.startswith(apps_name + "."):
+                alt = fullname[len("apps."):]
+                break
+        if not alt:
+            return None
+        existing = sys.modules.get(alt)
+        if existing is None:
+            return None
+        is_pkg = hasattr(existing, "__path__")
+        spec = importlib.machinery.ModuleSpec(
+            fullname,
+            _PackageAliasLoader(alt),
+            is_package=is_pkg,
+            origin=getattr(existing, "__file__", None),
+        )
+        if is_pkg:
+            spec.submodule_search_locations = list(getattr(existing, "__path__", []))
+        return spec
+
+
+if not any(type(finder).__name__ == "_FrappeErpnextAliasFinder" for finder in sys.meta_path):
+    sys.meta_path.insert(0, _FrappeErpnextAliasFinder())
 
 env = environ.Env(DEBUG=(bool, False))
 environ.Env.read_env(BASE_DIR / ".env")
@@ -37,6 +87,9 @@ THIRD_PARTY_APPS = [
 # Each app owns one or more doctype/ modules.
 BBS_ERP_APPS = [
     "apps.core",
+    "apps.frappe",
+    "apps.erpnext",
+    "apps.hrms",
     "apps.crm",
     "apps.property",
     "apps.leasing",
@@ -83,6 +136,7 @@ ASGI_APPLICATION = "config.asgi.application"
 DATABASES = {
     "default": env.db("DATABASE_URL", default="postgres://bbs_erp:bbs_erp@localhost:5432/bbs_erp"),
 }
+DATABASES["default"]["TEST"] = {"NAME": env("TEST_DATABASE_NAME", default="test_bbs_erp")}
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},

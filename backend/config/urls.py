@@ -15,6 +15,7 @@ urlpatterns = [
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
     path("api/meta/<str:doctype>/", doctype_meta, name="doctype-meta"),
+    path("api/erpnext/", include("apps.erpnext.urls")),
     path("api/crm/", include("apps.crm.urls")),
     path("api/property/", include("apps.property.urls")),
     path("api/leasing/", include("apps.leasing.urls")),
