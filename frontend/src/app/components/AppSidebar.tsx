@@ -151,7 +151,10 @@ export function AppSidebar({ mobile = false }: AppSidebarProps) {
       >
         <div className="flex h-full flex-col p-2">
           <div
-            className={cn('mb-[10px] flex shrink-0 items-center gap-1', isCollapsed ? 'justify-center' : 'justify-between')}
+            className={cn(
+              'mb-[10px] flex shrink-0 items-center gap-1',
+              isCollapsed ? 'justify-center' : 'justify-between',
+            )}
           >
             {!isCollapsed && (
               <Dropdown options={menuOptions} placement="left">

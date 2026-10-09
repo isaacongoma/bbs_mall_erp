@@ -658,6 +658,7 @@ function WorkspaceOnboarding({ item }: { item: DeskWorkspace }) {
   }
   const [dismissed, setDismissed] = useState(false)
   const [activeStep, setActiveStep] = useState<string | null>(null)
+  const [playing, setPlaying] = useState<string | null>(null)
   const navigate = useNavigate()
   if (onboarding.loading && !data)
     return (
@@ -674,7 +675,7 @@ function WorkspaceOnboarding({ item }: { item: DeskWorkspace }) {
     const path = String(step.path ?? '')
     const action = String(step.action ?? '')
     const video = String(step.intro_video_url ?? step.video_url ?? '')
-    if (action === 'Watch Video' && video) window.open(video, '_blank', 'noreferrer')
+    if (action === 'Watch Video' && video) setPlaying(String(step.name))
     else if (action === 'Complete Onboarding' && step.module_onboarding) {
       const target = Object.values(shell.sidebars).find(
         (sidebar) => sidebar.module_onboarding === step.module_onboarding,
@@ -792,22 +793,33 @@ function WorkspaceOnboarding({ item }: { item: DeskWorkspace }) {
                   )}
                 </div>
                 {video && (
-                  <a
-                    href={String(step.intro_video_url ?? step.video_url)}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label={__('Play video')}
-                    className="relative h-[180px] w-[320px] shrink-0 overflow-hidden rounded-[10px] bg-surface-gray-3"
-                  >
-                    <img
-                      alt=""
-                      src={`https://i.ytimg.com/vi/${video}/maxresdefault.jpg`}
-                      className="size-full object-cover"
-                    />
-                    <span className="absolute left-1/2 top-1/2 flex size-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-black/70 text-white">
-                      <Icon icon="lucide-play" className="size-4 fill-white" />
-                    </span>
-                  </a>
+                  <div className="relative h-[180px] w-[320px] shrink-0 overflow-hidden rounded-[10px] bg-surface-gray-3">
+                    {playing === String(step.name) ? (
+                      <iframe
+                        title={String(step.title ?? step.name)}
+                        src={`https://www.youtube.com/embed/${video}?autoplay=1&rel=0`}
+                        allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                        allowFullScreen
+                        className="size-full border-0"
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        aria-label={__('Play video')}
+                        className="relative size-full"
+                        onClick={() => setPlaying(String(step.name))}
+                      >
+                        <img
+                          alt=""
+                          src={`https://i.ytimg.com/vi/${video}/maxresdefault.jpg`}
+                          className="size-full object-cover"
+                        />
+                        <span className="absolute left-1/2 top-1/2 flex size-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-black/70 text-white">
+                          <Icon icon="lucide-play" className="size-4 fill-white" />
+                        </span>
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
             )

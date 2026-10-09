@@ -99,7 +99,10 @@ export function loadDeskBoot(): Promise<AnyRecord> {
       if (zone.system) setConfig('systemTimezone', zone.system)
       if (zone.user) setConfig('localTimezone', zone.user)
       useBootStore.setState((state) => ({
-        boot: { ...state.boot, sysdefaults: { ...state.boot.sysdefaults, ...((deskBoot.sysdefaults ?? {}) as AnyRecord) } },
+        boot: {
+          ...state.boot,
+          sysdefaults: { ...state.boot.sysdefaults, ...((deskBoot.sysdefaults ?? {}) as AnyRecord) },
+        },
       }))
       void ensureIconSprite()
       await ensureSharedScripts()

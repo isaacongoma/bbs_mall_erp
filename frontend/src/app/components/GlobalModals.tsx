@@ -38,7 +38,9 @@ export function GlobalModals() {
         />
       )}
       <AboutModal open={ui.showAboutModal} onOpenChange={(open) => set({ showAboutModal: open })} />
-      {ui.showPasskeys && <PasskeysDialog open={ui.showPasskeys} onOpenChange={(open) => set({ showPasskeys: open })} />}
+      {ui.showPasskeys && (
+        <PasskeysDialog open={ui.showPasskeys} onOpenChange={(open) => set({ showPasskeys: open })} />
+      )}
       <FieldLayoutDialogContainer />
       <FrappeDialogHost />
       <DoctypeModals />
