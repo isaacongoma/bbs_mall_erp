@@ -1,0 +1,137 @@
+import { __, frappe } from '@/shared/frappe'
+function get_filters() {
+  let filters: any = [
+    {
+      fieldname: 'company',
+      label: __('Company'),
+      fieldtype: 'Link',
+      options: 'Company',
+      default: frappe.defaults.get_user_default('Company'),
+      reqd: 1,
+    },
+    {
+      fieldname: 'period_start_date',
+      label: __('Start Date'),
+      fieldtype: 'Date',
+      reqd: 1,
+      default: frappe.datetime.add_months(frappe.datetime.get_today(), -1),
+    },
+    {
+      fieldname: 'period_end_date',
+      label: __('End Date'),
+      fieldtype: 'Date',
+      reqd: 1,
+      default: frappe.datetime.get_today(),
+    },
+    {
+      fieldname: 'customer_group',
+      label: __('Customer Group'),
+      fieldtype: 'Link',
+      width: 100,
+      options: 'Customer Group',
+    },
+    {
+      fieldname: 'customer',
+      label: __('Customer'),
+      fieldtype: 'Link',
+      width: 100,
+      options: 'Customer',
+      get_query: () => {
+        let customer_group = frappe.query_report.get_filter_value('customer_group')
+        return {
+          query:
+            'erpnext.selling.report.payment_terms_status_for_sales_order.payment_terms_status_for_sales_order.get_customers_or_items',
+          filters: [
+            ['Customer', 'disabled', '=', '0'],
+            ['Customer Group', 'name', '=', customer_group],
+          ],
+        }
+      },
+    },
+    {
+      fieldname: 'item_group',
+      label: __('Item Group'),
+      fieldtype: 'Link',
+      width: 100,
+      options: 'Item Group',
+    },
+    {
+      fieldname: 'item',
+      label: __('Item'),
+      fieldtype: 'Link',
+      width: 100,
+      options: 'Item',
+      get_query: () => {
+        let item_group = frappe.query_report.get_filter_value('item_group')
+        return {
+          query:
+            'erpnext.selling.report.payment_terms_status_for_sales_order.payment_terms_status_for_sales_order.get_customers_or_items',
+          filters: [
+            ['Item', 'disabled', '=', '0'],
+            ['Item Group', 'name', '=', item_group],
+          ],
+        }
+      },
+    },
+    {
+      fieldname: 'from_due_date',
+      label: __('From Due Date'),
+      fieldtype: 'Date',
+    },
+    {
+      fieldname: 'to_due_date',
+      label: __('To Due Date'),
+      fieldtype: 'Date',
+    },
+    {
+      fieldname: 'status',
+      label: __('Status'),
+      fieldtype: 'MultiSelectList',
+      options: ['Overdue', 'Unpaid', 'Completed', 'Partly Paid'],
+      width: 100,
+      get_data: function () {
+        let status: any = ['Overdue', 'Unpaid', 'Completed', 'Partly Paid']
+        let options: any = []
+        for (let option of status) {
+          options.push({
+            value: option,
+            label: __(option),
+            description: '',
+          })
+        }
+        return options
+      },
+    },
+    {
+      fieldname: 'only_immediate_upcoming_term',
+      label: __('Show only the Immediate Upcoming Term'),
+      fieldtype: 'Check',
+    },
+  ]
+  return filters
+}
+frappe.query_reports['Payment Terms Status for Sales Order'] = {
+  filters: get_filters(),
+  formatter: function (value?: any, row?: any, column?: any, data?: any, default_formatter?: any) {
+    if (column.fieldname == 'invoices' && value) {
+      let invoices = value.split(',')
+      const invoice_formatter = (prev_value?: any, curr_value?: any) => {
+        if (prev_value != '') {
+          return prev_value + ', ' + default_formatter(curr_value, row, column, data)
+        } else {
+          return default_formatter(curr_value, row, column, data)
+        }
+      }
+      return invoices.reduce(invoice_formatter, '')
+    } else if (column.fieldname == 'paid_amount' && value) {
+      let formatted_value = default_formatter(value, row, column, data)
+      if (value > 0) {
+        formatted_value = "<span style='color:green;'>" + formatted_value + '</span>'
+      }
+      return formatted_value
+    } else if (column.fieldname == 'status' && value == 'Completed') {
+      return "<span style='color:green;'>" + default_formatter(value, row, column, data) + '</span>'
+    }
+    return default_formatter(value, row, column, data)
+  },
+}

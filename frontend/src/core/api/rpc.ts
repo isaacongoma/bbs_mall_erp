@@ -16,8 +16,18 @@ interface ListEnvelope {
 
 function endpointFor(doctype: string): string {
   const base = getDoctypeEndpoint(doctype)
-  if (!base) throw new Error(`No REST endpoint mapped for doctype "${doctype}"`)
-  return `/api/${base}/`
+  return base ? `/api/${base}/` : `/api/erpnext/resource/${encodeURIComponent(doctype)}/`
+}
+
+function isGenericDoctype(doctype: string): boolean {
+  return !getDoctypeEndpoint(doctype)
+}
+
+function unwrapData<T>(value: T): T {
+  if (value && typeof value === 'object' && 'data' in (value as object)) {
+    return (value as Record<string, unknown>).data as T
+  }
+  return value
 }
 
 function asString(value: unknown): string {
@@ -85,22 +95,45 @@ export async function rpc<T = unknown>(request: RpcRequest): Promise<T> {
   }
 
   switch (url) {
+    case '/api/crm/doc/search-link/':
+      return httpJson<T>('POST', url, { body: params, signal })
+
     case 'frappe.client.get_list': {
-      const data = await httpJson<ListEnvelope | unknown[]>('GET', endpointFor(asString(params.doctype)), {
-        params: {
-          ...filtersToParams(params.filters),
-          limit: params.limit_page_length || params.limit || 20,
-          offset: params.limit_start || params.start || 0,
-          search: params.search || undefined,
-          ordering: orderByToOrdering(params.order_by),
-        },
+      const doctype = asString(params.doctype)
+      const generic = isGenericDoctype(doctype)
+      const data = await httpJson<ListEnvelope | unknown[]>('GET', endpointFor(doctype), {
+        params: generic
+          ? {
+              fields: params.fields,
+              filters: params.filters,
+              or_filters: params.or_filters,
+              group_by: params.group_by,
+              order_by: params.order_by,
+              limit_start: params.limit_start || params.start || 0,
+              limit_page_length: params.limit_page_length || params.limit || 20,
+            }
+          : {
+              ...filtersToParams(params.filters),
+              limit: params.limit_page_length || params.limit || 20,
+              offset: params.limit_start || params.start || 0,
+              search: params.search || undefined,
+              ordering: orderByToOrdering(params.order_by),
+            },
         signal,
       })
-      return ((data as ListEnvelope).results ?? data) as T
+      const responseData = data as ListEnvelope & { data?: unknown }
+      const payload = responseData.results ?? responseData.data ?? data
+      return payload as T
     }
 
     case 'frappe.desk.form.load.getdoctype': {
       const doctype = asString(params.doctype)
+      if (!/^F?CRM /.test(doctype)) {
+        return httpJson<T>('GET', '/api/erpnext/method/frappe.desk.form.load.getdoctype/', {
+          params: { doctype },
+          signal,
+        })
+      }
       const meta = await httpJson<Record<string, unknown>>('GET', `/api/meta/${encodeURIComponent(doctype)}/`, {
         signal,
       })
@@ -136,28 +169,38 @@ export async function rpc<T = unknown>(request: RpcRequest): Promise<T> {
     }
 
     case 'frappe.client.get_single_value': {
-      if (params.doctype !== 'FCRM Settings') return null as T
+      if (params.doctype !== 'FCRM Settings') {
+        return httpJson<T>('GET', '/api/erpnext/method/frappe.client.get_single_value/', { params, signal })
+      }
       const data = await httpJson<Record<string, unknown>>('GET', '/api/crm/settings/', { signal })
       return (data?.[asString(params.field)] ?? null) as T
     }
 
+    case 'frappe.client.get_single':
+      return httpJson<T>('GET', '/api/erpnext/method/frappe.client.get_single/', { params, signal })
+
     case 'frappe.client.get': {
       const singleton = SINGLETON_SETTINGS[asString(params.doctype)]
       if (singleton) return httpJson<T>('GET', singleton.read, { signal })
-      return httpJson<T>('GET', `${endpointFor(asString(params.doctype))}${asString(params.name)}/`, { signal })
+      const response = await httpJson<T>('GET', `${endpointFor(asString(params.doctype))}${encodeURIComponent(asString(params.name))}/`, {
+        signal,
+      })
+      return isGenericDoctype(asString(params.doctype)) ? unwrapData(response) : response
     }
 
     case 'frappe.client.insert': {
       const { doctype, ...values } = asRecord(params.doc)
-      return httpJson<T>('POST', endpointFor(asString(doctype)), { body: stripNulls(values), signal })
+      const response = await httpJson<T>('POST', endpointFor(asString(doctype)), { body: stripNulls(values), signal })
+      return isGenericDoctype(asString(doctype)) ? unwrapData(response) : response
     }
 
     case 'frappe.client.save': {
       const { doctype, ...values } = asRecord(params.doc)
-      return httpJson<T>('PUT', `${endpointFor(asString(doctype))}${asString(values.name)}/`, {
+      const response = await httpJson<T>('PUT', `${endpointFor(asString(doctype))}${encodeURIComponent(asString(values.name))}/`, {
         body: stripNulls(values),
         signal,
       })
+      return isGenericDoctype(asString(doctype)) ? unwrapData(response) : response
     }
 
     case 'frappe.client.set_value': {
@@ -166,25 +209,35 @@ export async function rpc<T = unknown>(request: RpcRequest): Promise<T> {
       const doctype = asString(params.doctype)
       const singleton = SINGLETON_SETTINGS[doctype]
       if (singleton) return httpJson<T>('PATCH', singleton.write, { body, signal })
-      return httpJson<T>('PATCH', `${endpointFor(doctype)}${asString(params.name)}/`, { body, signal })
+      if (!params.name) return httpJson<T>('POST', '/api/erpnext/method/frappe.client.set_value/', { body: params, signal })
+      const response = await httpJson<T>('PUT', `${endpointFor(doctype)}${encodeURIComponent(asString(params.name))}/`, {
+        body,
+        signal,
+      })
+      return isGenericDoctype(doctype) ? unwrapData(response) : response
     }
 
     case 'frappe.client.delete': {
-      await httpJson('DELETE', `${endpointFor(asString(params.doctype))}${asString(params.name)}/`, { signal })
+      await httpJson('DELETE', `${endpointFor(asString(params.doctype))}${encodeURIComponent(asString(params.name))}/`, { signal })
       return { name: params.name } as T
     }
 
     case 'run_doc_method': {
-      const actionPath = asString(params.method).replace(/_/g, '-')
-      return httpJson<T>('POST', `${endpointFor(asString(params.dt))}${asString(params.dn)}/${actionPath}/`, {
-        body: params.args,
+      return httpJson<T>('POST', '/api/erpnext/method/run_doc_method/', { body: params, signal })
+    }
+
+    case 'frappe.model.mapper.make_mapped_doc': {
+      const response = await httpJson<Record<string, unknown>>('POST', '/api/erpnext/method/frappe.model.mapper.make_mapped_doc/', {
+        body: params,
         signal,
       })
+      return (response.message ?? response.data ?? response) as T
     }
   }
 
-  const path = url.startsWith('/') || url.startsWith('http') ? url : `/api/crm/${url}`
-  return httpJson<T>(request.method ?? 'GET', path, { params, signal })
+  const path = url.startsWith('/') || url.startsWith('http') ? url : `/api/erpnext/method/${url}/`
+  const method = request.method ?? 'GET'
+  return method === 'GET' ? httpJson<T>(method, path, { params, signal }) : httpJson<T>(method, path, { body: params, signal })
 }
 
 export function call<T = unknown>(method: string, params?: RpcParams, signal?: AbortSignal): Promise<T> {

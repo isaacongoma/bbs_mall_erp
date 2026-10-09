@@ -126,15 +126,6 @@ class SystemSettings(Document):
             snapshot_report_scheduler(self.enable_snapshot_reports, self.frequency)
 
 
-def update_last_reset_password_date():
-    frappe.db.sql(
-        """ UPDATE `tabUser`
-        SET
-            last_password_reset_date = %s
-        WHERE
-            last_password_reset_date is null""",
-        today(),
-    )
 
 
 @frappe.whitelist()
@@ -211,3 +202,14 @@ def snapshot_report_scheduler(enable: bool = False, frequency: str = "Daily"):
     disable_duckdb_cron_job()
     if enable:
         enable_duckdb_cron_job(frequency)
+
+
+def update_last_reset_password_date():
+    frappe.db.sql(
+        """ UPDATE `tabUser`
+        SET
+            last_password_reset_date = %s
+        WHERE
+            last_password_reset_date is null""",
+        today(),
+    )

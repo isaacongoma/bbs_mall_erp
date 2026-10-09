@@ -38,9 +38,9 @@ def create_document(data, user=None):
     if not has_permission(doctype, "create", user=user):
         raise_permission_error(doctype, "create")
     doc = new_doc(doctype)
-    if user and getattr(user, "is_authenticated", False):
-        doc.owner = user.email
-        doc.modified_by = user.email
+    if user:
+        doc.owner = user
+        doc.modified_by = user
     for key, value in data.items():
         if key != "doctype":
             setattr(doc, key, value)

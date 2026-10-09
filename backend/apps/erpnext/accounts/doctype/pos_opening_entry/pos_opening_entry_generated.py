@@ -1,11 +1,11 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class PosOpeningEntryGenerated(FrappeModel):
     doctype = 'POS Opening Entry'
-    period_start_date = models.DateTimeField(null=True, blank=True)
+    period_start_date = FrappeDateTimeField(null=True, blank=True)
     period_end_date = models.DateField(null=True, blank=True)
     posting_date = models.DateField(null=True, blank=True)
     company = models.CharField(max_length=140, blank=True, null=True, default='')

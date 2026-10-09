@@ -53,3 +53,5 @@ desktop.ini
 
 # Local Claude Code state
 .claude/
+
+sites/

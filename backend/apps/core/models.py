@@ -2,10 +2,17 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from apps.core.user_fields import UserFrappeFields
 
-class User(AbstractUser):
-    """Platform user, referenced by owner/modified_by on every record and by
-    fields such as Lead.lead_owner."""
+
+SYSTEM_USER_NAMES = ("Administrator", "Guest")
+
+
+class User(UserFrappeFields, AbstractUser):
+    """The one system user: the Frappe `User` doctype (table `tabUser`) and the Django auth user.
+
+    `name` is the Frappe document name (the email); `enabled` is the Frappe flag that drives
+    Django's `is_active`. Both are kept consistent in `save`."""
 
     email = models.EmailField(unique=True)
     user_image = models.CharField(max_length=255, blank=True)
@@ -15,27 +22,29 @@ class User(AbstractUser):
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]
+    doctype = "User"
 
     class Meta:
-        # AbstractUser's default verbose_name is lowercase "user" -- every
-        # other doctype's Meta.verbose_name is the real "CRM Xyz" label
-        # (get_doctype_meta's Link-field options derives from this), and
-        # frappe's own doctype label for this one is exactly "User".
+        db_table = "tabUser"
         verbose_name = "User"
 
+    def save(self, *args, **kwargs):
+        from django.utils import timezone
 
-class UserEmail(models.Model):
-    """Child row of User.user_emails: an outgoing Email Account the user can send from."""
-
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_emails")
-    idx = models.PositiveIntegerField(default=0)
-    email_account = models.CharField(max_length=140)
-    email_id = models.EmailField()
-
-    class Meta:
-        db_table = "core_user_email"
-        verbose_name = "User Email"
-        ordering = ["idx", "id"]
+        if self.name not in SYSTEM_USER_NAMES:
+            self.name = self.email
+        if not self.username:
+            self.username = self.email
+        self.full_name = " ".join(part for part in (self.first_name, self.middle_name, self.last_name) if part).strip()
+        if self.pk is None or not self.creation:
+            self.creation = self.creation or timezone.now().replace(tzinfo=None)
+        self.modified = timezone.now().replace(tzinfo=None)
+        if kwargs.get("update_fields") is None:
+            if self._state.adding:
+                self.enabled = 1 if self.is_active else 0
+            else:
+                self.is_active = bool(self.enabled)
+        super().save(*args, **kwargs)
 
 
 class BaseDocument(models.Model):
@@ -67,26 +76,23 @@ class BaseDocument(models.Model):
 
 # Re-exported so Django's app registry discovers them (their real source
 # lives next to each doctype definition, same convention as apps/crm).
-from apps.core.doctype.assignment_rule.assignment_rule import (  # noqa: E402,F401
-    AssignmentRule, AssignmentRuleDay, AssignmentRuleUser,
-)
-from apps.core.doctype.automation_event_subscription.automation_event_subscription import (  # noqa: E402,F401
-    AutomationEventSubscription,
-)
-from apps.core.doctype.automation_flow.automation_flow import AutomationAction, AutomationFlow  # noqa: E402,F401
-from apps.core.doctype.automation_settings.automation_settings import AutomationSettings  # noqa: E402,F401
-from apps.core.doctype.automation_trigger_queue.automation_trigger_queue import (  # noqa: E402,F401
-    AutomationTriggerQueue,
-)
-from apps.core.doctype.background_task.background_task import BackgroundTask  # noqa: E402,F401
-from apps.core.doctype.contact.contact import Contact  # noqa: E402,F401
-from apps.core.doctype.data_import.data_import import DataImport, DataImportLog  # noqa: E402,F401
-from apps.core.doctype.contact_email.contact_email import ContactEmail  # noqa: E402,F401
-from apps.core.doctype.contact_phone.contact_phone import ContactPhone  # noqa: E402,F401
-from apps.core.doctype.docshare.docshare import DocShare  # noqa: E402,F401
-from apps.core.doctype.gender.gender import Gender  # noqa: E402,F401
+
+
 from apps.core.doctype.liked_document.liked_document import LikedDocument  # noqa: E402,F401
-from apps.core.doctype.salutation.salutation import Salutation  # noqa: E402,F401
 from apps.core.doctype.seen_document.seen_document import SeenDocument  # noqa: E402,F401
 from apps.core.doctype.system_settings.system_settings import SystemSettings  # noqa: E402,F401
-from apps.core.doctype.web_form.web_form import GuestLinkAccess, WebForm, WebFormField  # noqa: E402,F401
+
+
+class PasskeyCredential(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="passkeys")
+    credential_id = models.CharField(max_length=512, unique=True)
+    public_key = models.TextField()
+    sign_count = models.BigIntegerField(default=0)
+    transports = models.CharField(max_length=255, blank=True, default="")
+    label = models.CharField(max_length=140, blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_used_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = "core_passkey_credential"
+        ordering = ["-created_at"]

@@ -1,10 +1,32 @@
 {
  "allow_roles": [
   {
-   "role": "Accounts Manager"
+   "name": "ms853kasj0",
+   "owner": "Administrator",
+   "creation": "2026-02-22 18:26:42.015787",
+   "modified": "2026-10-07 14:26:07.200747",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 1,
+   "role": "Accounts Manager",
+   "parent": "Accounting Onboarding",
+   "parentfield": "allow_roles",
+   "parenttype": "Module Onboarding",
+   "doctype": "Onboarding Permission"
   },
   {
-   "role": "Accounts User"
+   "name": "ms83966odv",
+   "owner": "Administrator",
+   "creation": "2026-02-22 18:26:42.015787",
+   "modified": "2026-10-07 14:26:07.200747",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 2,
+   "role": "Accounts User",
+   "parent": "Accounting Onboarding",
+   "parentfield": "allow_roles",
+   "parenttype": "Module Onboarding",
+   "doctype": "Onboarding Permission"
   }
  ],
  "creation": "2026-02-22 18:26:42.015787",
@@ -19,23 +41,140 @@
  "owner": "Administrator",
  "steps": [
   {
-   "step": "Chart of Accounts"
+   "name": "ms8b6aumrf",
+   "owner": "Administrator",
+   "creation": "2026-02-22 18:26:42.015787",
+   "modified": "2026-10-07 14:26:07.200747",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 1,
+   "step": "Chart of Accounts",
+   "is_optional": 0,
+   "parent": "Accounting Onboarding",
+   "parentfield": "steps",
+   "parenttype": "Module Onboarding",
+   "doctype": "Onboarding Step Map"
   },
   {
-   "step": "Setup Sales taxes"
+   "name": "ms8t1q7j9d",
+   "owner": "Administrator",
+   "creation": "2026-02-22 18:26:42.015787",
+   "modified": "2026-10-07 14:26:07.200747",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 2,
+   "step": "Review Taxes",
+   "is_optional": 0,
+   "parent": "Accounting Onboarding",
+   "parentfield": "steps",
+   "parenttype": "Module Onboarding",
+   "doctype": "Onboarding Step Map"
   },
   {
-   "step": "Create Sales Invoice"
+   "name": "ms88qovmfu",
+   "owner": "Administrator",
+   "creation": "2026-02-22 18:26:42.015787",
+   "modified": "2026-10-07 14:26:07.200747",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 3,
+   "step": "Add Bank Account",
+   "is_optional": 0,
+   "parent": "Accounting Onboarding",
+   "parentfield": "steps",
+   "parenttype": "Module Onboarding",
+   "doctype": "Onboarding Step Map"
   },
   {
-   "step": "Create Payment Entry"
+   "name": "ms81lr4k84",
+   "owner": "Administrator",
+   "creation": "2026-02-22 18:26:42.015787",
+   "modified": "2026-10-07 14:26:07.200747",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 4,
+   "step": "Create Accounting Purchase Invoice",
+   "is_optional": 1,
+   "parent": "Accounting Onboarding",
+   "parentfield": "steps",
+   "parenttype": "Module Onboarding",
+   "doctype": "Onboarding Step Map"
   },
   {
-   "step": "View Balance Sheet"
+   "name": "ms8frk1ic8",
+   "owner": "Administrator",
+   "creation": "2026-02-22 18:26:42.015787",
+   "modified": "2026-10-07 14:26:07.200747",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 5,
+   "step": "Create Journal Entry",
+   "is_optional": 1,
+   "parent": "Accounting Onboarding",
+   "parentfield": "steps",
+   "parenttype": "Module Onboarding",
+   "doctype": "Onboarding Step Map"
   },
   {
-   "step": "Review Accounts Settings"
+   "name": "ms8iduug4n",
+   "owner": "Administrator",
+   "creation": "2026-02-22 18:26:42.015787",
+   "modified": "2026-10-07 14:26:07.200747",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 6,
+   "step": "Open Banking",
+   "is_optional": 1,
+   "parent": "Accounting Onboarding",
+   "parentfield": "steps",
+   "parenttype": "Module Onboarding",
+   "doctype": "Onboarding Step Map"
+  },
+  {
+   "name": "ms8horajj0",
+   "owner": "Administrator",
+   "creation": "2026-02-22 18:26:42.015787",
+   "modified": "2026-10-07 14:26:07.200747",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 7,
+   "step": "View General Ledger",
+   "is_optional": 1,
+   "parent": "Accounting Onboarding",
+   "parentfield": "steps",
+   "parenttype": "Module Onboarding",
+   "doctype": "Onboarding Step Map"
+  },
+  {
+   "name": "ms8tpptsnv",
+   "owner": "Administrator",
+   "creation": "2026-02-22 18:26:42.015787",
+   "modified": "2026-10-07 14:26:07.200747",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 8,
+   "step": "View Profit and Loss",
+   "is_optional": 1,
+   "parent": "Accounting Onboarding",
+   "parentfield": "steps",
+   "parenttype": "Module Onboarding",
+   "doctype": "Onboarding Step Map"
+  },
+  {
+   "name": "ms8ndqnfim",
+   "owner": "Administrator",
+   "creation": "2026-02-22 18:26:42.015787",
+   "modified": "2026-10-07 14:26:07.200747",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 9,
+   "step": "View Balance Sheet",
+   "is_optional": 1,
+   "parent": "Accounting Onboarding",
+   "parentfield": "steps",
+   "parenttype": "Module Onboarding",
+   "doctype": "Onboarding Step Map"
   }
  ],
- "title": "Accounting Onboarding"
+ "title": "Get your books ready"
 }

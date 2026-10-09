@@ -1,0 +1,176 @@
+{
+ "actions": [],
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "branch_id",
+  "provider",
+  "environment",
+  "is_active",
+  "server_url",
+  "tin",
+  "device_serial_number",
+  "communication_key",
+  "scu_id",
+  "mrc_no",
+  "initialized_on",
+  "payment_type_code",
+  "sales_status_code",
+  "purchase_type_code",
+  "purchase_receipt_type_code",
+  "purchase_status_code",
+  "max_attempts"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "branch_id",
+   "fieldtype": "Data",
+   "label": "Branch ID (bhfId)",
+   "reqd": 1,
+   "default": "00",
+   "length": 2,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "provider",
+   "fieldtype": "Select",
+   "label": "Provider",
+   "options": "OSCU KRA",
+   "default": "OSCU KRA",
+   "reqd": 1
+  },
+  {
+   "fieldname": "environment",
+   "fieldtype": "Select",
+   "label": "Environment",
+   "options": "Sandbox\nProduction",
+   "default": "Sandbox",
+   "reqd": 1
+  },
+  {
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "label": "Is Active",
+   "default": "0"
+  },
+  {
+   "fieldname": "server_url",
+   "fieldtype": "Data",
+   "label": "Server URL",
+   "reqd": 1
+  },
+  {
+   "fieldname": "tin",
+   "fieldtype": "Data",
+   "label": "KRA PIN (TIN)",
+   "reqd": 1
+  },
+  {
+   "fieldname": "device_serial_number",
+   "fieldtype": "Data",
+   "label": "Device Serial Number (dvcSrlNo)",
+   "reqd": 1
+  },
+  {
+   "fieldname": "communication_key",
+   "fieldtype": "Password",
+   "label": "Communication Key (cmcKey)"
+  },
+  {
+   "fieldname": "scu_id",
+   "fieldtype": "Data",
+   "label": "SCU ID (sdcId)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "mrc_no",
+   "fieldtype": "Data",
+   "label": "MRC No",
+   "read_only": 1
+  },
+  {
+   "fieldname": "initialized_on",
+   "fieldtype": "Datetime",
+   "label": "Initialized On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "payment_type_code",
+   "fieldtype": "Data",
+   "label": "Default Payment Type Code (pmtTyCd)",
+   "default": "01"
+  },
+  {
+   "fieldname": "sales_status_code",
+   "fieldtype": "Data",
+   "label": "Sales Status Code (salesSttsCd)",
+   "default": "02"
+  },
+  {
+   "fieldname": "purchase_type_code",
+   "fieldtype": "Data",
+   "label": "Purchase Type Code (pchsTyCd)",
+   "default": "N"
+  },
+  {
+   "fieldname": "purchase_receipt_type_code",
+   "fieldtype": "Data",
+   "label": "Purchase Receipt Type Code (rcptTyCd)",
+   "default": "P"
+  },
+  {
+   "fieldname": "purchase_status_code",
+   "fieldtype": "Data",
+   "label": "Purchase Status Code (pchsSttsCd)",
+   "default": "02"
+  },
+  {
+   "fieldname": "max_attempts",
+   "fieldtype": "Int",
+   "label": "Max Attempts",
+   "default": "5"
+  }
+ ],
+ "links": [],
+ "module": "ERPNext Integrations",
+ "name": "eTIMS Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "share": 1,
+   "email": 1
+  },
+  {
+   "role": "Accounts Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "share": 1,
+   "email": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

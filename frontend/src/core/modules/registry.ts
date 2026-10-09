@@ -34,7 +34,7 @@ export function getRouteGuards(): RouteGuard[] {
 
 export function getRailModules(): ModuleDefinition[] {
   return getModules()
-    .filter((module) => (module.navigation?.length ?? 0) > 0)
+    .filter((module) => module.rail === true || (module.navigation?.length ?? 0) > 0)
     .sort((a, b) => (a.railOrder ?? 0) - (b.railOrder ?? 0))
 }
 

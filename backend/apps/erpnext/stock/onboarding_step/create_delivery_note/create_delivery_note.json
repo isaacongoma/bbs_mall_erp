@@ -14,7 +14,9 @@
  "owner": "Administrator",
  "reference_document": "Delivery Note",
  "show_form_tour": 0,
- "show_full_form": 0,
- "title": "Create Delivery Note",
- "validate_action": 1
+ "show_full_form": 1,
+ "title": "Ship to a customer",
+ "validate_action": 1,
+ "description": "Stock goes down as the goods leave, and the invoice can be made from the delivery. See [Delivery Note](https://docs.frappe.io/erpnext/user/manual/en/delivery-note).",
+ "intro_video_url": "https://www.youtube.com/watch?v=sNHanAI_X-I"
 }

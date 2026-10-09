@@ -6,21 +6,6 @@ from frappe import safe_decode
 filter_dict = {"doctype": 0, "docfield": 1, "operator": 2, "value": 3}
 
 
-def get_user_settings(doctype, for_update=False):
-    user_settings = frappe.cache.hget("_user_settings", f"{doctype}::{frappe.session.user}")
-
-    if user_settings is None:
-        user_settings = frappe.db.sql(
-            """select data from `__UserSettings`
-            where `user`=%s and `doctype`=%s""",
-            (frappe.session.user, doctype),
-        )
-        user_settings = (user_settings and user_settings[0][0]) or "{}"
-
-        if not for_update:
-            update_user_settings(doctype, user_settings, True)
-
-    return user_settings or "{}"
 
 
 def update_user_settings(doctype, user_settings, for_update=False):
@@ -50,23 +35,6 @@ def clear_user_settings_cache(doctype: str):
         frappe.cache.hdel("_user_settings", keys)
 
 
-def sync_user_settings():
-    """Sync from cache to database (called asynchronously via the browser)"""
-    for key, data in frappe.cache.hgetall("_user_settings").items():
-        key = safe_decode(key)
-        doctype, user = key.split("::")
-        frappe.db.multisql(
-            {
-                "mariadb": """INSERT INTO `__UserSettings`(`user`, `doctype`, `data`)
-                VALUES (%s, %s, %s)
-                ON DUPLICATE key UPDATE `data`=%s""",
-                "*": """INSERT INTO `__UserSettings` (`user`, `doctype`, `data`)
-                VALUES (%s, %s, %s)
-                ON CONFLICT (`user`, `doctype`) DO UPDATE SET `data`=%s""",
-            },
-            (user, doctype, data, data),
-            as_dict=1,
-        )
 
 
 @frappe.whitelist()
@@ -108,3 +76,39 @@ def update_user_settings_data(
             )
 
             frappe.cache.hset("_user_settings", f"{user_setting.doctype}::{user_setting.user}", None)
+
+
+def get_user_settings(doctype, for_update=False):
+    user_settings = frappe.cache.hget("_user_settings", f"{doctype}::{frappe.session.user}")
+
+    if user_settings is None:
+        user_settings = frappe.db.sql(
+            """select data from `__UserSettings`
+            where `user`=%s and `doctype`=%s""",
+            (frappe.session.user, doctype),
+        )
+        user_settings = (user_settings and user_settings[0][0]) or "{}"
+
+        if not for_update:
+            update_user_settings(doctype, user_settings, True)
+
+    return user_settings or "{}"
+
+
+def sync_user_settings():
+    """Sync from cache to database (called asynchronously via the browser)"""
+    for key, data in frappe.cache.hgetall("_user_settings").items():
+        key = safe_decode(key)
+        doctype, user = key.split("::")
+        frappe.db.multisql(
+            {
+                "mariadb": """INSERT INTO `__UserSettings`(`user`, `doctype`, `data`)
+                VALUES (%s, %s, %s)
+                ON DUPLICATE key UPDATE `data`=%s""",
+                "*": """INSERT INTO `__UserSettings` (`user`, `doctype`, `data`)
+                VALUES (%s, %s, %s)
+                ON CONFLICT (`user`, `doctype`) DO UPDATE SET `data`=%s""",
+            },
+            (user, doctype, data, data),
+            as_dict=1,
+        )

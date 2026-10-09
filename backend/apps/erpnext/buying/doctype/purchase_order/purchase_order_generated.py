@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class PurchaseOrderGenerated(FrappeModel):
@@ -103,7 +103,7 @@ class PurchaseOrderGenerated(FrappeModel):
     supplier_group = models.CharField(max_length=140, blank=True, null=True, default='')
     last_scanned_warehouse = models.CharField(max_length=140, blank=True, null=True, default='')
     mps = models.CharField(max_length=140, blank=True, null=True, default='')
-    transaction_time = models.TimeField(null=True, blank=True)
+    transaction_time = FrappeTimeField(null=True, blank=True)
 
     class Meta:
         abstract = True

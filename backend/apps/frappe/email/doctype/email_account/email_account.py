@@ -994,57 +994,6 @@ def get_max_email_uid(email_account):
     return 1
 
 
-def setup_user_email_inbox(email_account, awaiting_password, email_id, enable_outgoing, used_oauth):
-    """setup email inbox for user"""
-    from frappe.core.doctype.user.user import ask_pass_update
-
-    def add_user_email(user):
-        user = frappe.get_doc("User", user)
-        row = user.append("user_emails", {})
-
-        row.email_id = email_id
-        row.email_account = email_account
-        row.awaiting_password = awaiting_password or 0
-        row.used_oauth = used_oauth or 0
-        row.enable_outgoing = enable_outgoing or 0
-
-        user.save(ignore_permissions=True)
-
-    update_user_email_settings = False
-    if not all([email_account, email_id]):
-        return
-
-    user_names = frappe.db.get_values("User", {"email": email_id}, as_dict=True)
-    if not user_names:
-        return
-
-    for user in user_names:
-        user_name = user.get("name")
-
-        user_inbox = (
-            frappe.db.get_value(
-                "User Email",
-                {"email_account": email_account, "parent": user_name},
-                ["name"],
-            )
-            or None
-        )
-
-        if not user_inbox:
-            add_user_email(user_name)
-        else:
-            update_user_email_settings = True
-
-    if update_user_email_settings:
-        UserEmail = frappe.qb.DocType("User Email")
-        frappe.qb.update(UserEmail).set(UserEmail.awaiting_password, (awaiting_password or 0)).set(
-            UserEmail.enable_outgoing, (enable_outgoing or 0)
-        ).set(UserEmail.used_oauth, (used_oauth or 0)).where(UserEmail.email_account == email_account).run()
-
-    else:
-        users = " and ".join([frappe.bold(user.get("name")) for user in user_names])
-        frappe.msgprint(_("Enabled email inbox for user {0}").format(users))
-    ask_pass_update()
 
 
 def remove_user_email_inbox(email_account):
@@ -1097,3 +1046,56 @@ def on_doctype_update() -> None:
         ["email_id", "enable_incoming", "enable_outgoing"],
         constraint_name="unique_email_account_type",
     )
+
+
+def setup_user_email_inbox(email_account, awaiting_password, email_id, enable_outgoing, used_oauth):
+    """setup email inbox for user"""
+    from frappe.core.doctype.user.user import ask_pass_update
+
+    def add_user_email(user):
+        user = frappe.get_doc("User", user)
+        row = user.append("user_emails", {})
+
+        row.email_id = email_id
+        row.email_account = email_account
+        row.awaiting_password = awaiting_password or 0
+        row.used_oauth = used_oauth or 0
+        row.enable_outgoing = enable_outgoing or 0
+
+        user.save(ignore_permissions=True)
+
+    update_user_email_settings = False
+    if not all([email_account, email_id]):
+        return
+
+    user_names = frappe.db.get_values("User", {"email": email_id}, as_dict=True)
+    if not user_names:
+        return
+
+    for user in user_names:
+        user_name = user.get("name")
+
+        user_inbox = (
+            frappe.db.get_value(
+                "User Email",
+                {"email_account": email_account, "parent": user_name},
+                ["name"],
+            )
+            or None
+        )
+
+        if not user_inbox:
+            add_user_email(user_name)
+        else:
+            update_user_email_settings = True
+
+    if update_user_email_settings:
+        UserEmail = frappe.qb.DocType("User Email")
+        frappe.qb.update(UserEmail).set(UserEmail.awaiting_password, (awaiting_password or 0)).set(
+            UserEmail.enable_outgoing, (enable_outgoing or 0)
+        ).set(UserEmail.used_oauth, (used_oauth or 0)).where(UserEmail.email_account == email_account).run()
+
+    else:
+        users = " and ".join([frappe.bold(user.get("name")) for user in user_names])
+        frappe.msgprint(_("Enabled email inbox for user {0}").format(users))
+    ask_pass_update()

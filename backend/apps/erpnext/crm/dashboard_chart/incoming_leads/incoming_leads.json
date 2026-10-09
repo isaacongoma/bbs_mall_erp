@@ -24,5 +24,8 @@
  "timespan": "Last Quarter",
  "type": "Bar",
  "use_report_chart": 0,
- "y_axis": []
+ "y_axis": [],
+ "show_values_over_chart": 0,
+ "empty_state_message": "New leads coming in each week.",
+ "roles": []
 }

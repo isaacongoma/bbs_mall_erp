@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class DashboardChartGenerated(FrappeModel):
@@ -17,7 +17,7 @@ class DashboardChartGenerated(FrappeModel):
     filters_json = models.TextField(blank=True, null=True, default='')
     type = models.CharField(max_length=140, blank=True, null=True, default='Line')
     color = models.CharField(max_length=140, blank=True, null=True, default='')
-    last_synced_on = models.DateTimeField(null=True, blank=True)
+    last_synced_on = FrappeDateTimeField(null=True, blank=True)
     group_by_based_on = models.CharField(max_length=140, blank=True, null=True, default='')
     group_by_type = models.CharField(max_length=140, blank=True, null=True, default='Count')
     aggregate_function_based_on = models.CharField(max_length=140, blank=True, null=True, default='')

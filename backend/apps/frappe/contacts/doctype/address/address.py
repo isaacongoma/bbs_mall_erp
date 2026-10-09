@@ -80,26 +80,6 @@ class Address(Document):
         return False
 
 
-def get_preferred_address(doctype, name, preferred_key="is_primary_address"):
-    if preferred_key in ["is_shipping_address", "is_primary_address"]:
-        address = frappe.db.sql(
-            """ SELECT
-                addr.name
-            FROM
-                `tabAddress` addr, `tabDynamic Link` dl
-            WHERE
-                dl.parent = addr.name and dl.link_doctype = {} and
-                dl.link_name = {} and ifnull(addr.disabled, 0) = 0 and
-                {} = {}
-            """.format("%s", "%s", preferred_key, "%s"),
-            (doctype, name, 1),
-            as_dict=1,
-        )
-
-        if address:
-            return address[0].name
-
-    return
 
 
 @frappe.whitelist()
@@ -327,3 +307,25 @@ def get_address_display_list(doctype: str, name: str) -> list[dict]:
         a["display"] = get_address_display(a)
 
     return address_list
+
+
+def get_preferred_address(doctype, name, preferred_key="is_primary_address"):
+    if preferred_key in ["is_shipping_address", "is_primary_address"]:
+        address = frappe.db.sql(
+            """ SELECT
+                addr.name
+            FROM
+                `tabAddress` addr, `tabDynamic Link` dl
+            WHERE
+                dl.parent = addr.name and dl.link_doctype = {} and
+                dl.link_name = {} and ifnull(addr.disabled, 0) = 0 and
+                {} = {}
+            """.format("%s", "%s", preferred_key, "%s"),
+            (doctype, name, 1),
+            as_dict=1,
+        )
+
+        if address:
+            return address[0].name
+
+    return

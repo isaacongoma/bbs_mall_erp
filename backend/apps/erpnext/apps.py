@@ -17,3 +17,30 @@ class ErpnextConfig(AppConfig):
 
     def ready(self):
         post_migrate.connect(install_fixtures_after_migrate, sender=self)
+        self._load_runtime_doctypes()
+
+    @staticmethod
+    def _load_runtime_doctypes():
+        import sys
+
+        if any(command in sys.argv for command in ("makemigrations", "migrate", "test")):
+            return
+        from django.db.utils import DatabaseError
+
+        from apps.frappe.model.dynamic_doctype import load_all
+
+        import threading
+
+        def run():
+            from django.db import connection
+
+            try:
+                load_all()
+            except DatabaseError:
+                pass
+            finally:
+                connection.close()
+
+        worker = threading.Thread(target=run)
+        worker.start()
+        worker.join()

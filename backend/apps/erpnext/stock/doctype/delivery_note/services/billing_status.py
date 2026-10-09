@@ -1,5 +1,4 @@
 """Billing status tracking and return invoicing for Delivery Note."""
-from __future__ import annotations
 
 import frappe
 from frappe import _

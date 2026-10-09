@@ -47,19 +47,4 @@ class Migration(migrations.Migration):
                 'ordering': ['creation'],
             },
         ),
-        migrations.AddField(
-            model_name='address',
-            name='is_your_company_address',
-            field=models.SmallIntegerField(default=0),
-        ),
-        migrations.AddField(
-            model_name='address',
-            name='tax_category',
-            field=models.CharField(blank=True, default='', max_length=140),
-        ),
-        migrations.AddField(
-            model_name='emailaccount',
-            name='company',
-            field=models.CharField(blank=True, default='', max_length=140),
-        ),
     ]

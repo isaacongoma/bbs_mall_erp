@@ -7,7 +7,7 @@ class CRMDealContact(models.Model):
     parent_deal = models.ForeignKey("crm.CRMDeal", on_delete=models.CASCADE, related_name="contacts")
     idx = models.PositiveIntegerField(default=0)
 
-    contact = models.ForeignKey("core.Contact", on_delete=models.CASCADE, related_name="+")
+    contact = models.ForeignKey("erpnext.Contact", on_delete=models.CASCADE, related_name="+")
     is_primary = models.BooleanField(default=False)
 
     class Meta:

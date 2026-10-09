@@ -10,6 +10,7 @@ import {
   type DataImportRecord,
   type DataImportStatus,
   type DoctypeMap,
+  type DoctypeOption,
 } from '../../utils/dataImport'
 
 type AnyRecord = Record<string, any>
@@ -19,9 +20,10 @@ export interface DataImportListProps {
   status: 'All' | DataImportStatus
   onStatusChange: (status: 'All' | DataImportStatus) => void
   doctypeMap: DoctypeMap
+  doctypeOptions?: DoctypeOption[]
 }
 
-export function DataImportList({ dataImports, status, onStatusChange, doctypeMap }: DataImportListProps) {
+export function DataImportList({ dataImports, status, onStatusChange, doctypeMap, doctypeOptions }: DataImportListProps) {
   const [search, setSearch] = useState('')
   const [showModal, setShowModal] = useState(false)
   const [doctypeForImport, setDoctypeForImport] = useState<string>('')
@@ -132,7 +134,7 @@ export function DataImportList({ dataImports, status, onStatusChange, doctypeMap
           type="select"
           label={__('Choose a Document Type to import')}
           value={doctypeForImport}
-          options={Object.entries(doctypeMap).map(([value, entry]) => ({ label: entry.title, value })) as never}
+          options={(doctypeOptions ?? Object.entries(doctypeMap).map(([value, entry]) => ({ label: entry.title, value }))) as never}
           onChange={setDoctypeForImport}
         />
       </Dialog>

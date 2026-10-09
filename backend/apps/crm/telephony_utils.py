@@ -17,8 +17,7 @@ def get_contact(phone_number: str) -> dict:
     """Resolve a phone number to a Contact (+ its primary Deal, if any) or a
     Lead. Mirrors the original's fallback chain: Contact (any of its phone_nos)
     -> Lead.mobile_no -> a bare {"mobile_no": phone_number}."""
-    from apps.core.doctype.contact.contact import Contact
-    from apps.core.doctype.contact_phone.contact_phone import ContactPhone
+    from apps.core import contacts
     from apps.crm.doctype.deal_contacts.deal_contacts import CRMDealContact
     from apps.crm.doctype.lead.lead import CRMLead
 
@@ -29,18 +28,16 @@ def get_contact(phone_number: str) -> dict:
     if not cleaned:
         return {"mobile_no": phone_number}
 
-    phone_row = ContactPhone.objects.filter(phone__icontains=cleaned).order_by("-parent__modified").first()
-    if phone_row:
-        contact = Contact.objects.filter(pk=phone_row.parent_id).first()
-        if contact:
-            result = {
-                "name": contact.pk, "full_name": contact.full_name, "image": contact.image,
-                "mobile_no": contact.mobile_no,
-            }
-            primary_link = CRMDealContact.objects.filter(contact=contact, is_primary=True).first()
-            if primary_link:
-                result["deal"] = primary_link.parent_deal_id
-            return result
+    contact = contacts.find_by_phone(cleaned, partial=True)
+    if contact:
+        result = {
+            "name": contact.pk, "full_name": contact.full_name, "image": contact.image,
+            "mobile_no": contact.mobile_no,
+        }
+        primary_link = CRMDealContact.objects.filter(contact=contact, is_primary=True).first()
+        if primary_link:
+            result["deal"] = primary_link.parent_deal_id
+        return result
 
     lead = (
         CRMLead.objects.filter(converted=False, mobile_no__icontains=cleaned)

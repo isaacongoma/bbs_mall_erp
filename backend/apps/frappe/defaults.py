@@ -124,25 +124,6 @@ def get_global_default(key):
     return value
 
 
-def set_default(key, value, parent, parenttype="__default"):
-    table = DocType("DefaultValue")
-    current_value = (
-        frappe.qb.from_(table)
-        .where((table.defkey == key) & (table.parent == parent))
-        .select(table.defvalue)
-        .run(as_dict=True)
-    )
-    if current_value:
-        if current_value[0].defvalue == cstr(value):
-            return
-        frappe.db.delete("DefaultValue", {"defkey": key, "parent": parent})
-    if value is not None:
-        add_default(key, value, parent)
-    else:
-        _clear_cache(parent)
-
-    if parent:
-        clear_defaults_cache(parent)
 
 
 def add_default(key, value, parent, parenttype=None):
@@ -193,32 +174,71 @@ def clear_default(key=None, value=None, parent=None, name=None, parenttype=None)
     _clear_cache(parent)
 
 
-def get_defaults_for(parent="__default"):
-    table = DocType("DefaultValue")
-    res = (
-        frappe.qb.from_(table)
-        .where(table.parent == parent)
-        .select(table.defkey, table.defvalue)
-        .orderby("creation")
-        .run(as_dict=True)
-    )
-
-    defaults = frappe._dict()
-    for d in res:
-        if d.defkey in defaults:
-            if not isinstance(defaults[d.defkey], list) and defaults[d.defkey] != d.defvalue:
-                defaults[d.defkey] = [defaults[d.defkey]]
-
-            if d.defvalue not in defaults[d.defkey]:
-                defaults[d.defkey].append(d.defvalue)
-
-        elif d.defvalue is not None:
-            defaults[d.defkey] = d.defvalue
-
-    return defaults
 
 
 def _clear_cache(parent):
     if frappe.flags.in_install:
         return
     frappe.clear_cache(user=parent if parent not in common_default_keys else None)
+
+
+def set_default(key, value, parent, parenttype="__default"):
+    """Override or add a default value.
+    Adds default value in table `tabDefaultValue`.
+
+    :param key: Default key.
+    :param value: Default value.
+    :param parent: Usually, **User** to whom the default belongs.
+    :param parenttype: [optional] default is `__default`."""
+    table = DocType("DefaultValue")
+    current_value = (
+        frappe.qb.from_(table)
+        .where((table.defkey == key) & (table.parent == parent))
+        .select(table.defvalue)
+        .for_update()
+        .run(as_dict=True)
+    )
+    if current_value:
+        if current_value[0].defvalue == cstr(value):
+            return
+        frappe.db.delete("DefaultValue", {"defkey": key, "parent": parent})
+    if value is not None:
+        add_default(key, value, parent)
+    else:
+        _clear_cache(parent)
+
+    if parent:
+        clear_defaults_cache(parent)
+
+
+def get_defaults_for(parent="__default"):
+    """get all defaults"""
+
+    key = f"defaults::{parent}"
+    defaults = frappe.client_cache.get_value(key)
+
+    if defaults is None:
+        table = DocType("DefaultValue")
+        res = (
+            frappe.qb.from_(table)
+            .where(table.parent == parent)
+            .select(table.defkey, table.defvalue)
+            .orderby("creation")
+            .run(as_dict=True)
+        )
+
+        defaults = frappe._dict()
+        for d in res:
+            if d.defkey in defaults:
+                if not isinstance(defaults[d.defkey], list) and defaults[d.defkey] != d.defvalue:
+                    defaults[d.defkey] = [defaults[d.defkey]]
+
+                if d.defvalue not in defaults[d.defkey]:
+                    defaults[d.defkey].append(d.defvalue)
+
+            elif d.defvalue is not None:
+                defaults[d.defkey] = d.defvalue
+
+        frappe.client_cache.set_value(key, defaults)
+
+    return defaults

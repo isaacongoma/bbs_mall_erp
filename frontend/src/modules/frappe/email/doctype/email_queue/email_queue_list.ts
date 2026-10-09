@@ -1,0 +1,52 @@
+import { __, frappe, has_common } from '@/shared/frappe'
+frappe.listview_settings['Email Queue'] = {
+  get_indicator: function (doc?: any) {
+    let colour: any = {
+      Sent: 'green',
+      Sending: 'blue',
+      'Not Sent': 'gray',
+      Error: 'red',
+      Expired: 'amber',
+    }
+    return [__(doc.status), colour[doc.status], 'status,=,' + doc.status]
+  },
+  refresh: function (listview?: any) {
+    show_toggle_sending_button(listview)
+    add_bulk_retry_button_to_actions(listview)
+  },
+  onload: function (list_view?: any) {
+    frappe.require('logtypes.bundle.js', () => {
+      frappe.utils.logtypes.show_log_retention_message(list_view.doctype)
+    })
+  },
+}
+function show_toggle_sending_button(list_view?: any) {
+  if (!has_common(frappe.user_roles, ['Administrator', 'System Manager'])) return
+  const sending_disabled = frappe.defaults.is_enabled('suspend_email_queue')
+  const label = sending_disabled ? __('Resume Sending') : __('Suspend Sending')
+  list_view.page.add_inner_button(label, async () => {
+    await frappe.xcall('frappe.email.doctype.email_queue.email_queue.toggle_sending', { enable: sending_disabled })
+    frappe.sys_defaults.suspend_email_queue = sending_disabled ? 0 : 1
+    list_view.page.remove_inner_button(label)
+    show_toggle_sending_button(list_view)
+  })
+}
+function add_bulk_retry_button_to_actions(list_view?: any) {
+  list_view.page.add_actions_menu_item(__('Retry Sending'), () => {
+    frappe.msgprint(
+      __('Updating Email Queue Statuses. The emails will be picked up in the next scheduled run.'),
+      __('Processing...'),
+    )
+    frappe.call({
+      method: 'frappe.email.doctype.email_queue.email_queue.retry_sending',
+      args: {
+        queues: list_view.get_checked_items(true),
+      },
+      callback: (r?: any) => {
+        if (!r.exc) {
+          list_view.refresh()
+        }
+      },
+    })
+  })
+}

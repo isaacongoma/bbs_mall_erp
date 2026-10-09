@@ -1,5 +1,4 @@
 """Small query helpers shared by Production Plan material planning."""
-from __future__ import annotations
 
 import json
 

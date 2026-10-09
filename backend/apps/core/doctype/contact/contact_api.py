@@ -18,39 +18,27 @@ def get_linked_deals(contact: str) -> list[dict]:
 
 
 def create_new(contact: str, field: str, value: str) -> bool:
-    from apps.core.models import Contact
+    from apps.core import contacts
 
-    doc = Contact.objects.filter(pk=contact).first()
-    if doc is None:
+    if not contacts.contact_model().objects.filter(pk=contact).exists():
         raise PermissionDenied("Not permitted")
 
     if field == "email":
-        doc.email_ids.create(email_id=value, is_primary=not doc.email_ids.exists())
+        contacts.add_email(contact, value)
     elif field in ("mobile_no", "phone"):
-        doc.phone_nos.create(phone=value, is_primary_mobile_no=not doc.phone_nos.exists())
+        contacts.add_phone(contact, value, "mobile_no")
     else:
         raise ValueError("Invalid field")
-
-    doc.save()  # refresh denormalized email_id/phone/mobile_no
     return True
 
 
 def set_as_primary(contact: str, field: str, value: str) -> bool:
-    from apps.core.models import Contact
+    from apps.core import contacts
 
-    doc = Contact.objects.filter(pk=contact).first()
-    if doc is None:
+    if not contacts.contact_model().objects.filter(pk=contact).exists():
         raise PermissionDenied("Not permitted")
 
-    if field == "email":
-        doc.email_ids.update(is_primary=False)
-        doc.email_ids.filter(email_id=value).update(is_primary=True)
-    elif field in ("mobile_no", "phone"):
-        attr = "is_primary_mobile_no" if field == "mobile_no" else "is_primary_phone"
-        doc.phone_nos.update(**{attr: False})
-        doc.phone_nos.filter(phone=value).update(**{attr: True})
-    else:
+    if field not in ("email", "mobile_no", "phone"):
         raise ValueError("Invalid field")
-
-    doc.save()  # refresh denormalized email_id/phone/mobile_no
+    contacts.set_primary(contact, field, value)
     return True

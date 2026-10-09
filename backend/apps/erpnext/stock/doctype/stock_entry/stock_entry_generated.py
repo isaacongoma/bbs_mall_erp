@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class StockEntryGenerated(FrappeModel):
@@ -20,7 +20,7 @@ class StockEntryGenerated(FrappeModel):
     sales_invoice_no = models.CharField(max_length=140, blank=True, null=True, default='')
     purchase_receipt_no = models.CharField(max_length=140, blank=True, null=True, default='')
     posting_date = models.DateField(null=True, blank=True)
-    posting_time = models.TimeField(null=True, blank=True)
+    posting_time = FrappeTimeField(null=True, blank=True)
     set_posting_time = models.SmallIntegerField(default=0)
     inspection_required = models.SmallIntegerField(default=0)
     from_bom = models.SmallIntegerField(default=0)

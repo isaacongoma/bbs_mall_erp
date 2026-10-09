@@ -1,14 +1,13 @@
-from apps.frappe.model.document import Document
-from apps.frappe.utils.nestedset import NestedSet, get_root_of
-from apps.frappe import exceptions
-from apps.frappe.runtime import in_test
-from django.core.cache import cache
+import frappe
+from frappe import _
+from frappe.utils.nestedset import NestedSet, get_root_of
 
-class ItemGroup(NestedSet, Document):
-    doctype = 'Item Group'
+
+class ItemGroup(NestedSet):
+
 
     def validate(self):
-        if not self.parent_item_group and not in_test:
+        if not self.parent_item_group and not frappe.in_test:
             root = get_root_of(self.doctype)
             if root and root != self.name:
                 self.parent_item_group = root
@@ -16,12 +15,18 @@ class ItemGroup(NestedSet, Document):
         self.check_item_tax()
 
     def check_item_tax(self):
+        """Check whether Tax Rate is not entered twice for same Tax Type"""
         check_list = []
-        for d in self.get("taxes") or []:
+        for d in self.get("taxes"):
             if d.item_tax_template:
                 if (d.item_tax_template, d.tax_category) in check_list:
-                    raise exceptions.ValidationError(
-                        f"<b>{d.item_tax_template}</b> entered twice for tax category <b>{d.tax_category or ''}</b> in Item Taxes"
+                    frappe.throw(
+                        _("{0} entered twice {1} in Item Taxes").format(
+                            frappe.bold(d.item_tax_template),
+                            _("for tax category {0}").format(frappe.bold(d.tax_category))
+                            if d.tax_category
+                            else "",
+                        )
                     )
                 else:
                     check_list.append((d.item_tax_template, d.tax_category))
@@ -36,40 +41,51 @@ class ItemGroup(NestedSet, Document):
         self.delete_child_item_groups_key()
 
     def delete_child_item_groups_key(self):
-        cache.delete(f"child_item_groups::{self.name}")
+        frappe.cache().hdel("child_item_groups", self.name)
 
     def validate_item_group_defaults(self):
-        pass
+        from erpnext.stock.doctype.item.item import validate_item_default_company_links
+
+        validate_item_default_company_links(self.item_group_defaults)
+
 
 def get_child_item_groups(item_group_name):
-    from apps.erpnext.registry import get_model
-    model = get_model("Item Group")
-    item_group = model.objects.filter(pk=item_group_name).values("lft", "rgt").first()
-    if not item_group:
-        return {}
+    item_group = frappe.get_cached_value("Item Group", item_group_name, ["lft", "rgt"], as_dict=1)
 
-    child_item_groups = list(model.objects.filter(lft__gte=item_group["lft"], rgt__lte=item_group["rgt"]).values_list("name", flat=True))
+    child_item_groups = [
+        d.name
+        for d in frappe.get_all(
+            "Item Group", filters={"lft": (">=", item_group.lft), "rgt": ("<=", item_group.rgt)}
+        )
+    ]
+
     return child_item_groups or {}
 
-def get_item_group_defaults(item, company):
-    from apps.frappe.runtime import get_doc
-    item_doc = get_doc("Item", item)
-    item_group = get_doc("Item Group", item_doc.item_group)
 
-    for d in item_group.get("item_group_defaults") or []:
+def get_item_group_defaults(item, company):
+    item = frappe.get_cached_doc("Item", item)
+    item_group = frappe.get_cached_doc("Item Group", item.item_group)
+
+    for d in item_group.item_group_defaults or []:
         if d.company == company:
             row = d.as_dict(no_private_properties=True)
-            row.pop("name", None)
+            row.pop("name")
             return row
 
-    return {}
+    return frappe._dict()
 
+
+@frappe.whitelist()
 def get_company_resolved_defaults(company: str) -> dict:
+    """
+    Returns effective default values for a company by checking:
+    1. Company document
+    2. Accounts Settings (for deferred account fallbacks)
+    """
     if not company:
         return {}
 
-    from apps.frappe.runtime import get_doc
-    company_doc = get_doc("Company", company)
+    company_doc = frappe.get_cached_doc("Company", company)
 
     return {
         "default_warehouse": company_doc.get("default_warehouse"),

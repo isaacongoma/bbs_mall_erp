@@ -7,21 +7,23 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from apps.core.doctype.data_import import importer
-from apps.core.doctype.data_import.data_import import DataImport
+from apps.erpnext.registry import get_model
 from apps.core.doctype.data_import.data_import_serializer import DataImportSerializer
 
 
 class DataImportViewSet(viewsets.ModelViewSet):
-    queryset = DataImport.objects.all()
     serializer_class = DataImportSerializer
     lookup_field = "name"
     filterset_fields = ("status", "reference_doctype", "import_type")
     ordering_fields = ("creation", "modified")
 
+    def get_queryset(self):
+        return get_model("Data Import").objects.all().order_by("-modified")
 
-def _get_import(request) -> DataImport:
+
+def _get_import(request):
     name = request.query_params.get("data_import") or request.data.get("data_import")
-    return DataImport.objects.get(pk=name)
+    return get_model("Data Import").objects.get(pk=name)
 
 
 @api_view(["GET"])
@@ -29,7 +31,7 @@ def _get_import(request) -> DataImport:
 def preview_view(request):
     try:
         return Response(importer.get_preview(_get_import(request)))
-    except (importer.ImportSourceError, DataImport.DoesNotExist) as error:
+    except (importer.ImportSourceError, get_model("Data Import").DoesNotExist) as error:
         return Response({"detail": str(error)}, status=400)
 
 
@@ -39,7 +41,7 @@ def start_view(request):
     try:
         data_import = _get_import(request)
         importer.run_import(data_import, request.user)
-    except (importer.ImportSourceError, DataImport.DoesNotExist) as error:
+    except (importer.ImportSourceError, get_model("Data Import").DoesNotExist) as error:
         return Response({"detail": str(error)}, status=400)
     return Response({"status": data_import.status})
 
@@ -49,7 +51,7 @@ def start_view(request):
 def logs_view(request):
     try:
         return Response(importer.get_logs(_get_import(request)))
-    except DataImport.DoesNotExist as error:
+    except get_model("Data Import").DoesNotExist as error:
         return Response({"detail": str(error)}, status=400)
 
 

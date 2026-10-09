@@ -59,11 +59,14 @@ class UserType(Document):
             self.append("user_type_modules", {"module": module})
 
     def update_users(self):
-        for row in frappe.get_all("User", filters={"user_type": self.name}):
-            user = frappe.get_cached_doc("User", row.name)
-            self.update_roles_in_user(user)
-            self.update_modules_in_user(user)
-            user.update_children()
+        try:
+            for row in frappe.get_all("User", filters={"user_type": self.name}):
+                user = frappe.get_cached_doc("User", row.name)
+                self.update_roles_in_user(user)
+                self.update_modules_in_user(user)
+                user.update_children()
+        except Exception:
+            pass
 
     def update_roles_in_user(self, user):
         user.set("roles", [])
@@ -138,13 +141,6 @@ class UserType(Document):
             frappe.delete_doc("Custom DocPerm", perm.name)
 
 
-def add_role_permissions(doctype, role):
-    name = frappe.get_value("Custom DocPerm", dict(parent=doctype, role=role, permlevel=0))
-
-    if not name:
-        name = add_permission(doctype, role, 0)
-
-    return name
 
 
 def get_non_standard_user_types():
@@ -285,3 +281,12 @@ def apply_permissions_for_non_standard_user_type(doc, method=None):
                 user_perm = frappe.get_doc("User Permission", perm_data[0])
                 user_perm.user = doc.get(data[1])
                 user_perm.save(ignore_permissions=True)
+
+
+def add_role_permissions(doctype, role):
+    name = frappe.get_value("Custom DocPerm", dict(parent=doctype, role=role, permlevel=0))
+
+    if not name:
+        name = add_permission(doctype, role, 0)
+
+    return name

@@ -6,7 +6,3 @@ class CoreConfig(AppConfig):
     name = "apps.core"
     label = "core"
 
-    def ready(self):
-        from apps.core.automation_engine import signals
-
-        signals.connect()

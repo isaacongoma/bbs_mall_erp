@@ -45,10 +45,10 @@ class CRMDeal(ChildRowBufferMixin, AssignableMixin, BaseDocument):
     expected_closure_date = models.DateField(null=True, blank=True)
     closed_date = models.DateField(null=True, blank=True)
 
-    contact = models.ForeignKey("core.Contact", on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    contact = models.ForeignKey("erpnext.Contact", on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
     lead = models.ForeignKey("crm.CRMLead", on_delete=models.SET_NULL, null=True, blank=True, related_name="deals")
     source = models.ForeignKey(
-        "crm.CRMLeadSource", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+        "erpnext.UtmSource", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
     lead_name = models.CharField(max_length=140, blank=True)
 
@@ -61,21 +61,21 @@ class CRMDeal(ChildRowBufferMixin, AssignableMixin, BaseDocument):
     no_of_employees = models.CharField(max_length=10, choices=NO_OF_EMPLOYEES_CHOICES, blank=True)
     job_title = models.CharField(max_length=140, blank=True)
     territory = models.ForeignKey(
-        "crm.CRMTerritory", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+        "erpnext.Territory", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
     currency = models.ForeignKey("erpnext.Currency", on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
     exchange_rate = models.FloatField(default=1)
     annual_revenue = models.DecimalField(max_digits=18, decimal_places=2, default=0)
     industry = models.ForeignKey(
-        "crm.CRMIndustry", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+        "erpnext.IndustryType", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
 
     salutation = models.ForeignKey(
-        "core.Salutation", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+        "erpnext.Salutation", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
     first_name = models.CharField(max_length=140, blank=True)
     last_name = models.CharField(max_length=140, blank=True)
-    gender = models.ForeignKey("core.Gender", on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    gender = models.ForeignKey("erpnext.Gender", on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
     email = models.EmailField(blank=True, editable=False)
     mobile_no = models.CharField(max_length=30, blank=True, editable=False)
     phone = models.CharField(max_length=30, blank=True, editable=False)
@@ -99,7 +99,7 @@ class CRMDeal(ChildRowBufferMixin, AssignableMixin, BaseDocument):
     last_responded_on = models.DateTimeField(null=True, blank=True)
 
     lost_reason = models.ForeignKey(
-        "crm.CRMLostReason", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+        "erpnext.OpportunityLostReason", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
     lost_notes = models.TextField(blank=True)
 
@@ -330,44 +330,27 @@ def create_organization(data: dict):
 
 
 def contact_exists(data: dict):
-    from apps.core.doctype.contact.contact import Contact
-    from apps.core.doctype.contact_email.contact_email import ContactEmail
-    from apps.core.doctype.contact_phone.contact_phone import ContactPhone
+    from apps.core import contacts
 
-    email = data.get("email")
-    mobile_no = data.get("mobile_no")
-    if email:
-        row = ContactEmail.objects.filter(email_id=email).first()
-        if row:
-            return Contact.objects.filter(pk=row.parent_id).first()
-    if mobile_no:
-        row = ContactPhone.objects.filter(phone=mobile_no).first()
-        if row:
-            return Contact.objects.filter(pk=row.parent_id).first()
-    return None
+    return contacts.find_by_email(data.get("email")) or contacts.find_by_phone(data.get("mobile_no"))
 
 
 def create_contact(data: dict):
-    from apps.core.doctype.contact.contact import Contact
+    from apps.core import contacts
 
     existing = contact_exists(data)
     if existing:
         return existing
 
-    contact = Contact(
+    return contacts.create_contact(
         first_name=data.get("first_name", ""),
         last_name=data.get("last_name", ""),
-        salutation_id=data.get("salutation") or None,
+        email=data.get("email"),
+        mobile_no=data.get("mobile_no"),
+        salutation=data.get("salutation") or None,
         company_name=data.get("organization") or data.get("organization_name", ""),
-        gender_id=data.get("gender") or None,
+        gender=data.get("gender") or None,
     )
-    contact.save()
-    if data.get("email"):
-        contact.email_ids.create(email_id=data["email"], is_primary=True)
-    if data.get("mobile_no"):
-        contact.phone_nos.create(phone=data["mobile_no"], is_primary_mobile_no=True)
-    contact.save()  # refresh denormalized email_id/phone/mobile_no
-    return contact
 
 
 def create_deal(data: dict):
@@ -381,9 +364,9 @@ def create_deal(data: dict):
         contact_obj = create_contact(data)
         contact = contact_obj.pk
     elif contact:
-        from apps.core.doctype.contact.contact import Contact
+        from apps.core import contacts
 
-        contact_obj = Contact.objects.filter(pk=contact).first()
+        contact_obj = contacts.contact_model().objects.filter(pk=contact).first()
 
     organization = data.get("organization")
     if not organization:

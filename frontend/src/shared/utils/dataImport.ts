@@ -28,6 +28,11 @@ export interface DoctypeMapEntry {
 
 export type DoctypeMap = Record<string, DoctypeMapEntry>
 
+export interface DoctypeOption {
+  value: string
+  label: string
+}
+
 export const IMPORT_STATUSES: DataImportStatus[] = ['Pending', 'Success', 'Partial Success', 'Error', 'Timed Out']
 
 export const FIELDS_TO_IGNORE = [

@@ -1,0 +1,21 @@
+{
+ "name": "Create Job Offer",
+ "owner": "Administrator",
+ "creation": "2026-10-05 12:00:00",
+ "modified": "2026-10-05 12:00:00",
+ "modified_by": "Administrator",
+ "docstatus": 0,
+ "idx": 0,
+ "title": "Make an offer",
+ "is_complete": 0,
+ "is_skipped": 0,
+ "description": "The terms you offer the applicant. Submit it once they accept. See [Job Offer](https://docs.frappe.io/hr/job-offer).",
+ "action": "Create Entry",
+ "action_label": "Create Job Offer",
+ "reference_document": "Job Offer",
+ "show_full_form": 1,
+ "show_form_tour": 0,
+ "is_single": 0,
+ "validate_action": 1,
+ "doctype": "Onboarding Step"
+}

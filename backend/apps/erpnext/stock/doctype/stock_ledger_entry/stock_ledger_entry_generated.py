@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class StockLedgerEntryGenerated(FrappeModel):
@@ -11,7 +11,7 @@ class StockLedgerEntryGenerated(FrappeModel):
     batch_no = models.CharField(max_length=140, blank=True, null=True, default='')
     warehouse = models.CharField(max_length=140, blank=True, null=True, default='')
     posting_date = models.DateField(null=True, blank=True)
-    posting_time = models.TimeField(null=True, blank=True)
+    posting_time = FrappeTimeField(null=True, blank=True)
     voucher_type = models.CharField(max_length=140, blank=True, null=True, default='')
     voucher_no = models.CharField(max_length=140, blank=True, null=True, default='')
     voucher_detail_no = models.CharField(max_length=140, blank=True, null=True, default='')
@@ -36,7 +36,7 @@ class StockLedgerEntryGenerated(FrappeModel):
     has_serial_no = models.SmallIntegerField(default=0)
     is_adjustment_entry = models.SmallIntegerField(default=0)
     auto_created_serial_and_batch_bundle = models.SmallIntegerField(default=0)
-    posting_datetime = models.DateTimeField(null=True, blank=True)
+    posting_datetime = FrappeDateTimeField(null=True, blank=True)
 
     class Meta:
         abstract = True

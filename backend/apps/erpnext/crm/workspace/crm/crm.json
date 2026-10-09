@@ -2,8 +2,19 @@
  "app": "erpnext",
  "charts": [
   {
+   "name": "mt3ol513t3",
+   "owner": "Administrator",
+   "creation": "2020-01-23 14:48:30.183272",
+   "modified": "2026-10-07 14:26:09.985957",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 1,
    "chart_name": "Incoming Leads",
-   "label": "Incoming Leads"
+   "label": "Incoming Leads",
+   "parent": "CRM",
+   "parentfield": "charts",
+   "parenttype": "Workspace",
+   "doctype": "Workspace Chart"
   }
  ],
  "content": "[{\"id\": \"5df9733229\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Incoming Leads\", \"col\": 12}}, {\"id\": \"1f47c95d4e\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Open Opportunity\", \"col\": 4}}, {\"id\": \"9a0668d938\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"New Lead (Last 1 Month)\", \"col\": 4}}, {\"id\": \"096cbb7b12\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Won Opportunity (Last 1 Month)\", \"col\": 4}}]",
@@ -24,16 +35,49 @@
  "name": "CRM",
  "number_cards": [
   {
+   "name": "mt3khbbgqe",
+   "owner": "Administrator",
+   "creation": "2020-01-23 14:48:30.183272",
+   "modified": "2026-10-07 14:26:09.985957",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 1,
+   "number_card_name": "Open Opportunity",
    "label": "Open Opportunity",
-   "number_card_name": "Open Opportunity"
+   "parent": "CRM",
+   "parentfield": "number_cards",
+   "parenttype": "Workspace",
+   "doctype": "Workspace Number Card"
   },
   {
+   "name": "mt38io62h6",
+   "owner": "Administrator",
+   "creation": "2020-01-23 14:48:30.183272",
+   "modified": "2026-10-07 14:26:09.985957",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 2,
+   "number_card_name": "New Lead (Last 1 Month)",
    "label": "New Lead (Last 1 Month)",
-   "number_card_name": "New Lead (Last 1 Month)"
+   "parent": "CRM",
+   "parentfield": "number_cards",
+   "parenttype": "Workspace",
+   "doctype": "Workspace Number Card"
   },
   {
+   "name": "mt381r31ip",
+   "owner": "Administrator",
+   "creation": "2020-01-23 14:48:30.183272",
+   "modified": "2026-10-07 14:26:09.985957",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 3,
+   "number_card_name": "Won Opportunity (Last 1 Month)",
    "label": "Won Opportunity (Last 1 Month)",
-   "number_card_name": "Won Opportunity (Last 1 Month)"
+   "parent": "CRM",
+   "parentfield": "number_cards",
+   "parenttype": "Workspace",
+   "doctype": "Workspace Number Card"
   }
  ],
  "owner": "Administrator",
@@ -42,7 +86,7 @@
  "quick_lists": [],
  "restrict_to_domain": "",
  "roles": [],
- "sequence_id": 17.0,
+ "sequence_id": 17,
  "shortcuts": [],
  "sidebar_items": [
   {

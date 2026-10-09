@@ -12,3 +12,10 @@ export {
   serializeQuery,
 } from './routeTable'
 export type { CurrentRoute, NamedLocation, RouteDefinition, RouteLocation, RouteParams } from './types'
+export {
+  canonicalPath,
+  routeKnowledgeReady,
+  setRouteKnowledge,
+  subscribeRouteKnowledge,
+  toInternal,
+} from './canonicalPath'

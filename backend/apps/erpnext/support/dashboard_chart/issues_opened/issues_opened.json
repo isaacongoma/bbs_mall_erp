@@ -29,5 +29,6 @@
  "type": "Line",
  "use_report_chart": 0,
  "value_based_on": "",
- "y_axis": []
+ "y_axis": [],
+ "empty_state_message": "Support issues opened each month."
 }

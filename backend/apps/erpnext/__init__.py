@@ -141,7 +141,7 @@ def allow_regional(fn):
     @functools.wraps(fn)
     def caller(*args, **kwargs):
         overrides = frappe.get_hooks("regional_overrides", {}).get(get_region())
-        function_path = f"{inspect.getmodule(fn).__name__}.{fn.__name__}"
+        function_path = f"{inspect.getmodule(fn).__name__.removeprefix('apps.')}.{fn.__name__}"
 
         if not overrides or function_path not in overrides:
             return fn(*args, **kwargs)

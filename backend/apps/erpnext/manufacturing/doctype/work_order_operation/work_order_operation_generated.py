@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class WorkOrderOperationGenerated(FrappeChildModel):
@@ -11,13 +11,13 @@ class WorkOrderOperationGenerated(FrappeChildModel):
     completed_qty = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     status = models.CharField(max_length=140, blank=True, null=True, default='Pending')
     workstation = models.CharField(max_length=140, blank=True, null=True, default='')
-    planned_start_time = models.DateTimeField(null=True, blank=True)
-    planned_end_time = models.DateTimeField(null=True, blank=True)
+    planned_start_time = FrappeDateTimeField(null=True, blank=True)
+    planned_end_time = FrappeDateTimeField(null=True, blank=True)
     time_in_mins = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     hour_rate = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     planned_operating_cost = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
-    actual_start_time = models.DateTimeField(null=True, blank=True)
-    actual_end_time = models.DateTimeField(null=True, blank=True)
+    actual_start_time = FrappeDateTimeField(null=True, blank=True)
+    actual_end_time = FrappeDateTimeField(null=True, blank=True)
     actual_operation_time = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     actual_operating_cost = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     batch_size = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)

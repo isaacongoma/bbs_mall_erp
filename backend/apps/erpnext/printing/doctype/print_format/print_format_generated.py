@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class PrintFormatGenerated(FrappeModel):
@@ -38,7 +38,7 @@ class PrintFormatGenerated(FrappeModel):
     print_format_for = models.CharField(max_length=140, blank=True, null=True, default='DocType')
     report = models.CharField(max_length=140, blank=True, null=True, default='')
     draft_data = models.TextField(blank=True, null=True, default='')
-    published_on = models.DateTimeField(null=True, blank=True)
+    published_on = FrappeDateTimeField(null=True, blank=True)
     published_by = models.CharField(max_length=140, blank=True, null=True, default='')
 
     class Meta:

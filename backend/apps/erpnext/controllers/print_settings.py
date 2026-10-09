@@ -48,3 +48,6 @@ def format_columns(display_columns, compact_fields):
         if column not in compact_fields:
             final_columns.append(column)
     return final_columns
+
+
+

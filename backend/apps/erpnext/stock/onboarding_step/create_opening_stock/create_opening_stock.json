@@ -1,0 +1,23 @@
+{
+ "name": "Create Opening Stock",
+ "owner": "Administrator",
+ "creation": "2026-10-04 00:49:20.659264",
+ "modified": "2026-10-04 01:47:46.873085",
+ "modified_by": "Administrator",
+ "docstatus": 0,
+ "idx": 0,
+ "title": "Enter the stock you have today",
+ "is_complete": 0,
+ "is_skipped": 0,
+ "description": "How much of each item is on your shelves, and what it is worth. From here, every receipt and delivery keeps it up to date. See [Stock Reconciliation](https://docs.frappe.io/erpnext/user/manual/en/stock-reconciliation).",
+ "intro_video_url": "https://www.youtube.com/watch?v=i_ZyVaOCiQ8",
+ "action": "Create Entry",
+ "action_label": "Create Stock Reconciliation",
+ "reference_document": "Stock Reconciliation",
+ "show_full_form": 1,
+ "show_form_tour": 0,
+ "is_single": 0,
+ "validate_action": 1,
+ "route_options": "{\n    \"purpose\": \"Opening Stock\"\n}",
+ "doctype": "Onboarding Step"
+}

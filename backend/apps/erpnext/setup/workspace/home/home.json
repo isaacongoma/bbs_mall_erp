@@ -1,11 +1,22 @@
 {
  "charts": [
   {
+   "name": "n0vf5fmljq",
+   "owner": "Administrator",
+   "creation": "2020-01-23 13:46:38.833076",
+   "modified": "2026-10-07 14:26:22.393668",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 1,
    "chart_name": "Profit and Loss",
-   "label": "Profit and Loss"
+   "label": "Profit and Loss",
+   "parent": "Home",
+   "parentfield": "charts",
+   "parenttype": "Workspace",
+   "doctype": "Workspace Chart"
   }
  ],
- "content": "[{\"id\": \"797d6b3896\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Profit and Loss\", \"col\": 12}}, {\"id\": \"7dfaeec97e\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Annual Sales\", \"col\": 4}}, {\"id\": \"b76ffb894b\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Annual Purchase\", \"col\": 4}}, {\"id\": \"ba3943fb2d\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Total Stock Value\", \"col\": 4}}]",
+ "content": "[{\"id\": \"5e7b1c9a2f\", \"type\": \"onboarding\", \"data\": {\"onboarding_name\": \"Organization Onboarding\", \"col\": 12}}, {\"id\": \"797d6b3896\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Profit and Loss\", \"col\": 12}}, {\"id\": \"7dfaeec97e\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Annual Sales\", \"col\": 4}}, {\"id\": \"b76ffb894b\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Annual Purchase\", \"col\": 4}}, {\"id\": \"ba3943fb2d\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Total Stock Value\", \"col\": 4}}]",
  "creation": "2020-01-23 13:46:38.833076",
  "custom_blocks": [],
  "docstatus": 0,
@@ -23,16 +34,49 @@
  "name": "Home",
  "number_cards": [
   {
+   "name": "n0v8veeiu5",
+   "owner": "Administrator",
+   "creation": "2020-01-23 13:46:38.833076",
+   "modified": "2026-10-07 14:26:22.393668",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 1,
+   "number_card_name": "Annual Sales",
    "label": "Annual Sales",
-   "number_card_name": "Annual Sales"
+   "parent": "Home",
+   "parentfield": "number_cards",
+   "parenttype": "Workspace",
+   "doctype": "Workspace Number Card"
   },
   {
+   "name": "n0v3v39j2r",
+   "owner": "Administrator",
+   "creation": "2020-01-23 13:46:38.833076",
+   "modified": "2026-10-07 14:26:22.393668",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 2,
+   "number_card_name": "Annual Purchase",
    "label": "Annual Purchase",
-   "number_card_name": "Annual Purchase"
+   "parent": "Home",
+   "parentfield": "number_cards",
+   "parenttype": "Workspace",
+   "doctype": "Workspace Number Card"
   },
   {
+   "name": "n0v8v0m173",
+   "owner": "Administrator",
+   "creation": "2020-01-23 13:46:38.833076",
+   "modified": "2026-10-07 14:26:22.393668",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 3,
+   "number_card_name": "Total Stock Value",
    "label": "Total Stock Value",
-   "number_card_name": "Total Stock Value"
+   "parent": "Home",
+   "parentfield": "number_cards",
+   "parenttype": "Workspace",
+   "doctype": "Workspace Number Card"
   }
  ],
  "owner": "Administrator",
@@ -42,10 +86,21 @@
  "restrict_to_domain": "",
  "roles": [
   {
-   "role": "Desk User"
+   "name": "n0vgorvnuc",
+   "owner": "Administrator",
+   "creation": "2020-01-23 13:46:38.833076",
+   "modified": "2026-10-07 14:26:22.393668",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 1,
+   "role": "Desk User",
+   "parent": "Home",
+   "parentfield": "roles",
+   "parenttype": "Workspace",
+   "doctype": "Has Role"
   }
  ],
- "sequence_id": 1.0,
+ "sequence_id": 1,
  "shortcuts": [],
  "standard": 1,
  "title": "Home",

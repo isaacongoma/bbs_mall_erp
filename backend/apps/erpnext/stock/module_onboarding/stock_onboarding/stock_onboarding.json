@@ -1,10 +1,32 @@
 {
  "allow_roles": [
   {
-   "role": "Stock Manager"
+   "name": "n5nj2jf089",
+   "owner": "Administrator",
+   "creation": "2026-02-20 13:52:55.989409",
+   "modified": "2026-10-07 14:26:37.570217",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 1,
+   "role": "Stock Manager",
+   "parent": "Stock Onboarding",
+   "parentfield": "allow_roles",
+   "parenttype": "Module Onboarding",
+   "doctype": "Onboarding Permission"
   },
   {
-   "role": "Stock User"
+   "name": "n5nanrb7g8",
+   "owner": "Administrator",
+   "creation": "2026-02-20 13:52:55.989409",
+   "modified": "2026-10-07 14:26:37.570217",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 2,
+   "role": "Stock User",
+   "parent": "Stock Onboarding",
+   "parentfield": "allow_roles",
+   "parenttype": "Module Onboarding",
+   "doctype": "Onboarding Permission"
   }
  ],
  "creation": "2026-02-20 13:52:55.989409",
@@ -19,26 +41,125 @@
  "owner": "Administrator",
  "steps": [
   {
-   "step": "Setup Warehouse"
+   "name": "n5njoedqi0",
+   "owner": "Administrator",
+   "creation": "2026-02-20 13:52:55.989409",
+   "modified": "2026-10-07 14:26:37.570217",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 1,
+   "step": "Setup Warehouse",
+   "is_optional": 0,
+   "parent": "Stock Onboarding",
+   "parentfield": "steps",
+   "parenttype": "Module Onboarding",
+   "doctype": "Onboarding Step Map"
   },
   {
-   "step": "Create Item"
+   "name": "n5ndhbs55s",
+   "owner": "Administrator",
+   "creation": "2026-02-20 13:52:55.989409",
+   "modified": "2026-10-07 14:26:37.570217",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 2,
+   "step": "Create Item",
+   "is_optional": 0,
+   "parent": "Stock Onboarding",
+   "parentfield": "steps",
+   "parenttype": "Module Onboarding",
+   "doctype": "Onboarding Step Map"
   },
   {
-   "step": "Create Purchase Receipt"
+   "name": "n5nuc3inc1",
+   "owner": "Administrator",
+   "creation": "2026-02-20 13:52:55.989409",
+   "modified": "2026-10-07 14:26:37.570217",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 3,
+   "step": "Create Opening Stock",
+   "is_optional": 0,
+   "parent": "Stock Onboarding",
+   "parentfield": "steps",
+   "parenttype": "Module Onboarding",
+   "doctype": "Onboarding Step Map"
   },
   {
-   "step": "Create Transfer Entry"
+   "name": "n5nlnljib5",
+   "owner": "Administrator",
+   "creation": "2026-02-20 13:52:55.989409",
+   "modified": "2026-10-07 14:26:37.570217",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 4,
+   "step": "Create Purchase Receipt",
+   "is_optional": 0,
+   "parent": "Stock Onboarding",
+   "parentfield": "steps",
+   "parenttype": "Module Onboarding",
+   "doctype": "Onboarding Step Map"
   },
   {
-   "step": "Create Delivery Note"
+   "name": "n5nj943bvt",
+   "owner": "Administrator",
+   "creation": "2026-02-20 13:52:55.989409",
+   "modified": "2026-10-07 14:26:37.570217",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 5,
+   "step": "Create Delivery Note",
+   "is_optional": 0,
+   "parent": "Stock Onboarding",
+   "parentfield": "steps",
+   "parenttype": "Module Onboarding",
+   "doctype": "Onboarding Step Map"
   },
   {
-   "step": "View Stock Balance Report"
+   "name": "n5nee5cqbm",
+   "owner": "Administrator",
+   "creation": "2026-02-20 13:52:55.989409",
+   "modified": "2026-10-07 14:26:37.570217",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 6,
+   "step": "Move Stock",
+   "is_optional": 1,
+   "parent": "Stock Onboarding",
+   "parentfield": "steps",
+   "parenttype": "Module Onboarding",
+   "doctype": "Onboarding Step Map"
   },
   {
-   "step": "Review Stock Settings"
+   "name": "n5n563umu7",
+   "owner": "Administrator",
+   "creation": "2026-02-20 13:52:55.989409",
+   "modified": "2026-10-07 14:26:37.570217",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 7,
+   "step": "View Stock Ledger",
+   "is_optional": 1,
+   "parent": "Stock Onboarding",
+   "parentfield": "steps",
+   "parenttype": "Module Onboarding",
+   "doctype": "Onboarding Step Map"
+  },
+  {
+   "name": "n5nfn267le",
+   "owner": "Administrator",
+   "creation": "2026-02-20 13:52:55.989409",
+   "modified": "2026-10-07 14:26:37.570217",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 8,
+   "step": "View Stock Balance Report",
+   "is_optional": 1,
+   "parent": "Stock Onboarding",
+   "parentfield": "steps",
+   "parenttype": "Module Onboarding",
+   "doctype": "Onboarding Step Map"
   }
  ],
- "title": "Stock Setup"
+ "title": "Keep track of your stock"
 }

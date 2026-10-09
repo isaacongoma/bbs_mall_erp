@@ -11,3 +11,106 @@
 .field-layout .field .form-control.prefix select {
   padding-left: 2rem;
 }
+
+.field-layout .html-control .tooltip-content {
+  display: none;
+}
+
+.field-layout .html-control .checkbox-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--checkbox-options-columns, 15rem), 1fr));
+  column-gap: 1.25rem;
+  padding: 1rem 0.75rem !important;
+}
+
+.field-layout .html-control .unit-checkbox {
+  margin: 0;
+}
+
+.field-layout .html-control .unit-checkbox label {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.375rem 0;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--color-ink-gray-8, #383838);
+  cursor: pointer;
+}
+
+.field-layout .html-control input[type='checkbox'] {
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  appearance: none;
+  border: 1px solid #c7c7c7;
+  border-radius: 0.25rem;
+  background-color: #fff;
+  background-position: center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+.field-layout .html-control input[type='checkbox']:checked {
+  border-color: #171717;
+  background-color: #171717;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.5 8.5l3 3 6-6.5'/%3E%3C/svg%3E");
+}
+
+.field-layout .html-control .bulk-select-options {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+
+.field-layout .html-control .bulk-select-options .btn {
+  height: 1.75rem;
+  padding: 0 0.5rem;
+  border: 0;
+  border-radius: 0.375rem;
+  background: var(--color-surface-gray-2, #f3f3f3);
+  font-size: 0.875rem;
+  color: var(--color-ink-gray-8, #383838);
+  cursor: pointer;
+}
+
+.field-layout .html-control .load-state {
+  display: none;
+}
+
+.field-layout [data-slot='description'] {
+  padding: 4px 8px 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-ink-gray-5);
+}
+
+.field-layout [data-slot='chevron'] {
+  display: none;
+}
+
+.field-layout .field[data-bold='1'] input,
+.field-layout .field[data-bold='1'] select,
+.field-layout .field[data-bold='1'] button {
+  font-weight: 600;
+  color: var(--color-ink-gray-9);
+}
+
+.field-layout[data-standalone] .dd-link {
+  display: none;
+}
+
+.field-layout[data-standalone] .dd-select {
+  display: none;
+}
+
+.field-layout[data-standalone] button[role='combobox']:has(.dd-select)::after {
+  content: '';
+  margin-left: auto;
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  background-color: var(--color-ink-gray-5, #7c7c7c);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 15 5 5 5-5'/%3E%3Cpath d='m7 9 5-5 5 5'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 15 5 5 5-5'/%3E%3Cpath d='m7 9 5-5 5 5'/%3E%3C/svg%3E") center / contain no-repeat;
+}

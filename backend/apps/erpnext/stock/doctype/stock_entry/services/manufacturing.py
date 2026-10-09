@@ -1,4 +1,3 @@
-from __future__ import annotations
 import json
 from collections import defaultdict
 from functools import cached_property

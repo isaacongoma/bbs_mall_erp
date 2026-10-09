@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class NoteGenerated(FrappeModel):
@@ -9,7 +9,7 @@ class NoteGenerated(FrappeModel):
     public = models.SmallIntegerField(default=0)
     notify_on_login = models.SmallIntegerField(default=0)
     notify_on_every_login = models.SmallIntegerField(default=0)
-    expire_notification_on = models.DateTimeField(null=True, blank=True)
+    expire_notification_on = FrappeDateTimeField(null=True, blank=True)
     content = models.TextField(blank=True, null=True, default='')
 
     class Meta:

@@ -9,3 +9,5 @@ ruff>=0.6
 # `python manage.py runfakeredis` serves the same protocol locally so Celery/Channels have
 # something to talk to. Production must run a real Redis instance instead.
 fakeredis>=2.30
+responses
+gitpython

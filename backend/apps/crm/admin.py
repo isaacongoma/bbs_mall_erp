@@ -11,18 +11,14 @@ from apps.crm.doctype.enrichment_run.enrichment_run import CRMEnrichmentRun
 from apps.crm.doctype.enrichment_settings.enrichment_settings import CRMEnrichmentSettings
 from apps.crm.doctype.exotel_settings.exotel_settings import CRMExotelSettings
 from apps.crm.doctype.holiday_list.holiday_list import CRMHolidayList
-from apps.crm.doctype.industry.industry import CRMIndustry
 from apps.crm.doctype.lead.lead import CRMLead
-from apps.crm.doctype.lead_source.lead_source import CRMLeadSource
 from apps.crm.doctype.lead_status.lead_status import CRMLeadStatus
-from apps.crm.doctype.lost_reason.lost_reason import CRMLostReason
 from apps.crm.doctype.note.note import FCRMNote
 from apps.crm.doctype.organization.organization import CRMOrganization
 from apps.crm.doctype.service_level_agreement.service_level_agreement import CRMServiceLevelAgreement
 from apps.crm.doctype.settings.settings import FCRMSettings
 from apps.crm.doctype.task.task import CRMTask
 from apps.crm.doctype.telephony_agent.telephony_agent import CRMTelephonyAgent
-from apps.crm.doctype.territory.territory import CRMTerritory
 from apps.crm.doctype.twilio_settings.twilio_settings import CRMTwilioSettings
 
 
@@ -48,10 +44,6 @@ class CRMOrganizationAdmin(admin.ModelAdmin):
 
 admin.site.register(CRMLeadStatus)
 admin.site.register(CRMDealStatus)
-admin.site.register(CRMLeadSource)
-admin.site.register(CRMIndustry)
-admin.site.register(CRMTerritory)
-admin.site.register(CRMLostReason)
 admin.site.register(CRMCommunicationStatus)
 admin.site.register(CRMServiceLevelAgreement)
 admin.site.register(CRMHolidayList)

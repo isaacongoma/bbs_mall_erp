@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class WarrantyClaimGenerated(FrappeModel):
@@ -17,7 +17,7 @@ class WarrantyClaimGenerated(FrappeModel):
     warranty_amc_status = models.CharField(max_length=140, blank=True, null=True, default='')
     warranty_expiry_date = models.DateField(null=True, blank=True)
     amc_expiry_date = models.DateField(null=True, blank=True)
-    resolution_date = models.DateTimeField(null=True, blank=True)
+    resolution_date = FrappeDateTimeField(null=True, blank=True)
     resolved_by = models.CharField(max_length=140, blank=True, null=True, default='')
     resolution_details = models.TextField(blank=True, null=True, default='')
     customer_name = models.CharField(max_length=140, blank=True, null=True, default='')

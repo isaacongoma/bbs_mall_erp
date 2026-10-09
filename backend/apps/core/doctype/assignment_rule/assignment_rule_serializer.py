@@ -1,43 +1,31 @@
 from rest_framework import serializers
 
-from apps.core.doctype.assignment_rule.assignment_rule import AssignmentRule, AssignmentRuleDay, AssignmentRuleUser
+from apps.core import assignment_rules
+
+RULE_FIELDS = (
+    "name", "document_type", "due_date_based_on", "priority", "disabled", "description", "rule",
+    "assign_condition", "unassign_condition", "close_condition", "assign_condition_json",
+    "unassign_condition_json", "field", "current_index",
+)
 
 
-class AssignmentRuleUserRowSerializer(serializers.ModelSerializer):
-    user = serializers.SlugRelatedField(slug_field="email", read_only=True)
-
-    class Meta:
-        model = AssignmentRuleUser
-        fields = ("user", "weight")
-
-
-class AssignmentRuleDaySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AssignmentRuleDay
-        fields = ("day",)
-
-
-class AssignmentRuleSerializer(serializers.ModelSerializer):
-    last_user = serializers.SlugRelatedField(slug_field="email", read_only=True)
-    users = serializers.SerializerMethodField()
-    weighted_users = serializers.SerializerMethodField()
-    assignment_days = AssignmentRuleDaySerializer(source="day_rows", many=True, read_only=True)
-
-    class Meta:
-        model = AssignmentRule
-        fields = (
-            "name", "document_type", "due_date_based_on", "priority", "disabled", "description",
-            "rule", "assign_condition", "unassign_condition", "close_condition",
-            "assign_condition_json", "unassign_condition_json", "field",
-            "last_user", "current_index", "users", "weighted_users", "assignment_days",
-            "creation", "modified",
-        )
-        read_only_fields = ("last_user", "current_index", "creation", "modified")
-
-    def get_users(self, obj):
-        return AssignmentRuleUserRowSerializer(obj.user_rows.filter(table_field="users").order_by("idx"), many=True).data
-
-    def get_weighted_users(self, obj):
-        return AssignmentRuleUserRowSerializer(
-            obj.user_rows.filter(table_field="weighted_users").order_by("idx"), many=True
-        ).data
+class AssignmentRuleSerializer(serializers.Serializer):
+    def to_representation(self, instance):
+        data = {field: getattr(instance, field, None) for field in RULE_FIELDS}
+        for field in RULE_FIELDS:
+            if data[field] is None and field not in ("priority", "current_index"):
+                data[field] = ""
+        data["priority"] = data["priority"] or 0
+        data["current_index"] = data["current_index"] or 0
+        data["disabled"] = bool(instance.disabled)
+        data["last_user"] = instance.last_user or None
+        for table in assignment_rules.USER_TABLES:
+            data[table] = [
+                {"user": row.user, "weight": row.weight if row.weight is not None else 1}
+                for row in assignment_rules.user_rows(instance.name, table)
+            ]
+        data["assignment_days"] = [{"day": day} for day in assignment_rules.day_names(instance.name)]
+        datetime_field = serializers.DateTimeField()
+        data["creation"] = datetime_field.to_representation(instance.creation) if instance.creation else None
+        data["modified"] = datetime_field.to_representation(instance.modified) if instance.modified else None
+        return data

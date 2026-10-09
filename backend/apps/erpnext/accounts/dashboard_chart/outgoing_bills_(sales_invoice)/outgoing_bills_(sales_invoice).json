@@ -11,7 +11,7 @@
  "idx": 0,
  "is_public": 1,
  "is_standard": 1,
- "last_synced_on": "2020-07-21 17:37:31.574666",
+ "last_synced_on": "2026-10-08 11:20:25.704869",
  "modified": "2020-07-21 17:52:03.970530",
  "modified_by": "Administrator",
  "module": "Accounts",
@@ -24,5 +24,8 @@
  "type": "Bar",
  "use_report_chart": 0,
  "value_based_on": "base_net_total",
- "y_axis": []
+ "y_axis": [],
+ "show_values_over_chart": 0,
+ "empty_state_message": "What you bill your customers each month.",
+ "roles": []
 }

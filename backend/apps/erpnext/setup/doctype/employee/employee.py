@@ -1,4 +1,3 @@
-from __future__ import annotations
 import frappe
 from frappe import _, scrub, throw
 from frappe.model.naming import set_name_by_naming_series

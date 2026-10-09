@@ -1,6 +1,7 @@
 import { getShellContributions } from '@/core/modules/registry'
 import { Button } from '@/design-system'
 import { MenuIcon } from '@/shared/components/Icons'
+import { GlobalSearch } from '@/shared/components/GlobalSearch'
 import { useUiStore } from '@/shared/stores/uiStore'
 
 export function MobileAppHeader() {
@@ -17,6 +18,7 @@ export function MobileAppHeader() {
           </Button>
         </div>
         <div id="app-header" className="flex-1" />
+        <GlobalSearch />
       </div>
       {actions.map((Action, index) => (
         <div key={index} className="mr-3 mt-2">

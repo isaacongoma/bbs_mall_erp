@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class CommunicationGenerated(FrappeModel):
@@ -18,11 +18,11 @@ class CommunicationGenerated(FrappeModel):
     communication_type = models.CharField(max_length=140, blank=True, null=True, default='Communication')
     status = models.CharField(max_length=140, blank=True, null=True, default='')
     sent_or_received = models.CharField(max_length=140, blank=True, null=True, default='')
-    communication_date = models.DateTimeField(null=True, blank=True)
+    communication_date = FrappeDateTimeField(null=True, blank=True)
     read_receipt = models.SmallIntegerField(default=0)
     sender_full_name = models.CharField(max_length=140, blank=True, null=True, default='')
     read_by_recipient = models.SmallIntegerField(default=0)
-    read_by_recipient_on = models.DateTimeField(null=True, blank=True)
+    read_by_recipient_on = FrappeDateTimeField(null=True, blank=True)
     reference_doctype = models.CharField(max_length=140, blank=True, null=True, default='')
     reference_name = models.CharField(max_length=140, blank=True, null=True, default='')
     reference_owner = models.CharField(max_length=140, blank=True, null=True, default='')
@@ -38,7 +38,8 @@ class CommunicationGenerated(FrappeModel):
     has_attachment = models.SmallIntegerField(default=0)
     email_template = models.CharField(max_length=140, blank=True, null=True, default='')
     imap_folder = models.CharField(max_length=140, blank=True, null=True, default='')
-    send_after = models.DateTimeField(null=True, blank=True)
+    send_after = FrappeDateTimeField(null=True, blank=True)
+    _seen = models.TextField(null=True, blank=True)
 
     class Meta:
         abstract = True

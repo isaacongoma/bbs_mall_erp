@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class DunningGenerated(FrappeModel):
@@ -16,7 +16,7 @@ class DunningGenerated(FrappeModel):
     amended_from = models.CharField(max_length=140, blank=True, null=True, default='')
     body_text = models.TextField(blank=True, null=True, default='')
     closing_text = models.TextField(blank=True, null=True, default='')
-    posting_time = models.TimeField(null=True, blank=True)
+    posting_time = FrappeTimeField(null=True, blank=True)
     rate_of_interest = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     address_display = models.TextField(blank=True, null=True, default='')
     contact_display = models.TextField(blank=True, null=True, default='')

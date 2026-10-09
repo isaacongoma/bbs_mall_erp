@@ -191,7 +191,56 @@ require_type_annotated_api_methods = True
 
 standard_queries = {"User": "frappe.core.doctype.user.user.user_query"}
 
-doc_events = {}
+doc_events = {
+    "*": {
+        "on_update": [
+            "frappe.desk.notifications.clear_doctype_notifications",
+            "frappe.workflow.doctype.workflow_action.workflow_action.process_workflow_actions",
+            "frappe.core.doctype.file.utils.attach_files_to_document",
+            "frappe.automation.doctype.assignment_rule.assignment_rule.apply",
+            "frappe.automation.doctype.assignment_rule.assignment_rule.update_due_date",
+            "frappe.core.doctype.user_type.user_type.apply_permissions_for_non_standard_user_type",
+            "frappe.core.doctype.permission_log.permission_log.make_perm_log",
+            "frappe.search.sqlite_search.update_doc_index",
+        ],
+        "after_rename": "frappe.desk.notifications.clear_doctype_notifications",
+        "on_cancel": [
+            "frappe.desk.notifications.clear_doctype_notifications",
+            "frappe.workflow.doctype.workflow_action.workflow_action.process_workflow_actions",
+            "frappe.automation.doctype.assignment_rule.assignment_rule.apply",
+        ],
+        "on_trash": [
+            "frappe.desk.notifications.clear_doctype_notifications",
+            "frappe.workflow.doctype.workflow_action.workflow_action.process_workflow_actions",
+            "frappe.search.sqlite_search.delete_doc_index",
+        ],
+        "on_update_after_submit": [
+            "frappe.workflow.doctype.workflow_action.workflow_action.process_workflow_actions",
+            "frappe.automation.doctype.assignment_rule.assignment_rule.apply",
+            "frappe.automation.doctype.assignment_rule.assignment_rule.update_due_date",
+            "frappe.core.doctype.file.utils.attach_files_to_document",
+        ],
+        "on_change": [
+            "frappe.automation.doctype.milestone_tracker.milestone_tracker.evaluate_milestone",
+        ],
+        "after_delete": ["frappe.core.doctype.permission_log.permission_log.make_perm_log"],
+    },
+    "Event": {
+        "after_insert": "frappe.integrations.doctype.google_calendar.google_calendar.insert_event_in_google_calendar",
+        "on_update": "frappe.integrations.doctype.google_calendar.google_calendar.update_event_in_google_calendar",
+        "on_trash": "frappe.integrations.doctype.google_calendar.google_calendar.delete_event_from_google_calendar",
+    },
+    "Contact": {
+        "after_insert": "frappe.integrations.doctype.google_contacts.google_contacts.insert_contacts_to_google_contacts",
+        "on_update": "frappe.integrations.doctype.google_contacts.google_contacts.update_contacts_to_google_contacts",
+    },
+    "DocType": {
+        "on_update": "frappe.cache_manager.build_domain_restricted_doctype_cache",
+    },
+    "Page": {
+        "on_update": "frappe.cache_manager.build_domain_restricted_page_cache",
+    },
+}
 
 scheduler_events = {
 	"cron": {

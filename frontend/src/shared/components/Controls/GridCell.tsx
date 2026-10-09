@@ -1,3 +1,4 @@
+import { __ } from '@/core/i18n'
 import { Checkbox, Combobox, DatePicker, DateTimePicker, FormControl, TimePicker, Tooltip } from '@/design-system'
 import { useMeta } from '../../hooks/useMeta'
 import { useUsers } from '../../hooks/useUsers'
@@ -49,6 +50,7 @@ export function GridCell({ field, row, doctype, parentDoc, editable, onChange, o
           value={value}
           doctype={field.fieldtype === 'Link' ? field.options : row[field.options]}
           filters={field.filters}
+          placeholder=" "
           disabled={disabled}
           onCreate={(query, close) => field.create?.(query, field, row, close)}
           onChange={(next) => onChange(next, field, row)}
@@ -122,7 +124,11 @@ export function GridCell({ field, row, doctype, parentDoc, editable, onChange, o
           className="text-sm text-ink-gray-8"
           variant="outline"
           value={value ?? ''}
-          options={field.options}
+          options={
+            typeof field.options === 'string'
+              ? field.options.split(String.fromCharCode(10)).map((option: string) => ({ label: __(option), value: option }))
+              : field.options
+          }
           disabled={disabled}
           onChange={(next: unknown) => onChange(next, field, row)}
         />

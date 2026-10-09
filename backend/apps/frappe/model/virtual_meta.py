@@ -2,7 +2,7 @@ from apps.frappe import exceptions
 from apps.frappe.runtime import _dict
 from apps.frappe.utils.data import evaluate_filters
 
-VIRTUAL_DOCTYPES = {"DocField", "DocType"}
+VIRTUAL_DOCTYPES = {"DocField", "DocType", "RQ Job"}
 
 DOCTYPE_COLUMNS = (
     "name",
@@ -109,7 +109,12 @@ def query_virtual(
     as_list=False,
     distinct=False,
 ):
-    rows = docfield_rows() if doctype == "DocField" else doctype_rows()
+    if doctype == "RQ Job":
+        from apps.frappe.utils.background_jobs import job_rows
+
+        rows = job_rows()
+    else:
+        rows = docfield_rows() if doctype == "DocField" else doctype_rows()
     normalized = _normalize_filters(filters)
     rows = [row for row in rows if _matches(row, normalized)]
     if or_filters:

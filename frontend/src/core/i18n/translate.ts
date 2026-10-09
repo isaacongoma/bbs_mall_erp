@@ -11,7 +11,7 @@ function format(message: string, replace: Replacements): string {
 
 export function translate(
   message: string | null | undefined,
-  replace?: Replacements,
+  replace?: Replacements | null,
   context: string | null = null,
 ): string {
   if (!message) return ''

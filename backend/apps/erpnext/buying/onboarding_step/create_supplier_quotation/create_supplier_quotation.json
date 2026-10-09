@@ -1,0 +1,22 @@
+{
+ "name": "Create Supplier Quotation",
+ "owner": "Administrator",
+ "creation": "2026-10-04 01:42:03.949115",
+ "modified": "2026-10-04 01:42:03.949115",
+ "modified_by": "Administrator",
+ "docstatus": 0,
+ "idx": 0,
+ "title": "Record a supplier's quote",
+ "is_complete": 0,
+ "is_skipped": 0,
+ "description": "Note down a price a supplier offered, so you can compare suppliers before you order. See [Supplier Quotation](https://docs.frappe.io/erpnext/user/manual/en/supplier-quotation).",
+ "intro_video_url": "https://www.youtube.com/watch?v=TyLNOkFzpKA",
+ "action": "Create Entry",
+ "action_label": "Create Supplier Quotation",
+ "reference_document": "Supplier Quotation",
+ "show_full_form": 1,
+ "show_form_tour": 0,
+ "is_single": 0,
+ "validate_action": 1,
+ "doctype": "Onboarding Step"
+}

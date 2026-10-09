@@ -21,16 +21,6 @@ STANDARD_FIELD_CONVERSION_MAP = {
 INCLUDE_DIRECTIVE_PATTERN = re.compile(r"""{% include\s['"](.*)['"]\s%}""")
 
 
-def set_default(doc, key):
-    """Set is_default property of given doc and unset all others filtered by given key."""
-    if not doc.is_default:
-        frappe.db.set(doc, "is_default", 1)
-
-    frappe.db.sql(
-        """update `tab{}` set `is_default`=0
-        where `{}`={} and name!={}""".format(doc.doctype, key, "%s", "%s"),
-        (doc.get(key), doc.name),
-    )
 
 
 def set_field_property(filters, key, value):
@@ -219,3 +209,15 @@ def simple_singledispatch(func):
 
     wrapper.register = register
     return wrapper
+
+
+def set_default(doc, key):
+    """Set is_default property of given doc and unset all others filtered by given key."""
+    if not doc.is_default:
+        frappe.db.set(doc, "is_default", 1)
+
+    frappe.db.sql(
+        """update `tab{}` set `is_default`=0
+        where `{}`={} and name!={}""".format(doc.doctype, key, "%s", "%s"),
+        (doc.get(key), doc.name),
+    )

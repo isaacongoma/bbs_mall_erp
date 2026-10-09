@@ -1,6 +1,8 @@
+from apps.core.migration_utils import tolerant_extra_columns
 from django.db import migrations
 
 
+@tolerant_extra_columns
 def copy_todos(apps, schema_editor):
     Legacy = apps.get_model("core", "ToDo")
     Canonical = apps.get_model("erpnext", "Todo")

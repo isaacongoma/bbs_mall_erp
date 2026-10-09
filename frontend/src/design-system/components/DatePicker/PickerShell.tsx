@@ -186,7 +186,7 @@ export function PickerShell({
                       setOpen(!open)
                     }}
                   >
-                    <LucideIcon name="chevron-down" className="h-4 w-4 cursor-pointer" />
+                    <LucideIcon name="chevron-down" className="dd-link h-4 w-4 cursor-pointer" />
                   </span>
                 )
               }

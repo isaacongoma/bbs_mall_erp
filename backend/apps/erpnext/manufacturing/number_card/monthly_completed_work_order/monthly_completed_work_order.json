@@ -16,5 +16,6 @@
  "name": "Monthly Completed Work Order",
  "owner": "Administrator",
  "show_percentage_stats": 1,
- "stats_time_interval": "Weekly"
+ "stats_time_interval": "Weekly",
+ "show_full_number": 0
 }

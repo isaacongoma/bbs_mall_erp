@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class SubcontractingReceiptGenerated(FrappeModel):
@@ -10,7 +10,7 @@ class SubcontractingReceiptGenerated(FrappeModel):
     supplier = models.CharField(max_length=140, blank=True, null=True, default='')
     supplier_name = models.CharField(max_length=140, blank=True, null=True, default='')
     posting_date = models.DateField(null=True, blank=True)
-    posting_time = models.TimeField(null=True, blank=True)
+    posting_time = FrappeTimeField(null=True, blank=True)
     company = models.CharField(max_length=140, blank=True, null=True, default='')
     supplier_address = models.CharField(max_length=140, blank=True, null=True, default='')
     contact_person = models.CharField(max_length=140, blank=True, null=True, default='')

@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class ScheduledJobTypeGenerated(FrappeModel):
@@ -8,12 +8,12 @@ class ScheduledJobTypeGenerated(FrappeModel):
     method = models.CharField(max_length=140, blank=True, null=True, default='')
     stopped = models.SmallIntegerField(default=0)
     create_log = models.SmallIntegerField(default=0)
-    last_execution = models.DateTimeField(null=True, blank=True)
+    last_execution = FrappeDateTimeField(null=True, blank=True)
     cron_format = models.CharField(max_length=140, blank=True, null=True, default='')
     queue = models.CharField(max_length=140, blank=True, null=True, default='')
     frequency = models.CharField(max_length=140, blank=True, null=True, default='')
     server_script = models.CharField(max_length=140, blank=True, null=True, default='')
-    next_execution = models.DateTimeField(null=True, blank=True)
+    next_execution = FrappeDateTimeField(null=True, blank=True)
     scheduler_event = models.CharField(max_length=140, blank=True, null=True, default='')
 
     class Meta:

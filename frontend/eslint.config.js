@@ -4,13 +4,10 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 
-const moduleNames = ['crm', 'property', 'leasing', 'accounting', 'payments', 'iot', 'helpdesk', 'erpnext']
+const moduleNames = ['crm', 'property', 'leasing', 'accounting', 'payments', 'iot', 'helpdesk', 'erpnext', 'hrms']
 
 const forbid = (...groups) => ({
-  'no-restricted-imports': [
-    'error',
-    { patterns: groups.map(([group, message]) => ({ group, message })) },
-  ],
+  'no-restricted-imports': ['error', { patterns: groups.map(([group, message]) => ({ group, message })) }],
 })
 
 const moduleBoundaries = moduleNames.map((name) => ({
@@ -58,4 +55,21 @@ export default tseslint.config(
     rules: forbid([['@/app/**', '@/modules/**'], 'shared components must not depend on modules or the app layer.']),
   },
   ...moduleBoundaries,
+  {
+    files: ['src/modules/erpnext/**/*.{ts,tsx}', 'src/modules/frappe/**/*.{ts,tsx}', 'src/modules/hrms/{hr,payroll,public}/**/*.{ts,tsx}', 'src/shared/frappe/upstream/**/*.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-this-alias': 'off',
+      '@typescript-eslint/no-unused-expressions': 'off',
+      'no-useless-assignment': 'off',
+      'no-unsafe-finally': 'off',
+      'no-useless-escape': 'off',
+      'no-console': 'off',
+      'no-control-regex': 'off',
+      'prefer-rest-params': 'off',
+      'no-empty': 'off',
+      'no-extra-boolean-cast': 'off',
+      'prefer-const': 'off',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', ignoreRestSiblings: true, caughtErrors: 'none' }],
+    },
+  },
 )

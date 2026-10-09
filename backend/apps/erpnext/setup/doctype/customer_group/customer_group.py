@@ -1,28 +1,32 @@
-from apps.frappe.utils.nestedset import NestedSet, get_root_of
-from apps.erpnext.registry import get_model
+import frappe
+from frappe import _
+from frappe.utils.nestedset import NestedSet, get_root_of
 
 
 class CustomerGroup(NestedSet):
-    doctype = "Customer Group"
+
+
     nsm_parent_field = "parent_customer_group"
 
     def validate(self):
-        if not self.get("parent_customer_group"):
+        if not self.parent_customer_group:
             self.parent_customer_group = get_root_of("Customer Group")
         self.validate_currency_for_receivable_and_advance_account()
 
     def validate_currency_for_receivable_and_advance_account(self):
-        import frappe
-
-        for x in self.get("accounts") or []:
+        for x in self.accounts:
             receivable_account_currency = None
             advance_account_currency = None
 
-            if getattr(x, "account", None):
-                receivable_account_currency = frappe.get_cached_value("Account", x.account, "account_currency")
+            if x.account:
+                receivable_account_currency = frappe.get_cached_value(
+                    "Account", x.account, "account_currency"
+                )
 
-            if getattr(x, "advance_account", None):
-                advance_account_currency = frappe.get_cached_value("Account", x.advance_account, "account_currency")
+            if x.advance_account:
+                advance_account_currency = frappe.get_cached_value(
+                    "Account", x.advance_account, "account_currency"
+                )
 
             if (
                 receivable_account_currency
@@ -30,12 +34,12 @@ class CustomerGroup(NestedSet):
                 and receivable_account_currency != advance_account_currency
             ):
                 frappe.throw(
-                    frappe._(
+                    _(
                         "Both Receivable Account: {0} and Advance Account: {1} must be of same currency for company: {2}"
                     ).format(
-                        frappe.bold(getattr(x, "account", "")),
-                        frappe.bold(getattr(x, "advance_account", "")),
-                        frappe.bold(getattr(x, "company", "")),
+                        frappe.bold(x.account),
+                        frappe.bold(x.advance_account),
+                        frappe.bold(x.company),
                     )
                 )
 
@@ -45,16 +49,14 @@ class CustomerGroup(NestedSet):
 
 
 def get_parent_customer_groups(customer_group):
-    CustomerGroupModel = get_model("Customer Group")
-    try:
-        cg = CustomerGroupModel.objects.get(name=customer_group)
-        lft = getattr(cg, "lft", 0)
-        rgt = getattr(cg, "rgt", 0)
-        
-        qs = CustomerGroupModel.objects.filter(
-            lft__lte=lft,
-            rgt__gte=rgt
-        ).order_by("lft").values("name")
-        return list(qs)
-    except CustomerGroupModel.DoesNotExist:
-        return []
+    lft, rgt = frappe.db.get_value("Customer Group", customer_group, ["lft", "rgt"])
+    return frappe.get_all(
+        "Customer Group",
+        filters=[["lft", "<=", lft], ["rgt", ">=", rgt]],
+        fields=["name"],
+        order_by="lft asc",
+    )
+
+
+def on_doctype_update():
+    frappe.db.add_index("Customer Group", ["lft", "rgt"])

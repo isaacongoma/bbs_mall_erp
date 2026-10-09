@@ -19,6 +19,13 @@ export interface LayoutTab {
 export interface FieldLayoutStandaloneContext {
   fieldPropertyOverrides?: Record<string, Partial<DocField>>
   onFieldChange?: (fieldname: string, value: unknown, row?: AnyRecord | null) => void
+  onButton?: (fieldname: string, row?: AnyRecord | null) => Promise<void> | void
+  onRowAdd?: (row: AnyRecord) => Promise<void> | void
+  onRowRemove?: (selectedRows: Set<string>, rows: AnyRecord[]) => Promise<void> | void
+  resolveLinkQuery?: FieldLayoutContextValue['resolveLinkQuery']
+  registerHtmlHost?: FieldLayoutContextValue['registerHtmlHost']
+  gridUi?: FieldLayoutContextValue['gridUi']
+  gridOps?: FieldLayoutContextValue['gridOps']
 }
 
 export interface FieldLayoutProps {
@@ -99,7 +106,13 @@ function FieldLayoutBody({
 
   return (
     <FieldLayoutContext.Provider value={context}>
-      <div className={cn('field-layout flex flex-col', hasTabs && 'rounded-lg border border-outline-elevation-2')}>
+      <div
+        data-standalone={baseContext.standalone ? '' : undefined}
+        className={cn(
+          'field-layout flex flex-col',
+          hasTabs && !baseContext.standalone && 'rounded-lg border border-outline-elevation-2',
+        )}
+      >
         <Tabs
           as="div"
           tabs={processedTabs.map((tab) => ({ ...tab, label: tab.label ?? '' }))}
@@ -107,13 +120,24 @@ function FieldLayoutBody({
           onChange={(index) => updateTab(index, processedTabs[index]?.name || '')}
           className={cn(
             !hasTabs && "[&_[role='tablist']]:hidden",
-            "!overflow-visible [&_[role='tab']]:shrink-0 [&_[role='tablist']::-webkit-scrollbar]:h-0 [&_[role='tabpanel']]:overflow-visible",
+            baseContext.standalone &&
+              "[&_[role='tablist']]:sticky [&_[role='tablist']]:!overflow-visible [&_[role='tablist']>span]:!h-[2px] [&_[role='tablist']]:top-0 [&_[role='tablist']]:z-10 [&_[role='tablist']]:bg-surface-base [&_[role='tablist']]:px-4 [&_[role='tab']]:font-[420] [&_[role='tab'][aria-selected='true']]:font-[480] [&_[role='tab']]:text-ink-gray-5 [&_[role='tab'][aria-selected='true']]:text-ink-gray-9",
+            "!overflow-visible [&_[role='tab']]:shrink-0 [&_[role='tab']]:cursor-pointer [&_[role='tablist']::-webkit-scrollbar]:h-0 [&_[role='tabpanel']]:overflow-visible",
           )}
           tabPanel={({ tab }) => (
-            <div className={cn('sections', hasTabs && 'my-4 sm:my-5')}>
+            <div
+              className={cn(
+                'sections',
+                hasTabs && (baseContext.standalone ? 'mt-1' : 'my-4 sm:my-5'),
+                baseContext.standalone && 'w-full [&>.section:last-child]:border-b [&>.section:last-child]:border-outline-elevation-2',
+              )}
+            >
               {(tab as unknown as LayoutTab).sections.map((section) => (
                 <Section key={section.name} section={section} />
               ))}
+              {(tab as unknown as { extra?: ReactNode }).extra && (
+                <div className="mx-auto w-full max-w-[870px] pt-5">{(tab as unknown as { extra?: ReactNode }).extra}</div>
+              )}
             </div>
           )}
         />
@@ -196,9 +220,19 @@ function StandaloneFieldLayout(props: FieldLayoutProps & { context: FieldLayoutS
         parentFieldname: '',
         setFieldValue: (fieldname, value) => change(fieldname, value),
         triggerOnChange: async (fieldname, value, row) => change(fieldname, value, row),
-        triggerButton: noopAsync,
-        triggerOnRowAdd: noopAsync,
-        triggerOnRowRemove: noopAsync,
+        triggerButton: async (fieldname, row) => {
+          await context.onButton?.(fieldname, row)
+        },
+        triggerOnRowAdd: async (row) => {
+          await context.onRowAdd?.(row)
+        },
+        triggerOnRowRemove: async (selected, rows) => {
+          await context.onRowRemove?.(selected, rows)
+        },
+        resolveLinkQuery: context.resolveLinkQuery,
+        registerHtmlHost: context.registerHtmlHost,
+        gridUi: context.gridUi,
+        gridOps: context.gridOps,
       }}
     />
   )
@@ -229,6 +263,10 @@ function GridRowFieldLayout(props: FieldLayoutProps) {
         triggerButton: parent?.triggerButton ?? noopAsync,
         triggerOnRowAdd: parent?.triggerOnRowAdd ?? noopAsync,
         triggerOnRowRemove: parent?.triggerOnRowRemove ?? noopAsync,
+        resolveLinkQuery: parent?.resolveLinkQuery,
+        registerHtmlHost: parent?.registerHtmlHost,
+        gridUi: parent?.gridUi,
+        gridOps: parent?.gridOps,
       }}
     />
   )

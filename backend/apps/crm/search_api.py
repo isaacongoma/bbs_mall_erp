@@ -63,9 +63,9 @@ def _search_users(txt: str, page_length: int) -> list[dict]:
 # our Contact model has no such fields (Frappe's is conditional on the meta
 # too, so this isn't a divergence from a real installed schema).
 def search_emails(txt: str = "") -> list[list[str]]:
-    from apps.core.models import Contact
+    from apps.core.contacts import contact_model
 
-    qs = Contact.objects.exclude(email_id="")
+    qs = contact_model().objects.exclude(email_id="").exclude(email_id__isnull=True)
     if txt:
         qs = qs.filter(Q(full_name__icontains=txt) | Q(email_id__icontains=txt) | Q(name__icontains=txt))
     qs = qs.order_by("email_id", "full_name", "name")[:20]

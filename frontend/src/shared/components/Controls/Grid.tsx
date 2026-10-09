@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { __ } from '@/core/i18n'
-import { Button, Checkbox, SortableList } from '@/design-system'
+import { Button, Checkbox, SortableList, toast } from '@/design-system'
 import { FieldLayoutContext, useFieldLayout } from '../../hooks/useFieldLayout'
 import { useMeta } from '../../hooks/useMeta'
 import { useUsers } from '../../hooks/useUsers'
@@ -11,6 +11,8 @@ import { GRID_RESTRICTED_FIELD_TYPES, getDefaultValue, normalizeFieldValue } fro
 import { isTouchScreenDevice } from '../../utils/platform'
 import { getRandom } from '../../utils/text'
 import { createDocument } from '../../utils/documents'
+import { downloadCsv, parseCsv } from '../../utils/csv'
+import { renderFieldLayoutDialog } from '../../utils/renderFieldLayoutDialog'
 import { EditIcon } from '../Icons'
 import '../../styles/grid.css'
 import { GridCell } from './GridCell'
@@ -59,6 +61,7 @@ export function Grid({
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
   const [showGridFieldsEditorModal, setShowGridFieldsEditorModal] = useState(false)
   const [showGridRowFieldsModal, setShowGridRowFieldsModal] = useState(false)
+  const csvInputRef = useRef<HTMLInputElement>(null)
 
   const columnOverrides = layout.fieldPropertyOverrides
 
@@ -95,7 +98,7 @@ export function Grid({
     const withFilters: FieldObj = {
       ...field,
       filters: parseLinkFilters(field.link_filters),
-      placeholder: field.placeholder || field.label,
+      placeholder: layout.standalone ? field.placeholder : field.placeholder || field.label,
     }
     return { ...withFilters, ...overrides.fields?.find((entry) => entry.fieldname === field.fieldname) }
   }
@@ -112,6 +115,8 @@ export function Grid({
     return merged
   }
 
+  const gridUi = layout.gridUi?.(parentFieldname)
+  const gridOps = layout.gridOps?.(parentFieldname)
   const gridSettings = childMeta.getGridSettings() as Record<string, any>
   const gridViewSettings = childMeta.getGridViewSettings(parentDoctype) as Array<Record<string, any>>
   const gridFields = childMeta.getFields({
@@ -126,10 +131,11 @@ export function Grid({
           getFieldObj(gridFields.find((field) => field.fieldname === setting.fieldname)!),
         )
       : gridFields.filter((field) => field.in_list_view).map((field) => getFieldObj(field))
-    return processed.filter((field) => !field.hidden)
+    return processed.filter((field) => !field.hidden && !gridUi?.hiddenColumns?.has(field.fieldname))
   })()
 
   const allFields = childMeta.getFields().map((field) => getFieldObj(field))
+  const csvFields = allFields.filter((field) => !field.hidden && !GRID_RESTRICTED_FIELD_TYPES.includes(field.fieldtype))
 
   const gridTemplateColumns = fields.length
     ? fields
@@ -158,6 +164,10 @@ export function Grid({
   }
 
   function addRow() {
+    if (gridOps) {
+      gridOps.addRow()
+      return
+    }
     const newRow: DocRecord = {}
     allFields.forEach((field) => {
       newRow[field.fieldname] = field.fieldtype === 'Check' ? false : ''
@@ -173,11 +183,106 @@ export function Grid({
     void layout.triggerOnRowAdd(newRow)
   }
 
+  function createRow(values: DocRecord = {}): DocRecord {
+    const row: DocRecord = {}
+    allFields.forEach((field) => {
+      row[field.fieldname] = field.fieldtype === 'Check' ? false : ''
+      if (field.default) row[field.fieldname] = getDefaultValue(field.default, field.fieldtype)
+    })
+    Object.assign(row, values)
+    row.name = getRandom(10)
+    row.__islocal = true
+    row.doctype = doctype
+    row.parentfield = parentFieldname
+    row.parenttype = parentDoctype
+    return row
+  }
+
   function deleteRows() {
+    if (gridOps) {
+      gridOps.deleteRows(selectedRows)
+      setSelectedRows(new Set())
+      return
+    }
     const remaining = rows.filter((row) => !selectedRows.has(row.name))
     onRowsChange?.(remaining)
     void layout.triggerOnRowRemove(selectedRows, remaining)
     setSelectedRows(new Set())
+  }
+
+  function duplicateRows() {
+    if (!selectedRows.size) return
+    if (gridOps) {
+      gridOps.duplicateRows(selectedRows)
+      setSelectedRows(new Set())
+      return
+    }
+    const copies = rows
+      .filter((row) => selectedRows.has(row.name))
+      .map((row) => createRow({ ...row, idx: rows.length + 1 }))
+    onRowsChange?.([...rows, ...copies].map((row, index) => ({ ...row, idx: index + 1 })))
+    setSelectedRows(new Set(copies.map((row) => row.name)))
+  }
+
+  async function bulkEditRows() {
+    if (!selectedRows.size) return
+    const editableFields = csvFields.filter((field) => !field.read_only && field.fieldtype !== 'Button')
+    const values = await renderFieldLayoutDialog({
+      title: __('Edit Selected Rows'),
+      fields: [
+        {
+          fieldname: 'fieldname',
+          fieldtype: 'Select',
+          label: __('Field'),
+          options: editableFields.map((field) => `${field.fieldname}\n${field.label ?? field.fieldname}`).join('\n'),
+          reqd: 1,
+        },
+        { fieldname: 'value', fieldtype: 'Data', label: __('Value') },
+      ],
+      submitLabel: __('Apply'),
+    })
+    if (!values) return
+    const field = editableFields.find((entry) => entry.fieldname === values.fieldname)
+    if (!field) return
+    const nextValue = getDefaultValue(values.value, field.fieldtype)
+    const updated = rows.map((row) => (selectedRows.has(row.name) ? { ...row, [field.fieldname]: nextValue } : row))
+    onRowsChange?.(updated)
+  }
+
+  function exportRows() {
+    downloadCsv(
+      `${parentFieldname.replaceAll(' ', '_')}.csv`,
+      rows,
+      csvFields.map((field) => ({ key: field.fieldname, label: field.label ?? field.fieldname })),
+    )
+  }
+
+  async function importRows(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    try {
+      const records = parseCsv(await file.text())
+      const headers = records.shift() ?? []
+      const mappedFields = headers.map((header) =>
+        csvFields.find((field) => field.fieldname === header.trim() || field.label === header.trim()),
+      )
+      if (!mappedFields.some(Boolean)) {
+        toast.error(__('The CSV does not contain fields for this table'))
+        return
+      }
+      const imported = records.map((record, rowIndex) => {
+        const values: DocRecord = {}
+        mappedFields.forEach((field, fieldIndex) => {
+          if (field) values[field.fieldname] = getDefaultValue(record[fieldIndex] ?? '', field.fieldtype)
+        })
+        return createRow({ ...values, idx: rows.length + rowIndex + 1 })
+      })
+      onRowsChange?.([...rows, ...imported].map((row, index) => ({ ...row, idx: index + 1 })))
+      toast.success(__('Imported {0} row(s)', [imported.length]))
+    } catch {
+      toast.error(__('Could not read the CSV file'))
+    }
   }
 
   async function handleButtonClick(field: FieldObj, row: DocRecord) {
@@ -203,7 +308,7 @@ export function Grid({
                 />
               </div>
               <div className="inline-flex w-12 items-center justify-center border-r border-outline-gray-2 px-1 py-2">
-                {__('Number')}
+                {__('No.')}
               </div>
               <div className="grid w-full truncate" style={{ gridTemplateColumns }}>
                 {fields.map((field) => (
@@ -212,7 +317,7 @@ export function Grid({
                     className={`truncate border-r border-outline-gray-2 p-2 ${NUMERIC_TYPES.includes(field.fieldtype) ? 'text-right' : ''}`}
                     title={field.label}
                   >
-                    {__(field.label)}
+                    {__(String(columnOverrides[`${parentFieldname}.${field.fieldname}`]?.label ?? field.label))}
                     {(field.reqd || (field.mandatory_depends_on && field.mandatory_via_depends_on)) && (
                       <span className="text-ink-red-5">*</span>
                     )}
@@ -236,7 +341,10 @@ export function Grid({
                 itemKey="name"
                 className="w-full"
                 touchDelay={isTouchScreenDevice() ? 200 : 0}
-                onChange={(next) => onRowsChange?.(renumber(next))}
+                onChange={(next) => {
+                  if (gridOps) gridOps.reorder(renumber(next))
+                  else onRowsChange?.(renumber(next))
+                }}
                 renderItem={(row, { index }) => (
                   <div
                     className="grid-row flex cursor-pointer items-center border-b border-outline-elevation-2 bg-surface-modals last:rounded-b last:border-b-0"
@@ -306,15 +414,64 @@ export function Grid({
                 )}
               />
             ) : (
-              <div className="flex flex-col items-center rounded p-5 text-sm text-ink-gray-5">{__('No Data')}</div>
+              <div className="flex flex-col items-center rounded p-5 text-base text-ink-gray-6">{__('No rows')}</div>
             )}
           </div>
         )}
 
         {fields.length > 0 && (
-          <div className="mt-2 flex flex-row gap-2">
-            {selectedRows.size > 0 && <Button label={__('Delete')} variant="solid" theme="red" onClick={deleteRows} />}
-            <Button label={__('Add Row')} onClick={addRow} />
+          <div className="mt-2 flex items-center justify-between gap-2">
+            <div className="flex flex-row flex-wrap gap-2">
+              {selectedRows.size > 0 && !gridUi?.cannotDeleteRows && (
+                <Button
+                  label={
+                    selectedRows.size === rows.length && rows.length > 1
+                      ? __('Delete all {0} rows', [String(rows.length)])
+                      : selectedRows.size === 1
+                        ? __('Delete row')
+                        : __('Delete {0} rows', [String(selectedRows.size)])
+                  }
+                  variant="subtle"
+                  theme="red"
+                  onClick={deleteRows}
+                />
+              )}
+              {selectedRows.size > 0 && (
+                <Button label={__('Edit')} variant="subtle" onClick={() => void bulkEditRows()} />
+              )}
+              {selectedRows.size > 0 && (
+                <Button label={__('Duplicate rows')} variant="subtle" onClick={duplicateRows} />
+              )}
+              {!gridUi?.cannotAddRows && <Button label={__('Add row')} variant="subtle" onClick={addRow} />}
+              {!gridUi?.cannotAddRows && gridUi?.multipleAdd && (
+                <Button label={__('Add multiple')} variant="subtle" onClick={() => gridUi.multipleAdd?.()} />
+              )}
+              {(gridUi?.customButtons ?? []).map((entry) => (
+                <Button
+                  key={entry.label}
+                  label={__(entry.label)}
+                  variant="subtle"
+                  onClick={() => void entry.action()}
+                />
+              ))}
+            </div>
+            <div className="flex flex-row gap-2">
+              {!gridUi && rows.length > 0 && <Button label={__('Download')} variant="subtle" onClick={exportRows} />}
+              {!gridUi && rows.length > 0 && (
+                <Button label={__('Upload')} variant="subtle" onClick={() => csvInputRef.current?.click()} />
+              )}
+              {gridUi?.download && (
+                <Button label={__('Download')} variant="subtle" onClick={() => gridUi.download?.()} />
+              )}
+              {gridUi?.upload && <Button label={__('Upload')} variant="subtle" onClick={() => gridUi.upload?.()} />}
+            </div>
+            <input
+              ref={csvInputRef}
+              type="file"
+              accept=".csv,text/csv"
+              className="hidden"
+              onChange={(event) => void importRows(event)}
+            />
           </div>
         )}
 

@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class ShipmentGenerated(FrappeModel):
@@ -29,8 +29,8 @@ class ShipmentGenerated(FrappeModel):
     pallets = models.CharField(max_length=140, blank=True, null=True, default='No')
     value_of_goods = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     pickup_date = models.DateField(null=True, blank=True)
-    pickup_from = models.TimeField(null=True, blank=True)
-    pickup_to = models.TimeField(null=True, blank=True)
+    pickup_from = FrappeTimeField(null=True, blank=True)
+    pickup_to = FrappeTimeField(null=True, blank=True)
     shipment_type = models.CharField(max_length=140, blank=True, null=True, default='Goods')
     pickup_type = models.CharField(max_length=140, blank=True, null=True, default='Pickup')
     description_of_content = models.TextField(blank=True, null=True, default='')

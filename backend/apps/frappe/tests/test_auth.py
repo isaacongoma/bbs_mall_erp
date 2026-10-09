@@ -1,0 +1,492 @@
+import datetime
+import time
+from unittest.mock import Mock, patch
+
+import requests
+from werkzeug.test import EnvironBuilder
+from werkzeug.wrappers import Request
+
+import frappe
+from frappe.auth import CookieManager, LoginAttemptTracker, validate_auth, validate_ip_address
+from frappe.core.doctype.user.user import generate_keys
+from frappe.frappeclient import AuthError, FrappeClient
+from frappe.sessions import Session, get_expired_sessions, get_expiry_in_seconds, hash_sid
+from frappe.tests import IntegrationTestCase, UnitTestCase
+from frappe.tests.test_api import FrappeAPITestCase
+from frappe.tests.utils.test_capabilities import TestService, requires_test_service
+from frappe.utils import get_datetime, get_site_url, now
+from frappe.utils.data import add_to_date, sha256_hash
+from frappe.www.login import _generate_temporary_login_link
+
+
+def add_user(email, password, username=None, mobile_no=None):
+    first_name = email.split("@", 1)[0]
+    user = frappe.get_doc(
+        doctype="User", email=email, first_name=first_name, username=username, mobile_no=mobile_no
+    ).insert()
+    user.new_password = password
+    user.simultaneous_sessions = 1
+    user.add_roles("System Manager")
+    frappe.db.commit()
+
+
+class TestAuth(IntegrationTestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.HOST_NAME = frappe.get_site_config().host_name or get_site_url(frappe.local.site)
+        cls.test_user_email = "test_auth@test.com"
+        cls.test_user_name = "test_auth_user"
+        cls.test_user_mobile = "+911234567890"
+        cls.test_user_password = "pwd_012"
+
+        cls.tearDownClass()
+        add_user(
+            email=cls.test_user_email,
+            password=cls.test_user_password,
+            username=cls.test_user_name,
+            mobile_no=cls.test_user_mobile,
+        )
+
+    @classmethod
+    def tearDownClass(cls):
+        frappe.db.rollback()
+        frappe.delete_doc("User", cls.test_user_email, force=True)
+        frappe.local.request_ip = None
+        frappe.form_dict.email = None
+        frappe.local.response["http_status_code"] = None
+        frappe.db.commit()
+
+    def set_system_settings(self, k, v):
+        frappe.db.set_single_value("System Settings", k, v)
+        frappe.clear_cache()
+        frappe.db.commit()
+
+    def test_validate_ip_address_without_a_request(self):
+        with (
+            patch.object(frappe.local, "request", None, create=True),
+            patch(
+                "frappe.auth.frappe.get_cached_doc",
+                return_value=Mock(get_restricted_ip_list=lambda: []),
+            ),
+        ):
+            self.assertIsNone(validate_ip_address("Administrator"))
+
+    def test_session_without_a_request_uses_guest_sid(self):
+        original_session = frappe.local.session
+        self.addCleanup(setattr, frappe.local, "session", original_session)
+
+        with patch.object(frappe.local, "request", None, create=True):
+            self.assertEqual(Session(user="").sid, "Guest")
+
+    def test_cookie_manager_without_a_request_uses_non_secure_cookie(self):
+        with patch.object(frappe.local, "request", None, create=True):
+            cookies = CookieManager()
+            cookies.set_cookie("sid", "test")
+            self.assertFalse(cookies.cookies["sid"]["secure"])
+
+    @requires_test_service(TestService.WEB_SERVER)
+    def test_allow_login_using_mobile(self):
+        self.set_system_settings("allow_login_using_mobile_number", 1)
+        self.set_system_settings("allow_login_using_user_name", 0)
+
+        FrappeClient(self.HOST_NAME, self.test_user_mobile, self.test_user_password)
+        FrappeClient(self.HOST_NAME, self.test_user_email, self.test_user_password)
+
+        with self.assertRaises(AuthError):
+            FrappeClient(self.HOST_NAME, self.test_user_name, self.test_user_password)
+
+    @requires_test_service(TestService.WEB_SERVER)
+    def test_allow_login_using_only_email(self):
+        self.set_system_settings("allow_login_using_mobile_number", 0)
+        self.set_system_settings("allow_login_using_user_name", 0)
+
+        with self.assertRaises(AuthError):
+            FrappeClient(self.HOST_NAME, self.test_user_mobile, self.test_user_password)
+
+        with self.assertRaises(AuthError):
+            FrappeClient(self.HOST_NAME, self.test_user_name, self.test_user_password)
+
+        FrappeClient(self.HOST_NAME, self.test_user_email, self.test_user_password)
+
+    @requires_test_service(TestService.WEB_SERVER)
+    def test_allow_login_using_username(self):
+        self.set_system_settings("allow_login_using_mobile_number", 0)
+        self.set_system_settings("allow_login_using_user_name", 1)
+
+        with self.assertRaises(AuthError):
+            FrappeClient(self.HOST_NAME, self.test_user_mobile, self.test_user_password)
+
+        FrappeClient(self.HOST_NAME, self.test_user_email, self.test_user_password)
+        FrappeClient(self.HOST_NAME, self.test_user_name, self.test_user_password)
+
+    @requires_test_service(TestService.WEB_SERVER)
+    def test_allow_login_using_username_and_mobile(self):
+        self.set_system_settings("allow_login_using_mobile_number", 1)
+        self.set_system_settings("allow_login_using_user_name", 1)
+
+        FrappeClient(self.HOST_NAME, self.test_user_mobile, self.test_user_password)
+        FrappeClient(self.HOST_NAME, self.test_user_email, self.test_user_password)
+        FrappeClient(self.HOST_NAME, self.test_user_name, self.test_user_password)
+
+    @requires_test_service(TestService.WEB_SERVER)
+    def test_deny_multiple_login(self):
+        self.set_system_settings("deny_multiple_sessions", 1)
+        self.addCleanup(self.set_system_settings, "deny_multiple_sessions", 0)
+
+        first_login = FrappeClient(self.HOST_NAME, self.test_user_email, self.test_user_password)
+        first_login.get_list("ToDo")
+
+        second_login = FrappeClient(self.HOST_NAME, self.test_user_email, self.test_user_password)
+        second_login.get_list("ToDo")
+        with self.assertRaises(Exception):
+            first_login.get_list("ToDo")
+
+        third_login = FrappeClient(self.HOST_NAME, self.test_user_email, self.test_user_password)
+        with self.assertRaises(Exception):
+            first_login.get_list("ToDo")
+        with self.assertRaises(Exception):
+            second_login.get_list("ToDo")
+        third_login.get_list("ToDo")
+
+    @requires_test_service(TestService.WEB_SERVER)
+    def test_disable_user_pass_login(self):
+        FrappeClient(self.HOST_NAME, self.test_user_email, self.test_user_password).get_list("ToDo")
+        self.set_system_settings("disable_user_pass_login", 1)
+        self.addCleanup(self.set_system_settings, "disable_user_pass_login", 0)
+
+        with self.assertRaises(Exception):
+            FrappeClient(self.HOST_NAME, self.test_user_email, self.test_user_password).get_list("ToDo")
+
+    def test_forced_password_reset_does_not_leak_reset_key(self):
+        from frappe.auth import LoginManager
+        from frappe.utils import add_days, set_request, today
+
+        self.set_system_settings("force_user_to_reset_password", 1)
+        self.addCleanup(self.set_system_settings, "force_user_to_reset_password", 0)
+
+        frappe.db.set_value("User", self.test_user_email, "last_password_reset_date", add_days(today(), -2))
+        frappe.db.commit()
+
+        set_request(method="POST", path="/api/method/login")
+        frappe.form_dict.usr = self.test_user_email
+        frappe.form_dict.pwd = self.test_user_password
+        frappe.local.response = frappe._dict()
+        frappe.local.request_ip = "127.0.0.68"
+        self.addCleanup(frappe.form_dict.clear)
+
+        emails_before = frappe.db.count("Email Queue")
+
+        frappe.local.cookie_manager = CookieManager()
+        frappe.local.login_manager = LoginManager()
+
+        self.assertEqual(frappe.local.response.get("message"), "Password Reset")
+        self.assertNotIn("redirect_to", frappe.local.response)
+        self.assertGreater(frappe.db.count("Email Queue"), emails_before)
+
+    def test_forced_password_reset_waits_for_2fa(self):
+        from frappe.auth import LoginManager
+        from frappe.utils import add_days, set_request, today
+
+        system_settings = frappe.get_doc("System Settings")
+        system_settings.enable_two_factor_auth = 1
+        system_settings.two_factor_method = "OTP App"
+        system_settings.flags.ignore_mandatory = True
+        system_settings.save(ignore_permissions=True)
+        self.addCleanup(self.set_system_settings, "enable_two_factor_auth", 0)
+
+        self.set_system_settings("force_user_to_reset_password", 1)
+        self.addCleanup(self.set_system_settings, "force_user_to_reset_password", 0)
+
+        frappe.db.set_value("User", self.test_user_email, "last_password_reset_date", add_days(today(), -2))
+        frappe.db.commit()
+
+        set_request(method="POST", path="/api/method/login")
+        frappe.form_dict.usr = self.test_user_email
+        frappe.form_dict.pwd = self.test_user_password
+        frappe.local.response = frappe._dict()
+        frappe.local.request_ip = "127.0.0.69"
+        self.addCleanup(frappe.form_dict.clear)
+
+        frappe.local.cookie_manager = CookieManager()
+        frappe.local.login_manager = LoginManager()
+
+        self.assertIn("tmp_id", frappe.local.response)
+        self.assertNotEqual(frappe.local.response.get("message"), "Password Reset")
+        self.assertNotIn("redirect_to", frappe.local.response)
+
+    @requires_test_service(TestService.WEB_SERVER)
+    def test_login_with_email_link(self):
+        user = self.test_user_email
+
+        res = requests.get(_generate_temporary_login_link(user, 10))
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(res.cookies.get("sid"))
+        self.assertNotEqual(res.cookies.get("sid"), "Guest")
+
+        res = requests.get(_generate_temporary_login_link(user, 10) + "aa")
+        self.assertEqual(res.cookies.get("sid"), "Guest")
+
+        res = requests.post(_generate_temporary_login_link(user, 10))
+        self.assertEqual(res.status_code, 403)
+
+        for _ in range(6):
+            res = requests.get(_generate_temporary_login_link(user, 10))
+            if res.status_code == 429:
+                break
+        else:
+            self.fail("Rate limting not working")
+
+    @requires_test_service(TestService.WEB_SERVER)
+    def test_correct_cookie_expiry_set(self):
+        client = FrappeClient(self.HOST_NAME, self.test_user_email, self.test_user_password)
+
+        expiry_time = next(x for x in client.session.cookies if x.name == "sid").expires
+        current_time = datetime.datetime.now(tz=datetime.UTC).timestamp()
+        self.assertAlmostEqual(get_expiry_in_seconds(), expiry_time - current_time, delta=60 * 60)
+
+
+class TestAllowedReferrer(UnitTestCase):
+    def test_is_allowed_referrer(self):
+        def create_request(headers):
+            builder = EnvironBuilder(headers=headers)
+            env = builder.get_environ()
+            return Request(env)
+
+        frappe.cache.set_value("allowed_referrers", ["https://example.com"])
+
+        frappe.local.request = create_request({"Referer": "https://example.com/some/path"})
+        http_request = frappe.auth.HTTPRequest()
+        self.assertTrue(http_request.is_allowed_referrer())
+
+        frappe.local.request = create_request({"Referer": "https://malicious.com"})
+        http_request = frappe.auth.HTTPRequest()
+        self.assertFalse(http_request.is_allowed_referrer())
+
+        frappe.local.request = create_request({"Origin": "https://example.com"})
+        http_request = frappe.auth.HTTPRequest()
+        self.assertTrue(http_request.is_allowed_referrer())
+
+        frappe.local.request = create_request({"Origin": "https://malicious.com"})
+        http_request = frappe.auth.HTTPRequest()
+        self.assertFalse(http_request.is_allowed_referrer())
+
+        frappe.local.request = create_request({"Referer": "https://example.com.evil.com"})
+        http_request = frappe.auth.HTTPRequest()
+        self.assertFalse(http_request.is_allowed_referrer())
+
+        frappe.local.request = create_request({"Referer": "https://example.com"})
+        http_request = frappe.auth.HTTPRequest()
+        self.assertTrue(http_request.is_allowed_referrer())
+
+        frappe.cache.delete_value("allowed_referrers")
+        frappe.local.request = None
+
+
+class TestIPRestrictionForAPIAuth(IntegrationTestCase):
+    """Header-authenticated requests must honour the user's `restrict_ip` allowlist.
+
+    `validate_ip_address` runs in `LoginManager.post_login` for interactive logins and in
+    `Session.resume` for cookie-based requests. A request authenticated purely from an
+    `Authorization` header takes neither path, so `validate_auth` has to enforce it.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.user_email = "test_api_ip_restriction@test.com"
+        if not frappe.db.exists("User", cls.user_email):
+            frappe.get_doc(doctype="User", email=cls.user_email, first_name="API IP Restricted").insert(
+                ignore_permissions=True
+            )
+
+        cls.api_secret = generate_keys(cls.user_email)["api_secret"]
+        cls.api_key = frappe.db.get_value("User", cls.user_email, "api_key")
+        frappe.db.commit()
+
+    def setUp(self):
+        self._request = getattr(frappe.local, "request", None)
+        self._request_ip = getattr(frappe.local, "request_ip", None)
+        self._login_manager = getattr(frappe.local, "login_manager", None)
+        self.addCleanup(self._restore)
+
+    def _restore(self):
+        frappe.local.request = self._request
+        frappe.local.request_ip = self._request_ip
+        frappe.local.login_manager = self._login_manager
+        frappe.set_user("Administrator")
+
+    def _authenticated_request_from(self, request_ip):
+        """Simulate an unauthenticated request carrying an API key/secret token."""
+        env = EnvironBuilder(
+            headers={"Authorization": f"token {self.api_key}:{self.api_secret}"}
+        ).get_environ()
+        frappe.local.request = Request(env)
+        frappe.local.request_ip = request_ip
+        frappe.local.login_manager = frappe._dict(user="Guest")
+        frappe.set_user("Guest")
+
+    def _set_restrict_ip(self, value):
+        frappe.db.set_value("User", self.user_email, "restrict_ip", value)
+        frappe.clear_cache(user=self.user_email)
+
+    def test_api_auth_blocked_from_disallowed_ip(self):
+        self._set_restrict_ip("192.168.255.254")
+        self._authenticated_request_from("10.0.0.1")
+
+        with self.assertRaises(frappe.AuthenticationError):
+            validate_auth()
+
+    def test_api_auth_allowed_from_allowed_ip(self):
+        self._set_restrict_ip("10.0.0.1")
+        self._authenticated_request_from("10.0.0.1")
+
+        validate_auth()
+        self.assertEqual(frappe.session.user, self.user_email)
+
+    def test_api_auth_unaffected_without_ip_restriction(self):
+        self._set_restrict_ip("")
+        self._authenticated_request_from("10.0.0.1")
+
+        validate_auth()
+        self.assertEqual(frappe.session.user, self.user_email)
+
+
+class TestLoginAttemptTracker(IntegrationTestCase):
+    def test_account_lock(self):
+        """Make sure that account locks after `n consecutive failures"""
+        tracker = LoginAttemptTracker("tester", max_consecutive_login_attempts=3, lock_interval=60)
+        tracker.add_success_attempt()
+
+        tracker.add_failure_attempt()
+        self.assertTrue(tracker.is_user_allowed())
+
+        tracker.add_failure_attempt()
+        self.assertTrue(tracker.is_user_allowed())
+
+        tracker.add_failure_attempt()
+        self.assertTrue(tracker.is_user_allowed())
+
+        tracker.add_failure_attempt()
+        self.assertFalse(tracker.is_user_allowed())
+
+    def test_account_unlock(self):
+        """Make sure that locked account gets unlocked after lock_interval of time."""
+        lock_interval = 2
+        tracker = LoginAttemptTracker("tester", max_consecutive_login_attempts=1, lock_interval=lock_interval)
+        tracker.add_success_attempt()
+
+        tracker.add_failure_attempt()
+        self.assertTrue(tracker.is_user_allowed())
+
+        tracker.add_failure_attempt()
+        self.assertFalse(tracker.is_user_allowed())
+
+        time.sleep(lock_interval)
+
+        tracker.add_failure_attempt()
+        self.assertTrue(tracker.is_user_allowed())
+
+
+class TestSessionIdHashing(FrappeAPITestCase):
+    """Sessions are stored under the sha256 of the sid, never the sid itself.
+
+    The raw sid lives only in the client's cookie, so a dump of `tabSessions` or of the
+    session cache yields nothing that can be replayed as a session.
+    """
+
+    def sessions_row(self, stored_sid):
+        sessions = frappe.qb.DocType("Sessions")
+        return frappe.qb.from_(sessions).select(sessions.user).where(sessions.sid == stored_sid).run()
+
+    def test_raw_sid_is_never_stored(self):
+        sid = self.sid
+        self.assertFalse(self.sessions_row(sid), "raw sid must not appear in tabSessions")
+        self.assertFalse(frappe.cache.hget("session", sid), "raw sid must not key the session cache")
+
+    def test_session_is_stored_under_its_hash(self):
+        sid = self.sid
+        row = self.sessions_row(hash_sid(sid))
+        self.assertTrue(row, "session must be stored under the hash of the sid")
+        self.assertEqual(row[0][0], "Administrator")
+        self.assertTrue(frappe.cache.hget("session", hash_sid(sid)))
+
+    def test_cached_payload_does_not_carry_the_sid(self):
+        sid = self.sid
+        payload = frappe.cache.hget("session", hash_sid(sid))
+        self.assertNotIn("sid", payload, "the cached session must not carry the raw sid")
+
+    def request_with_cookie(self, sid):
+        """Put a request carrying `sid` on this thread, restored when the test ends."""
+        from frappe.utils import set_request
+
+        original_request = getattr(frappe.local, "request", None)
+        if original_request is not None:
+            self.addCleanup(setattr, frappe.local, "request", original_request)
+        else:
+            self.addCleanup(delattr, frappe.local, "request")
+
+        set_request(path="/")
+        frappe.local.request.cookies = {"sid": sid}
+
+    def test_raw_cookie_resumes_the_session(self):
+        self.request_with_cookie(self.sid)
+        self.assertEqual(Session(user=None, resume=True).user, "Administrator")
+
+    def test_sid_hash_follows_sid(self):
+        self.request_with_cookie(self.sid)
+        session = Session(user=None, resume=True)
+        session.sid = "a" * 32
+        self.assertEqual(session.sid_hash, sha256_hash("a" * 32))
+
+    def test_guest_sid_is_not_hashed(self):
+        self.assertEqual(hash_sid("Guest"), "Guest")
+
+
+class TestSessionExpiry(FrappeAPITestCase):
+    def test_session_expires(self):
+        sid = self.sid
+        s: Session = frappe.local.session_obj
+
+        expiry_in = get_expiry_in_seconds()
+        session_created = now()
+
+        for step in range(0, 100, 1):
+            seconds_elapsed = expiry_in * step / 100
+
+            time_now = add_to_date(session_created, seconds=seconds_elapsed, as_string=True)
+            with self.freeze_time(time_now):
+                data = s.get_session_data_from_db()
+                self.assertEqual(data.user, "Administrator")
+
+        time_of_expiry = add_to_date(session_created, seconds=expiry_in * 1.01, as_string=True)
+        with self.freeze_time(time_of_expiry):
+            self.assertIn(hash_sid(sid), get_expired_sessions())
+            self.assertFalse(s.get_session_data_from_db())
+
+    def test_expired_session_answers_401_without_leaking_method(self):
+        from frappe.auth import get_logged_user
+
+        frappe.set_user("Guest")
+        self.addCleanup(frappe.set_user, "Administrator")
+        self.addCleanup(frappe.local.response.pop, "session_expired", None)
+        self.addCleanup(frappe.clear_messages)
+
+        frappe.local.response["session_expired"] = 1
+        frappe.clear_messages()
+        with self.assertRaises(frappe.SessionExpired):
+            frappe.is_whitelisted(get_logged_user)
+        self.assertEqual(
+            frappe.get_message_log(), [], "an expired session must not send a message to the client"
+        )
+
+        frappe.local.response.pop("session_expired", None)
+        with self.assertRaises(frappe.PermissionError):
+            frappe.is_whitelisted(get_logged_user)
+
+        def not_whitelisted():
+            pass
+
+        frappe.local.response["session_expired"] = 1
+        with self.assertRaises(frappe.PermissionError):
+            frappe.is_whitelisted(not_whitelisted)

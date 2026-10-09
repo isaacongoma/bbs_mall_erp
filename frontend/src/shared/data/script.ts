@@ -58,7 +58,7 @@ function evaluateFormClass(script: string, className: string, helpers: Helpers =
   return new Function(...helperKeys, wrapped)(...helperValues)
 }
 
-function defineListProperty(FormClass: { prototype: AnyRecord }, name: 'actions' | 'statuses') {
+function defineListProperty(FormClass: { prototype: AnyRecord }, name: 'actions' | 'mappedCreates' | 'statuses') {
   if (Object.prototype.hasOwnProperty.call(FormClass.prototype, name)) return
   Object.defineProperty(FormClass.prototype, name, {
     configurable: true,
@@ -87,6 +87,35 @@ function defineListProperty(FormClass: { prototype: AnyRecord }, name: 'actions'
 
 function setupHelperMethods(FormClass: { prototype: AnyRecord }) {
   const proto = FormClass.prototype
+
+  if (typeof proto.addMappedCreate !== 'function') {
+    proto.addMappedCreate = function (this: AnyRecord, label: string, method: string, args?: AnyRecord, selectedChildren?: AnyRecord) {
+      const context = this._originalDocumentContext
+      if (!context || !label || !method) return
+      context.mappedCreates = [
+        ...(context.mappedCreates || []).filter((item: AnyRecord) => item.label !== label),
+        { label, method, args: args ?? null, selectedChildren: selectedChildren ?? null },
+      ]
+    }
+  }
+
+  if (typeof proto.openMappedDoc !== 'function') {
+    proto.openMappedDoc = async function (this: AnyRecord, method: string, args?: AnyRecord, selectedChildren?: AnyRecord) {
+      const context = this._originalDocumentContext
+      const sourceName = context?.doc?.name
+      if (!sourceName) return null
+      const result = await call<AnyRecord>('frappe.model.mapper.make_mapped_doc', {
+        method,
+        source_name: sourceName,
+        args: args ?? null,
+        selected_children: selectedChildren ?? null,
+      })
+      const mapped = result?.message && typeof result.message === 'object' ? result.message : result
+      if (!mapped?.doctype) return mapped
+      getRouter().push({ name: 'Desk New Document', params: { doctype: String(mapped.doctype) } })
+      return mapped
+    }
+  }
 
   if (typeof proto.getRow !== 'function') {
     proto.getRow = function (this: AnyRecord, parentField: string, idx?: number) {
@@ -181,6 +210,16 @@ function setupHelperMethods(FormClass: { prototype: AnyRecord }) {
     }
   }
 
+  if (typeof proto.setQuery !== 'function') {
+    proto.setQuery = function (this: AnyRecord, target: string, query: unknown) {
+      const filters = typeof query === 'function' ? query() : query
+      if (!filters || typeof filters !== 'object') return
+      this.setFieldProperty(target, 'link_filters', filters)
+    }
+  }
+
+  if (typeof proto.set_query !== 'function') proto.set_query = proto.setQuery
+
   if (typeof proto.getField !== 'function') {
     proto.getField = function (this: AnyRecord, fieldname: string): DocField | null {
       const context = this._originalDocumentContext
@@ -221,6 +260,7 @@ export function getScript(doctype: string, view = 'Form') {
     helpers: Helpers,
     parentInstance: AnyRecord | null = null,
     isChildDoctype = false,
+    childClassName = '',
   ) {
     document.actions = document.actions || []
     document.statuses = document.statuses || []
@@ -228,6 +268,7 @@ export function getScript(doctype: string, view = 'Form') {
     const instance = new FormClass()
     instance._originalDocumentContext = document
     instance._isChildDoctype = isChildDoctype
+    instance._parentInstance = parentInstance
 
     for (const key in helpers) instance[key] = helpers[key]
     for (const key in document) {
@@ -242,9 +283,20 @@ export function getScript(doctype: string, view = 'Form') {
       return doctypesMeta[dt]
     }
 
-    const getDoc = () => document.doc
+    const childField = isChildDoctype
+      ? doctypesMeta[doctype]?.fields?.find((field: DocField) => field.fieldtype === 'Table' && String(field.options ?? '').replace(/\s+/g, '') === childClassName)
+      : null
+    const getChildDoc = () => {
+      const rows = childField && Array.isArray(document.doc?.[childField.fieldname]) ? document.doc[childField.fieldname] as AnyRecord[] : []
+      const currentRow = rows.find((row) => row.idx === instance.currentRowIdx)
+      return currentRow ?? rows[0] ?? {}
+    }
+    const getDoc = () => isChildDoctype ? getChildDoc() : document.doc
     const onSet = (prop: string | symbol, value: unknown) => {
-      if (typeof document.setField === 'function' && typeof prop === 'string') document.setField(prop, value)
+      if (isChildDoctype && typeof prop === 'string') {
+        getChildDoc()[prop] = value
+        document.touch?.()
+      } else if (typeof document.setField === 'function' && typeof prop === 'string') document.setField(prop, value)
       else if (document.doc) document.doc[prop as string] = value
     }
 
@@ -291,7 +343,7 @@ export function getScript(doctype: string, view = 'Form') {
         parentInstanceIdx = controllers.length || 0
       }
 
-      const instance = setupFormController(FormClass, doctypesMeta, document, helpers, parentInstance, isChildDoctype)
+      const instance = setupFormController(FormClass, doctypesMeta, document, helpers, parentInstance, isChildDoctype, className)
       instance._className = className
       controllers.push(instance)
     }

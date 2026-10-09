@@ -30,6 +30,8 @@ type Alignment = 'start' | 'center' | 'end'
 export interface LinkProps {
   doctype: string
   filters?: unknown
+  query?: string
+  searchContext?: { reference_doctype?: string; link_fieldname?: string; ignore_user_permissions?: number | boolean }
   value?: string | null
   valueLabel?: string
   onChange?: (value: string) => void
@@ -51,6 +53,19 @@ export interface LinkProps {
 }
 
 const SEARCH_URL = 'frappe.desk.search.search_link'
+const DESK_SEARCH_URL = '/api/erpnext/method/frappe.desk.search.search_link/'
+
+function unwrapOptions(value: unknown): Array<{ label?: string; value: string; description?: string }> | null {
+  const payload =
+    value && typeof value === 'object' && !Array.isArray(value) && 'message' in value
+      ? (value as { message: unknown }).message
+      : value
+  return Array.isArray(payload) ? (payload as Array<{ label?: string; value: string; description?: string }>) : null
+}
+
+function searchUrl(doctype: string): string {
+  return /^F?CRM /.test(doctype) ? SEARCH_URL : DESK_SEARCH_URL
+}
 
 function stripHtml(html: string | null | undefined): string {
   if (!html) return ''
@@ -83,6 +98,8 @@ function toOptions(
 export function Link({
   doctype,
   filters = [],
+  query: searchMethod,
+  searchContext,
   value = '',
   valueLabel,
   onChange,
@@ -104,21 +121,32 @@ export function Link({
 }: LinkProps) {
   const [query, setQuery] = useState('')
   const [selectedOption, setSelectedOption] = useState<LinkOption | null>(null)
+  const [opened, setOpened] = useState(false)
   const debouncedQuery = useDebouncedValue(query, 300)
   const filtersKey = JSON.stringify(filters)
+  const contextKey = JSON.stringify(searchContext ?? {})
 
   const resource = useResource<Array<{ label?: string; value: string; description?: string }>>({
-    url: SEARCH_URL,
+    url: searchUrl(doctype),
     method: 'POST',
-    cache: [doctype, '', hideMe, filters],
-    params: { txt: '', doctype, filters },
+    transform: unwrapOptions,
+    cache: ['link-v2', doctype, '', hideMe, filters, searchMethod ?? '', searchContext ?? {}],
+    params: { txt: '', doctype, filters, ...(searchMethod ? { query: searchMethod } : {}), ...(searchContext ?? {}) },
   })
 
   useEffect(() => {
-    if (!doctype) return
-    resource.update({ params: { txt: debouncedQuery, doctype, filters: JSON.parse(filtersKey) as unknown } })
+    if (!doctype || !opened) return
+    resource.update({
+      params: {
+        txt: debouncedQuery,
+        doctype,
+        filters: JSON.parse(filtersKey) as unknown,
+        ...(searchMethod ? { query: searchMethod } : {}),
+        ...(JSON.parse(contextKey) as Record<string, unknown>),
+      },
+    })
     void resource.reload().catch(() => undefined)
-  }, [resource, doctype, filtersKey, debouncedQuery])
+  }, [resource, doctype, opened, filtersKey, debouncedQuery, searchMethod, contextKey])
 
   useImperativeHandle(handleRef, () => ({ reload: () => void resource.reload().catch(() => undefined) }), [resource])
 
@@ -143,6 +171,9 @@ export function Link({
       value={current || null}
       options={options}
       query={query}
+      onOpenChange={(next) => {
+        if (next) setOpened(true)
+      }}
       onQueryChange={setQuery}
       onChange={(next) => {
         if (next === null || next === '') return

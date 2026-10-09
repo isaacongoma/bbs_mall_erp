@@ -9,7 +9,6 @@ shims without forcing every GL-building doctype to inherit from those classes.
 Subclasses implement ``compose`` to return the voucher-specific list of GL
 entries.
 """
-from __future__ import annotations
 
 import frappe
 from frappe import _

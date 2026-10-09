@@ -1,5 +1,4 @@
 """Exchange gain/loss journal helpers."""
-from __future__ import annotations
 
 import frappe
 from frappe import _, qb

@@ -10,53 +10,8 @@ from frappe.permissions import add_permission, update_permission_property
 from hrms.overrides.company import delete_company_fixtures
 
 
-SKIPPED_UNREGISTERED_INSTALL_DOCTYPES = set()
-
-
-def _doctype_registered(doctype):
-    try:
-        frappe.get_meta(doctype)
-        frappe.db.table_exists(doctype)
-        return True
-    except Exception:
-        SKIPPED_UNREGISTERED_INSTALL_DOCTYPES.add(doctype)
-        return False
-
-
-def _registered_custom_fields(custom_fields):
-    return {
-        doctype: fields
-        for doctype, fields in custom_fields.items()
-        if _doctype_registered(doctype)
-    }
-
-
-def _registered_records(records):
-    kept = []
-    for record in records:
-        doctype = record.get("doctype")
-        if not _doctype_registered(doctype):
-            continue
-        meta = frappe.get_meta(doctype)
-        skip = False
-        for field in meta.get("fields") or []:
-            if field.get("fieldtype") != "Link" or field.get("options") != "DocType":
-                continue
-            value = record.get(field.get("fieldname"))
-            if value and not _doctype_registered(value):
-                skip = True
-                break
-        if not skip:
-            kept.append(record)
-    return kept
-
-
-def _registered_docperms(docperms):
-    return {doctype: perms for doctype, perms in docperms.items() if _doctype_registered(doctype)}
-
-
 def after_install():
-    create_custom_fields(_registered_custom_fields(get_custom_fields()), ignore_validate=True)
+    create_custom_fields(get_custom_fields(), ignore_validate=True)
     create_salary_slip_loan_fields()
     make_fixtures()
     setup_notifications()
@@ -70,8 +25,8 @@ def after_install():
 
 
 def before_uninstall():
-    delete_custom_fields(_registered_custom_fields(get_custom_fields()))
-    delete_custom_fields(_registered_custom_fields(get_salary_slip_loan_fields()))
+    delete_custom_fields(get_custom_fields())
+    delete_custom_fields(get_salary_slip_loan_fields())
     delete_company_fixtures()
 
 
@@ -137,7 +92,7 @@ def after_app_install(app_name):
         return
 
     print("Updating payroll setup for loans")
-    create_custom_fields(_registered_custom_fields(get_salary_slip_loan_fields()), ignore_validate=True)
+    create_custom_fields(get_salary_slip_loan_fields(), ignore_validate=True)
     add_lending_docperms_to_ess()
 
 
@@ -526,7 +481,7 @@ def make_fixtures():
         {"doctype": "Email Account", "email_id": "jobs@example.com", "append_to": "Job Applicant"},
     ]
 
-    make_records(_registered_records(records))
+    make_records(records)
 
 
 def setup_notifications():
@@ -614,8 +569,6 @@ def update_hr_defaults():
 
 def set_single_defaults():
     for dt in ("HR Settings", "Payroll Settings"):
-        if not _doctype_registered(dt):
-            continue
         default_values = frappe.get_all(
             "DocField",
             filters={"parent": dt},
@@ -785,7 +738,7 @@ def create_user_type(user_type, data):
             }
         )
 
-    docperms = _registered_docperms(data.get("doctypes"))
+    docperms = data.get("doctypes")
     if doc.role == "Employee Self Service" and "lending" in frappe.get_installed_apps():
         docperms.update(get_lending_docperms_for_ess())
 
@@ -969,8 +922,6 @@ HR_ROLE_PERMISSIONS = {
 def add_default_hr_permissions():
     for role, permissions in HR_ROLE_PERMISSIONS.items():
         for doctype, ptypes in permissions.items():
-            if not _doctype_registered(doctype):
-                continue
             add_permission(doctype, role)
 
             for ptype, value in ptypes.items():

@@ -4,7 +4,6 @@ Consolidates the former ``material_planning``, ``material_request_items`` and
 ``material_request_helpers`` modules. Also re-exports the planning helpers so
 existing imports of ``...services.material_planning`` keep working through here.
 """
-from __future__ import annotations
 
 import copy
 import json

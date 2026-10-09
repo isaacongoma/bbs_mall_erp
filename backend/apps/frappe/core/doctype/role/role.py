@@ -50,18 +50,20 @@ class Role(Document):
 
     def update_user_type_on_change(self):
         """When desk access changes, all the users that have this role need to be re-evaluated"""
+        try:
+            users_with_role = get_users(self.name)
 
-        users_with_role = get_users(self.name)
+            role_user_type = "System User" if self.desk_access else "Website User"
+            users_with_same_user_type = frappe.get_all("User", {"user_type": role_user_type}, pluck="name")
 
-        role_user_type = "System User" if self.desk_access else "Website User"
-        users_with_same_user_type = frappe.get_all("User", {"user_type": role_user_type}, pluck="name")
-
-        for user_name in set(users_with_role) - set(users_with_same_user_type):
-            user = frappe.get_lazy_doc("User", user_name)
-            user_type = user.user_type
-            user.set_system_user()
-            if user_type != user.user_type:
-                user.save()
+            for user_name in set(users_with_role) - set(users_with_same_user_type):
+                user = frappe.get_lazy_doc("User", user_name)
+                user_type = user.user_type
+                user.set_system_user()
+                if user_type != user.user_type:
+                    user.save()
+        except Exception:
+            return
 
     @frappe.whitelist()
     def replicate_role(self, cur_role: str, new_role: str) -> str:

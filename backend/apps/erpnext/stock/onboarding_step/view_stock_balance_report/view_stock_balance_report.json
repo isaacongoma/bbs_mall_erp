@@ -1,6 +1,6 @@
 {
  "action": "View Report",
- "action_label": "View Stock Balance",
+ "action_label": "Open Stock Balance",
  "creation": "2026-02-20 13:52:54.499787",
  "docstatus": 0,
  "doctype": "Onboarding Step",
@@ -13,11 +13,13 @@
  "name": "View Stock Balance Report",
  "owner": "Administrator",
  "reference_report": "Stock Balance",
- "report_description": "View Stock Balance Report",
+ "report_description": "What you have in each warehouse, and what it is worth.",
  "report_reference_doctype": "Stock Ledger Entry",
  "report_type": "Script Report",
  "show_form_tour": 0,
- "show_full_form": 0,
- "title": "View Stock Balance Report",
- "validate_action": 1
+ "show_full_form": 1,
+ "title": "Check your stock levels",
+ "validate_action": 1,
+ "description": "What you have in each warehouse, and what it is worth.",
+ "intro_video_url": "https://www.youtube.com/watch?v=IwCFlmast3U"
 }

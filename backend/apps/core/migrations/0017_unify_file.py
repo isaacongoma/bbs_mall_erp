@@ -1,6 +1,8 @@
+from apps.core.migration_utils import tolerant_extra_columns
 from django.db import migrations
 
 
+@tolerant_extra_columns
 def copy_files(apps, schema_editor):
     Legacy = apps.get_model("core", "FileAttachment")
     Canonical = apps.get_model("erpnext", "File")

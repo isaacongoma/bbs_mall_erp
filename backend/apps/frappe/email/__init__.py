@@ -77,45 +77,6 @@ def get_recipient_avatars(emails: str) -> dict:
     return {"user_info": user_info, "contact_images": contact_images}
 
 
-def get_system_managers():
-    return frappe.db.sql_list(
-        """select parent FROM `tabHas Role`
-        WHERE role='System Manager'
-        AND parent!='Administrator'
-        AND parent IN (SELECT email FROM tabUser WHERE enabled=1)"""
-    )
-
-
-@frappe.whitelist()
-def relink(name: str, reference_doctype: str | None = None, reference_name: str | None = None):
-    from frappe.core.doctype.comment.comment import relink_comment_cache
-
-    frappe.has_permission("Communication", "write", name, throw=True)
-
-    comm = frappe.get_doc("Communication", name)
-    if comm.communication_type != "Communication":
-        return
-
-    old_reference_doctype = comm.reference_doctype
-    old_reference_name = comm.reference_name
-
-    frappe.db.sql(
-        """update
-            `tabCommunication`
-        set
-            reference_doctype = %s,
-            reference_name = %s,
-            status = 'Linked'
-        where
-            name = %s""",
-        (reference_doctype, reference_name, name),
-    )
-
-    comm.reference_doctype = reference_doctype
-    comm.reference_name = reference_name
-    relink_comment_cache(comm, old_reference_doctype, old_reference_name)
-
-
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
 def get_communication_doctype(
@@ -280,3 +241,42 @@ def sendmail(
     if now and q:
         frappe.db.after_commit.add(q.send)
     return q
+
+
+def get_system_managers():
+    return frappe.db.sql_list(
+        """select parent FROM `tabHas Role`
+        WHERE role='System Manager'
+        AND parent!='Administrator'
+        AND parent IN (SELECT email FROM tabUser WHERE enabled=1)"""
+    )
+
+
+@frappe.whitelist()
+def relink(name: str, reference_doctype: str | None = None, reference_name: str | None = None):
+    from frappe.core.doctype.comment.comment import relink_comment_cache
+
+    frappe.has_permission("Communication", "write", name, throw=True)
+
+    comm = frappe.get_doc("Communication", name)
+    if comm.communication_type != "Communication":
+        return
+
+    old_reference_doctype = comm.reference_doctype
+    old_reference_name = comm.reference_name
+
+    frappe.db.sql(
+        """update
+            `tabCommunication`
+        set
+            reference_doctype = %s,
+            reference_name = %s,
+            status = 'Linked'
+        where
+            name = %s""",
+        (reference_doctype, reference_name, name),
+    )
+
+    comm.reference_doctype = reference_doctype
+    comm.reference_name = reference_name
+    relink_comment_cache(comm, old_reference_doctype, old_reference_name)

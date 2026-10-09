@@ -1,0 +1,84 @@
+import { frappe, refresh_field } from '@/shared/frappe'
+frappe.ui.form.on('Supplier Scorecard', {
+  setup: function (frm?: any) {
+    if (frm.doc.indicator_color !== '') {
+      frm.set_indicator_formatter('status', function (doc?: any) {
+        return doc.indicator_color.toLowerCase()
+      })
+    }
+  },
+  onload: function (frm?: any) {
+    if (frm.doc.__unsaved == 1) {
+      loadAllStandings(frm)
+    }
+  },
+  load_criteria: function (frm?: any) {
+    frappe.call({
+      method: 'erpnext.buying.doctype.supplier_scorecard_criteria.supplier_scorecard_criteria.get_criteria_list',
+      callback: function (r?: any) {
+        let row: any
+        frm.set_value('criteria', [])
+        for (let i = 0; i < r.message.length; i++) {
+          row = frm.add_child('criteria')
+          row.criteria_name = r.message[i].name
+          frm.script_manager.trigger('criteria_name', row.doctype, row.name)
+        }
+        refresh_field('criteria')
+      },
+    })
+  },
+})
+frappe.ui.form.on('Supplier Scorecard Scoring Standing', {
+  standing_name: function (frm?: any, cdt?: any, cdn?: any) {
+    const d = frappe.get_doc(cdt, cdn)
+    if (d.standing_name) {
+      return frm.call({
+        method: 'erpnext.buying.doctype.supplier_scorecard_standing.supplier_scorecard_standing.get_scoring_standing',
+        child: d,
+        args: {
+          standing_name: d.standing_name,
+        },
+      })
+    }
+  },
+})
+frappe.ui.form.on('Supplier Scorecard Scoring Criteria', {
+  criteria_name: function (frm?: any, cdt?: any, cdn?: any) {
+    const d = frappe.get_doc(cdt, cdn)
+    if (d.criteria_name) {
+      return frm.call({
+        method: 'frappe.client.get',
+        args: {
+          fieldname: 'weight',
+          doctype: 'Supplier Scorecard Criteria',
+          filters: { name: d.criteria_name },
+        },
+        callback: function (r?: any) {
+          if (r.message) {
+            d.weight = r.message.weight
+            frm.refresh_field('criteria', 'weight')
+          }
+        },
+      })
+    }
+  },
+})
+const loadAllStandings = function (frm?: any) {
+  frappe.call({
+    method: 'erpnext.buying.doctype.supplier_scorecard_standing.supplier_scorecard_standing.get_standings_list',
+    callback: function (r?: any) {
+      let new_row: any
+      for (let j = 0; j < frm.doc.standings.length; j++) {
+        if (!Object.prototype.hasOwnProperty.call(frm.doc.standings[j], 'standing_name')) {
+          frm.get_field('standings').grid.grid_rows[j].remove()
+        }
+      }
+      for (let i = 0; i < r.message.length; i++) {
+        new_row = frm.add_child('standings')
+        new_row.standing_name = r.message[i].name
+        frm.script_manager.trigger('standing_name', new_row.doctype, new_row.name)
+      }
+      refresh_field('standings')
+    },
+  })
+}

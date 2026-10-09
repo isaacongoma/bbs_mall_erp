@@ -1,4 +1,3 @@
-from __future__ import annotations
 
 import copy
 import gc
@@ -1460,7 +1459,7 @@ class update_entries_after:
         validate negative stock for entries current datetime onwards
         will not consider cancelled entries
         """
-        diff = self.wh_data.qty_after_transaction + flt(sle.actual_qty) - flt(self.reserved_stock)
+        diff = flt(self.wh_data.qty_after_transaction) + flt(sle.actual_qty) - flt(self.reserved_stock)
         diff = flt(diff, self.flt_precision)
 
         diff_threshold = 0.0001

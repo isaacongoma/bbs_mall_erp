@@ -3,7 +3,7 @@ import { __ } from '@/core/i18n'
 import { resolveLocation, useRoute } from '@/core/navigation'
 import { Breadcrumbs } from '@/design-system'
 import { useDataImports } from '../../hooks/useDataImports'
-import type { DataImportRecord, DataImportStep, DoctypeMap } from '../../utils/dataImport'
+import type { DataImportRecord, DataImportStep, DoctypeMap, DoctypeOption } from '../../utils/dataImport'
 import { DataImportList } from './DataImportList'
 import { ImportSteps } from './ImportSteps'
 import { MappingStep } from './MappingStep'
@@ -14,14 +14,17 @@ export interface DataImportViewProps {
   doctype?: string | null
   importName?: string | null
   doctypeMap: DoctypeMap
+  doctypeOptions?: DoctypeOption[]
 }
 
-export function DataImportView({ doctype, importName, doctypeMap }: DataImportViewProps) {
+export function DataImportView({ doctype, importName, doctypeMap, doctypeOptions }: DataImportViewProps) {
   const route = useRoute()
   const { list, status, filterByStatus } = useDataImports()
-  const [step, setStep] = useState<DataImportStep>('list')
-  const [data, setData] = useState<DataImportRecord | null>(null)
-  const [syncKey, setSyncKey] = useState('')
+  const [viewState, setViewState] = useState<{
+    key: string
+    step: DataImportStep
+    data: DataImportRecord | null
+  }>({ key: '', step: 'list', data: null })
 
   const imports = list.data as DataImportRecord[] | null
   const queryStep = Array.isArray(route.query.step) ? route.query.step[0] : route.query.step
@@ -32,26 +35,22 @@ export function DataImportView({ doctype, importName, doctypeMap }: DataImportVi
     )
     .join(',')}`
 
-  if (key !== syncKey) {
-    setSyncKey(key)
-    if (queryStep === 'list') {
-      setStep('list')
-    } else if (doctype) {
-      setStep('upload')
-    } else if (importName) {
-      const found = imports?.find((entry) => entry.name === importName) ?? null
-      setData(found)
-      if (!found?.import_file && !found?.google_sheets_url) setStep('upload')
-      else if (step === 'upload' && queryStep === 'map') setStep('map')
-      else setStep('preview')
-    } else {
-      setStep('list')
-    }
-  }
+  const foundData = importName ? imports?.find((entry) => entry.name === importName) ?? null : null
+  const derivedStep: DataImportStep = queryStep === 'list' || (!doctype && !importName)
+    ? 'list'
+    : doctype
+      ? 'upload'
+      : foundData?.import_file || foundData?.google_sheets_url
+        ? queryStep === 'map'
+          ? 'map'
+          : 'preview'
+        : 'upload'
+  const current = viewState.key === key ? viewState : { key, step: derivedStep, data: foundData }
+  const step = current.step
+  const data = current.data
 
   function updateStep(next: DataImportStep, nextData: DataImportRecord | null) {
-    setStep(next)
-    if (nextData) setData(nextData)
+    setViewState({ key, step: next, data: nextData ?? data })
   }
 
   const referenceDoctype = doctype || data?.reference_doctype || ''
@@ -80,7 +79,13 @@ export function DataImportView({ doctype, importName, doctypeMap }: DataImportVi
           />
         )}
         {step === 'list' && (
-          <DataImportList dataImports={list} status={status} onStatusChange={filterByStatus} doctypeMap={doctypeMap} />
+          <DataImportList
+            dataImports={list}
+            status={status}
+            onStatusChange={filterByStatus}
+            doctypeMap={doctypeMap}
+            doctypeOptions={doctypeOptions}
+          />
         )}
         {step === 'upload' && (
           <UploadStep

@@ -1,0 +1,277 @@
+import datetime
+import time
+
+import pyotp
+
+import frappe
+from frappe.auth import HTTPRequest, get_login_attempt_tracker, validate_ip_address
+from frappe.tests import IntegrationTestCase
+from frappe.twofactor import (
+    ExpiredLoginException,
+    authenticate_for_2factor,
+    confirm_otp_token,
+    get_cached_user_pass,
+    get_default,
+    get_email_body_for_2fa,
+    get_email_body_for_qr_code,
+    get_otpsecret_for_,
+    get_verification_obj,
+    process_2fa_for_email,
+    should_run_2fa,
+    two_factor_is_enabled_for_,
+)
+from frappe.utils import cint, set_request
+
+
+class TestTwoFactor(IntegrationTestCase):
+    def setUp(self):
+        self.http_requests = create_http_request()
+        self.login_manager = frappe.local.login_manager
+        self.user = self.login_manager.user
+        self.enterContext(self.change_settings("System Settings", {"allow_consecutive_login_attempts": 2}))
+
+    def tearDown(self):
+        frappe.local.response["verification"] = None
+        frappe.local.response["tmp_id"] = None
+        disable_2fa()
+        frappe.clear_cache(user=self.user)
+
+    def test_should_run_2fa(self):
+        """Should return true if enabled."""
+        toggle_2fa_all_role(state=True)
+        self.assertTrue(should_run_2fa(self.user))
+        toggle_2fa_all_role(state=False)
+        self.assertFalse(should_run_2fa(self.user))
+
+    def test_get_cached_user_pass(self):
+        """Cached data should not contain user and pass before 2fa."""
+        user, pwd = get_cached_user_pass()
+        self.assertTrue(all([not user, not pwd]))
+
+    def test_2fa_email_bodies_render(self):
+        code_body = get_email_body_for_2fa({"otp": "123456", "otp_issuer": "Frappe"})
+        self.assertIn("123456", code_body)
+
+        qr_body = get_email_body_for_qr_code({"qrcode_link": "https://example.com/qrcode/abc"})
+        self.assertIn("https://example.com/qrcode/abc", qr_body)
+
+    def test_2fa_email_delivery_status(self):
+        """Verification object should report failure when the mail is never queued."""
+        otp_secret = get_otpsecret_for_(self.user)
+        token = int(pyotp.TOTP(otp_secret).now())
+
+        verification_obj = process_2fa_for_email(self.user, token, otp_secret, "Frappe")
+        self.assertTrue(verification_obj["setup"])
+        self.assertTrue(verification_obj["prompt"])
+
+        unsubscribe = frappe.get_doc(
+            doctype="Email Unsubscribe", email=self.user, global_unsubscribe=1
+        ).insert(ignore_permissions=True)
+        self.addCleanup(unsubscribe.delete, ignore_permissions=True)
+
+        verification_obj = process_2fa_for_email(self.user, token, otp_secret, "Frappe")
+        self.assertFalse(verification_obj["setup"])
+        self.assertFalse(verification_obj["prompt"])
+
+    def test_authenticate_for_2factor(self):
+        """Verification obj and tmp_id should be set in frappe.local."""
+        authenticate_for_2factor(self.user)
+        verification_obj = frappe.local.response["verification"]
+        tmp_id = frappe.local.response["tmp_id"]
+        self.assertTrue(verification_obj)
+        self.assertTrue(tmp_id)
+        for k in ["_usr", "_pwd", "_otp_secret"]:
+            self.assertTrue(frappe.cache.get(f"{tmp_id}{k}"), f"{k} not available")
+
+    def test_two_factor_is_enabled(self):
+        """
+        1. Should return true, if enabled and not bypass_2fa_for_retricted_ip_users
+        2. Should return false, if not enabled
+        3. Should return true, if enabled and not bypass_2fa_for_retricted_ip_users and ip in restrict_ip
+        4. Should return true, if enabled and bypass_2fa_for_retricted_ip_users and not restrict_ip
+        5. Should return false, if enabled and bypass_2fa_for_retricted_ip_users and ip in restrict_ip
+        """
+
+        enable_2fa()
+        self.assertTrue(should_run_2fa(self.user))
+
+        disable_2fa()
+        self.assertFalse(should_run_2fa(self.user))
+
+        enable_2fa()
+        user = frappe.get_doc("User", self.user)
+        user.restrict_ip = frappe.local.request_ip
+        user.save()
+        self.assertTrue(should_run_2fa(self.user))
+
+        user = frappe.get_doc("User", self.user)
+        user.restrict_ip = ""
+        user.save()
+        enable_2fa(1)
+        self.assertTrue(should_run_2fa(self.user))
+
+        user = frappe.get_doc("User", self.user)
+        user.restrict_ip = frappe.local.request_ip
+        user.save()
+        enable_2fa(1)
+        self.assertFalse(should_run_2fa(self.user))
+
+    def test_two_factor_is_enabled_for_user(self):
+        """Should return true if enabled for user."""
+        toggle_2fa_all_role(state=True)
+        self.assertTrue(two_factor_is_enabled_for_(self.user))
+        toggle_2fa_all_role(state=False)
+        self.assertFalse(two_factor_is_enabled_for_(self.user))
+
+    def test_get_otpsecret_for_user(self):
+        """OTP secret should be set for user."""
+        self.assertTrue(get_otpsecret_for_(self.user))
+        self.assertTrue(get_default(self.user + "_otpsecret"))
+
+    def test_confirm_otp_token(self):
+        """Ensure otp is confirmed"""
+        frappe.flags.otp_expiry = 2
+        authenticate_for_2factor(self.user)
+        tmp_id = frappe.local.response["tmp_id"]
+        otp = "wrongotp"
+        with self.assertRaises(frappe.AuthenticationError):
+            confirm_otp_token(self.login_manager, otp=otp, tmp_id=tmp_id)
+
+        with self.freeze_time(datetime.datetime.now()):
+            otp = get_otp(self.user)
+            self.assertTrue(confirm_otp_token(self.login_manager, otp=otp, tmp_id=tmp_id))
+
+        frappe.flags.otp_expiry = None
+        print("Sleeping for 2 secs to confirm token expires..")
+        time.sleep(2)
+        with self.assertRaises(ExpiredLoginException):
+            confirm_otp_token(self.login_manager, otp=otp, tmp_id=tmp_id)
+
+    def test_get_verification_obj(self):
+        """Confirm verification object is returned."""
+        otp_secret = get_otpsecret_for_(self.user)
+        token = int(pyotp.TOTP(otp_secret).now())
+        self.assertTrue(get_verification_obj(self.user, token, otp_secret))
+
+    def test_get_user_svg_from_cache_returns_otp_secret_in_tuple(self):
+        """get_user_svg_from_cache should return a 3-tuple including otp_secret (line 41 in qrcode.py)."""
+        from frappe.www.qrcode import get_user_svg_from_cache
+
+        key = frappe.generate_hash(length=20)
+        otp_secret = get_otpsecret_for_(self.user)
+        totp_uri = pyotp.TOTP(otp_secret).provisioning_uri(self.user, issuer_name="Frappe")
+
+        frappe.cache.set_value(f"{key}_uri", totp_uri)
+        frappe.cache.set_value(f"{key}_user", self.user)
+        frappe.cache.set_value(f"{key}_secret", otp_secret)
+
+        set_request(method="GET", path="/qrcode", query_string=f"k={key}")
+        result = get_user_svg_from_cache()
+
+        self.assertEqual(len(result), 3)
+        user_doc, svg, returned_secret = result
+        self.assertEqual(user_doc.name, self.user)
+        self.assertIsInstance(svg, str)
+        self.assertEqual(returned_secret, otp_secret)
+
+    def test_render_string_template(self):
+        """String template renders as expected with variables."""
+        args = {"issuer_name": "Frappe Technologies"}
+        _str = "Verification Code from {{issuer_name}}"
+        _str = frappe.render_template(_str, args)
+        self.assertEqual(_str, "Verification Code from Frappe Technologies")
+
+    def test_bypass_restict_ip(self):
+        """
+        1. Raise error if user not login from one of the restrict_ip, Bypass restrict ip check disabled by default
+        2. Bypass restrict ip check enabled in System Settings
+        3. Bypass restrict ip check enabled for User
+        """
+
+        user = frappe.get_doc("User", self.user)
+        user.restrict_ip = "192.168.255.254"
+        user.bypass_restrict_ip_check_if_2fa_enabled = 0
+        user.save()
+        enable_2fa(bypass_restrict_ip_check=0)
+        with self.assertRaises(frappe.AuthenticationError):
+            validate_ip_address(self.user)
+
+        enable_2fa(bypass_restrict_ip_check=1)
+        self.assertIsNone(validate_ip_address(self.user))
+
+        user = frappe.get_doc("User", self.user)
+        user.bypass_restrict_ip_check_if_2fa_enabled = 1
+        user.save()
+        enable_2fa()
+        self.assertIsNone(validate_ip_address(self.user))
+
+    def test_otp_attempt_tracker(self):
+        """Check that OTP login attempts are tracked."""
+        authenticate_for_2factor(self.user)
+        tmp_id = frappe.local.response["tmp_id"]
+        otp = "wrongotp"
+        with self.assertRaises(frappe.AuthenticationError):
+            confirm_otp_token(self.login_manager, otp=otp, tmp_id=tmp_id)
+
+        with self.assertRaises(frappe.AuthenticationError):
+            confirm_otp_token(self.login_manager, otp=otp, tmp_id=tmp_id)
+
+        with self.assertRaises(frappe.AuthenticationError):
+            confirm_otp_token(self.login_manager, otp=otp, tmp_id=tmp_id)
+
+        with self.assertRaises(frappe.SecurityException):
+            confirm_otp_token(self.login_manager, otp=otp, tmp_id=tmp_id)
+
+        tracker = get_login_attempt_tracker(self.user, raise_locked_exception=False)
+        tracker.add_success_attempt()
+
+        with self.freeze_time(datetime.datetime.now()):
+            otp = get_otp(self.user)
+            self.assertTrue(confirm_otp_token(self.login_manager, otp=otp, tmp_id=tmp_id))
+
+
+def create_http_request():
+    """Get http request object."""
+    set_request(method="POST", path="/api/method/login")
+    enable_2fa()
+    frappe.form_dict["usr"] = "test@example.com"
+    frappe.form_dict["pwd"] = "Eastern_43A1W"
+    return HTTPRequest()
+
+
+def enable_2fa(bypass_two_factor_auth=0, bypass_restrict_ip_check=0):
+    """Enable Two factor in system settings."""
+    system_settings = frappe.get_doc("System Settings")
+    system_settings.enable_two_factor_auth = 1
+    system_settings.bypass_2fa_for_retricted_ip_users = cint(bypass_two_factor_auth)
+    system_settings.bypass_restrict_ip_check_if_2fa_enabled = cint(bypass_restrict_ip_check)
+    system_settings.two_factor_method = "OTP App"
+    system_settings.flags.ignore_mandatory = True
+    system_settings.save(ignore_permissions=True)
+    frappe.db.commit()
+
+
+def disable_2fa():
+    system_settings = frappe.get_doc("System Settings")
+    system_settings.enable_two_factor_auth = 0
+    system_settings.flags.ignore_mandatory = True
+    system_settings.save(ignore_permissions=True)
+    frappe.db.commit()
+
+
+def toggle_2fa_all_role(state=None):
+    """Enable or disable 2fa for 'all' role on the system."""
+    all_role = frappe.get_doc("Role", "All")
+    state = state if state is not None else False
+    if not isinstance(state, bool):
+        return
+
+    all_role.two_factor_auth = cint(state)
+    all_role.save(ignore_permissions=True)
+    frappe.db.commit()
+
+
+def get_otp(user):
+    otp_secret = get_otpsecret_for_(user)
+    otp = pyotp.TOTP(otp_secret)
+    return otp.now()

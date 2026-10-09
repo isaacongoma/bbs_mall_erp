@@ -2,8 +2,19 @@
  "app": "erpnext",
  "charts": [
   {
+   "name": "ms50the47h",
+   "owner": "Administrator",
+   "creation": "2024-01-05 16:09:16.766939",
+   "modified": "2026-10-07 14:26:06.958488",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 1,
    "chart_name": "Budget Variance",
-   "label": "Budget Variance"
+   "label": "Budget Variance",
+   "parent": "Financial Reports",
+   "parentfield": "charts",
+   "parenttype": "Workspace",
+   "doctype": "Workspace Chart"
   }
  ],
  "content": "[{\"id\": \"12e194822e\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Budget Variance\", \"col\": 12}}, {\"id\": \"1e3181e0cb\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Total Outgoing Bills\", \"col\": 4}}, {\"id\": \"94f620327b\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Total Incoming Bills\", \"col\": 4}}, {\"id\": \"e3e5de6c45\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Total Outgoing Payment\", \"col\": 4}}]",
@@ -26,16 +37,49 @@
  "name": "Financial Reports",
  "number_cards": [
   {
+   "name": "ms5f4lr20k",
+   "owner": "Administrator",
+   "creation": "2024-01-05 16:09:16.766939",
+   "modified": "2026-10-07 14:26:06.958488",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 1,
+   "number_card_name": "Total Outgoing Bills",
    "label": "Total Outgoing Bills",
-   "number_card_name": "Total Outgoing Bills"
+   "parent": "Financial Reports",
+   "parentfield": "number_cards",
+   "parenttype": "Workspace",
+   "doctype": "Workspace Number Card"
   },
   {
+   "name": "ms57qjpen2",
+   "owner": "Administrator",
+   "creation": "2024-01-05 16:09:16.766939",
+   "modified": "2026-10-07 14:26:06.958488",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 2,
+   "number_card_name": "Total Incoming Bills",
    "label": "Total Incoming Bills",
-   "number_card_name": "Total Incoming Bills"
+   "parent": "Financial Reports",
+   "parentfield": "number_cards",
+   "parenttype": "Workspace",
+   "doctype": "Workspace Number Card"
   },
   {
+   "name": "ms59tok75f",
+   "owner": "Administrator",
+   "creation": "2024-01-05 16:09:16.766939",
+   "modified": "2026-10-07 14:26:06.958488",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 3,
+   "number_card_name": "Total Outgoing Payment",
    "label": "Total Outgoing Payment",
-   "number_card_name": "Total Outgoing Payment"
+   "parent": "Financial Reports",
+   "parentfield": "number_cards",
+   "parenttype": "Workspace",
+   "doctype": "Workspace Number Card"
   }
  ],
  "owner": "Administrator",
@@ -44,7 +88,7 @@
  "quick_lists": [],
  "restrict_to_domain": "",
  "roles": [],
- "sequence_id": 5.0,
+ "sequence_id": 5,
  "shortcuts": [],
  "sidebar_items": [
   {

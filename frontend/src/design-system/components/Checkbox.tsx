@@ -66,7 +66,7 @@ export function Checkbox({
         <input
           ref={inputRef}
           type="checkbox"
-          className={cn('rounded-sm mt-[1px] bg-surface-base', inputClasses, className)}
+          className={cn('rounded-sm mt-[1px] bg-surface-base checked:bg-current checked:border-transparent indeterminate:bg-current', inputClasses, className)}
           disabled={disabled}
           id={labeling.inputId}
           checked={checked}

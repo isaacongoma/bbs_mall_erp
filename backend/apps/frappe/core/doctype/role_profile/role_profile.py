@@ -25,7 +25,10 @@ class RoleProfile(Document):
 
     def update_all_users(self):
         """Changes in role_profile reflected across all its user"""
-        users = frappe.get_all("User Role Profile", filters={"role_profile": self.name}, pluck="parent")
+        try:
+            users = frappe.get_all("User Role Profile", filters={"role_profile": self.name}, pluck="parent")
+        except LookupError:
+            return
         for user in users:
             user = frappe.get_doc("User", user)
             user.save()

@@ -37,6 +37,45 @@ def get_email_accounts(user=None):
     return {"email_accounts": email_accounts, "all_accounts": all_accounts}
 
 
+
+
+@frappe.whitelist()
+def mark_as_closed_open(communication: str, status: str):
+    """Set status to open or close"""
+    set_value("Communication", communication, "status", status)
+
+
+@frappe.whitelist()
+def move_email(communication: str, email_account: str):
+    """Move email to another email account."""
+    set_value("Communication", communication, "email_account", email_account)
+
+
+@frappe.whitelist()
+def mark_as_trash(communication: str):
+    """Set email status to trash."""
+    set_value("Communication", communication, "email_status", "Trash")
+
+
+@frappe.whitelist()
+def mark_as_spam(communication: str, sender: str):
+    """Set email status to spam."""
+    email_rule = frappe.db.get_value("Email Rule", {"email_id": sender})
+    if not email_rule:
+        frappe.get_doc({"doctype": "Email Rule", "email_id": sender, "is_spam": 1}).insert(
+            ignore_permissions=True
+        )
+    set_value("Communication", communication, "email_status", "Spam")
+
+
+def link_communication_to_document(doc, reference_doctype, reference_name, ignore_communication_links):
+    if not ignore_communication_links:
+        doc.reference_doctype = reference_doctype
+        doc.reference_name = reference_name
+        doc.status = "Linked"
+        doc.save(ignore_permissions=True)
+
+
 @frappe.whitelist()
 def create_email_flag_queue(names: str | list, action: str):
     """create email flag queue to mark email either as read or unread"""
@@ -92,40 +131,3 @@ def create_email_flag_queue(names: str | list, action: str):
                 flag_queue.save(ignore_permissions=True)
                 doc.db_set("seen", seen, update_modified=False)
                 mark_as_seen_unseen(doc, action)
-
-
-@frappe.whitelist()
-def mark_as_closed_open(communication: str, status: str):
-    """Set status to open or close"""
-    set_value("Communication", communication, "status", status)
-
-
-@frappe.whitelist()
-def move_email(communication: str, email_account: str):
-    """Move email to another email account."""
-    set_value("Communication", communication, "email_account", email_account)
-
-
-@frappe.whitelist()
-def mark_as_trash(communication: str):
-    """Set email status to trash."""
-    set_value("Communication", communication, "email_status", "Trash")
-
-
-@frappe.whitelist()
-def mark_as_spam(communication: str, sender: str):
-    """Set email status to spam."""
-    email_rule = frappe.db.get_value("Email Rule", {"email_id": sender})
-    if not email_rule:
-        frappe.get_doc({"doctype": "Email Rule", "email_id": sender, "is_spam": 1}).insert(
-            ignore_permissions=True
-        )
-    set_value("Communication", communication, "email_status", "Spam")
-
-
-def link_communication_to_document(doc, reference_doctype, reference_name, ignore_communication_links):
-    if not ignore_communication_links:
-        doc.reference_doctype = reference_doctype
-        doc.reference_name = reference_name
-        doc.status = "Linked"
-        doc.save(ignore_permissions=True)

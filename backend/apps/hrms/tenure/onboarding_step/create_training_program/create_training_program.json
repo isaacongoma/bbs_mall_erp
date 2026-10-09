@@ -1,0 +1,21 @@
+{
+ "name": "Create Training Program",
+ "owner": "Administrator",
+ "creation": "2026-10-05 12:00:00",
+ "modified": "2026-10-05 12:00:00",
+ "modified_by": "Administrator",
+ "docstatus": 0,
+ "idx": 0,
+ "title": "Plan a training program",
+ "is_complete": 0,
+ "is_skipped": 0,
+ "description": "A course you run for employees, with its trainer and what it covers. See [Training Program](https://docs.frappe.io/hr/training-program).",
+ "action": "Create Entry",
+ "action_label": "Create Training Program",
+ "reference_document": "Training Program",
+ "show_full_form": 1,
+ "show_form_tour": 0,
+ "is_single": 0,
+ "validate_action": 1,
+ "doctype": "Onboarding Step"
+}

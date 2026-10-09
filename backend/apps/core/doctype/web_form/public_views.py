@@ -13,8 +13,8 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+import frappe
 from apps.core.doctype.web_form import web_form_api as api
-from apps.core.doctype.web_form.web_form import WebForm
 
 MAX_LINK_OPTIONS = 500
 ALLOWED_EMBEDDING_DOMAIN_RE = re.compile(
@@ -25,12 +25,14 @@ ALLOWED_EMBEDDING_DOMAIN_RE = re.compile(
 def crm_form_page(request, route: str):
     """GET /crm-form/<route>/ -- renders the public lead/deal capture page."""
     route = route.strip("/")
-    doc = WebForm.objects.filter(route=route, crm_published=True, doc_type__in=api.ALLOWED_DOCTYPE_LABELS).first()
+    labels = ("in", api.ALLOWED_DOCTYPE_LABELS)
+    name = frappe.db.get_value("Web Form", {"route": route, "crm_published": 1, "doc_type": labels})
     is_author = request.user.is_authenticated and api.is_manager(request.user)
-    if not doc and is_author:
-        doc = WebForm.objects.filter(route=route, doc_type__in=api.ALLOWED_DOCTYPE_LABELS).first()
-    if not doc:
+    if not name and is_author:
+        name = frappe.db.get_value("Web Form", {"route": route, "doc_type": labels})
+    if not name:
         raise Http404
+    doc = frappe.get_doc("Web Form", name)
 
     fields = [
         {
@@ -50,7 +52,7 @@ def crm_form_page(request, route: str):
             "mandatory_depends_on": f.mandatory_depends_on or "",
             "read_only_depends_on": f.read_only_depends_on or "",
         }
-        for f in doc.field_rows.all()
+        for f in doc.web_form_fields
     ]
     for f in fields:
         f["link_options"] = _link_field_options(f["options"]) if f["fieldtype"] == "Link" else []
@@ -60,7 +62,7 @@ def crm_form_page(request, route: str):
         "form_title": doc.title,
         "form_description": doc.introduction_text or "",
         "form_route": doc.route,
-        "web_form_name": doc.pk,
+        "web_form_name": doc.name,
         "submit_label": doc.button_label or "Submit",
         "success_message": doc.success_message or "Thank you!",
         "success_url": doc.success_url or "",
@@ -68,7 +70,7 @@ def crm_form_page(request, route: str):
         "layout": _build_layout(fields),
         "fields_json": json.dumps(fields),
         "form_route_json": json.dumps(doc.route),
-        "web_form_name_json": json.dumps(doc.pk),
+        "web_form_name_json": json.dumps(doc.name),
         "success_url_json": json.dumps(doc.success_url or ""),
         "draft_preview_json": json.dumps(not doc.crm_published),
         "embed_json": json.dumps(request.GET.get("embed") in ("1", "true", "yes")),
@@ -131,14 +133,17 @@ def submit_form(request):
     else:
         values = raw_values or {}
 
-    doc_row = WebForm.objects.filter(pk=web_form_name, crm_published=True, doc_type__in=api.ALLOWED_DOCTYPE_LABELS).first()
-    if not doc_row:
+    found = frappe.db.exists(
+        "Web Form", {"name": web_form_name, "crm_published": 1, "doc_type": ("in", api.ALLOWED_DOCTYPE_LABELS)}
+    )
+    if not found:
         raise ValidationError("Form not found or not published")
+    doc_row = frappe.get_doc("Web Form", web_form_name)
 
     model = get_doctype_model(doc_row.doc_type)
-    allowed_fields = {f.fieldname for f in doc_row.field_rows.all() if f.fieldtype not in ("Section Break", "Column Break")}
+    allowed_fields = {f.fieldname for f in doc_row.web_form_fields if f.fieldtype not in ("Section Break", "Column Break")}
     missing = []
-    for f in doc_row.field_rows.all():
+    for f in doc_row.web_form_fields:
         if f.fieldtype in ("Section Break", "Column Break"):
             continue
         value = values.get(f.fieldname)

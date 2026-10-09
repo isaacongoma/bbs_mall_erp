@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class SalesOrderGenerated(FrappeModel):
@@ -111,9 +111,10 @@ class SalesOrderGenerated(FrappeModel):
     has_unit_price_items = models.SmallIntegerField(default=0)
     last_scanned_warehouse = models.CharField(max_length=140, blank=True, null=True, default='')
     is_subcontracted = models.SmallIntegerField(default=0)
-    transaction_time = models.TimeField(null=True, blank=True)
+    transaction_time = FrappeTimeField(null=True, blank=True)
     ignore_default_payment_terms_template = models.SmallIntegerField(default=0)
     title = models.CharField(max_length=140, blank=True, null=True, default='')
+    _seen = models.TextField(null=True, blank=True)
 
     class Meta:
         abstract = True

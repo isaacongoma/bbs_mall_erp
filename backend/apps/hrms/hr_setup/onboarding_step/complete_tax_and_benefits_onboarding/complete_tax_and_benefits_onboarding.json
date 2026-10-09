@@ -1,0 +1,21 @@
+{
+ "name": "Complete Tax and Benefits Onboarding",
+ "owner": "Administrator",
+ "creation": "2026-10-05 12:00:00",
+ "modified": "2026-10-05 12:00:00",
+ "modified_by": "Administrator",
+ "docstatus": 0,
+ "idx": 0,
+ "title": "Deduct the right tax",
+ "is_complete": 0,
+ "is_skipped": 0,
+ "description": "Set the payroll period and tax slabs, and record what employees declare.",
+ "action": "Complete Onboarding",
+ "action_label": "Open Tax & Benefits",
+ "module_onboarding": "Tax and Benefits Onboarding",
+ "show_full_form": 0,
+ "show_form_tour": 0,
+ "is_single": 0,
+ "validate_action": 1,
+ "doctype": "Onboarding Step"
+}

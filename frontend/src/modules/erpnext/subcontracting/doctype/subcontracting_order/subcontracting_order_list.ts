@@ -1,0 +1,16 @@
+import { __, frappe } from '@/shared/frappe'
+frappe.listview_settings['Subcontracting Order'] = {
+  get_indicator: function (doc?: any) {
+    const status_colors: any = {
+      Draft: 'red',
+      Open: 'orange',
+      'Partially Received': 'yellow',
+      Completed: 'green',
+      'Partial Material Transferred': 'purple',
+      'Material Transferred': 'blue',
+      Closed: 'green',
+      Cancelled: 'red',
+    }
+    return [__(doc.status), status_colors[doc.status], 'status,=,' + doc.status]
+  },
+}

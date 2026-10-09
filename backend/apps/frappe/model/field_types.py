@@ -55,9 +55,13 @@ def django_field(df):
     if fieldtype == "Date":
         return models.DateField(null=True, blank=True)
     if fieldtype == "Datetime":
-        return models.DateTimeField(null=True, blank=True)
+        from apps.frappe.model.base import FrappeDateTimeField
+
+        return FrappeDateTimeField(null=True, blank=True)
     if fieldtype == "Time":
-        return models.TimeField(null=True, blank=True)
+        from apps.frappe.model.base import FrappeTimeField
+
+        return FrappeTimeField(null=True, blank=True)
     length = int(df.get("length") or 140)
     if length <= 0:
         length = 140

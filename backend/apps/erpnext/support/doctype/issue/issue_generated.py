@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class IssueGenerated(FrappeModel):
@@ -14,8 +14,8 @@ class IssueGenerated(FrappeModel):
     issue_type = models.CharField(max_length=140, blank=True, null=True, default='')
     description = models.TextField(blank=True, null=True, default='')
     service_level_agreement = models.CharField(max_length=140, blank=True, null=True, default='')
-    response_by = models.DateTimeField(null=True, blank=True)
-    first_responded_on = models.DateTimeField(null=True, blank=True)
+    response_by = FrappeDateTimeField(null=True, blank=True)
+    first_responded_on = FrappeDateTimeField(null=True, blank=True)
     lead = models.CharField(max_length=140, blank=True, null=True, default='')
     contact = models.CharField(max_length=140, blank=True, null=True, default='')
     email_account = models.CharField(max_length=140, blank=True, null=True, default='')
@@ -24,21 +24,22 @@ class IssueGenerated(FrappeModel):
     company = models.CharField(max_length=140, blank=True, null=True, default='')
     resolution_details = models.TextField(blank=True, null=True, default='')
     opening_date = models.DateField(null=True, blank=True)
-    opening_time = models.TimeField(null=True, blank=True)
+    opening_time = FrappeTimeField(null=True, blank=True)
     content_type = models.CharField(max_length=140, blank=True, null=True, default='')
     attachment = models.TextField(blank=True, null=True, default='')
     via_customer_portal = models.SmallIntegerField(default=0)
-    service_level_agreement_creation = models.DateTimeField(null=True, blank=True)
+    service_level_agreement_creation = FrappeDateTimeField(null=True, blank=True)
     issue_split_from = models.CharField(max_length=140, blank=True, null=True, default='')
     avg_response_time = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     resolution_time = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     user_resolution_time = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
-    on_hold_since = models.DateTimeField(null=True, blank=True)
+    on_hold_since = FrappeDateTimeField(null=True, blank=True)
     total_hold_time = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     agreement_status = models.CharField(max_length=140, blank=True, null=True, default='First Response Due')
     first_response_time = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
-    sla_resolution_by = models.DateTimeField(null=True, blank=True)
-    sla_resolution_date = models.DateTimeField(null=True, blank=True)
+    sla_resolution_by = FrappeDateTimeField(null=True, blank=True)
+    sla_resolution_date = FrappeDateTimeField(null=True, blank=True)
+    _seen = models.TextField(null=True, blank=True)
 
     class Meta:
         abstract = True

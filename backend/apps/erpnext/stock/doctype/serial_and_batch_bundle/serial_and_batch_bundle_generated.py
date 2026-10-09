@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class SerialAndBatchBundleGenerated(FrappeModel):
@@ -25,7 +25,7 @@ class SerialAndBatchBundleGenerated(FrappeModel):
     returned_against = models.CharField(max_length=140, blank=True, null=True, default='')
     naming_series = models.CharField(max_length=140, blank=True, null=True, default='SABB-.########')
     is_packed = models.SmallIntegerField(default=0)
-    posting_datetime = models.DateTimeField(null=True, blank=True)
+    posting_datetime = FrappeDateTimeField(null=True, blank=True)
 
     class Meta:
         abstract = True

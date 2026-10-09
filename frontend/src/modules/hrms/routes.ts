@@ -1,0 +1,85 @@
+import type { ModuleRoute } from '@/core/modules/types'
+
+export const hrmsRoutes: ModuleRoute[] = [
+  { name: 'HRMS Home', path: '/hrms/home', aliases: ['/hrms'], component: () => import('./pages/Home') },
+  { name: 'HRMS Attendance', path: '/hrms/attendance', component: () => import('./pages/Attendance') },
+  {
+    name: 'HRMS Attendance Requests',
+    path: '/hrms/attendance/requests',
+    component: () => import('./pages/AttendanceRequests'),
+  },
+  {
+    name: 'HRMS Attendance Request',
+    path: '/hrms/attendance/requests/new',
+    component: () => import('./pages/AttendanceRequestForm'),
+  },
+  {
+    name: 'HRMS Attendance Request Detail',
+    path: '/hrms/attendance/requests/:id',
+    component: () => import('./pages/AttendanceRequestForm'),
+  },
+  {
+    name: 'HRMS Shift Request',
+    path: '/hrms/attendance/shifts/new',
+    component: () => import('./pages/ShiftRequestForm'),
+  },
+  {
+    name: 'HRMS Shift Request Detail',
+    path: '/hrms/attendance/shifts/:id',
+    component: () => import('./pages/ShiftRequestForm'),
+  },
+  {
+    name: 'HRMS Shift Requests',
+    path: '/hrms/attendance/shift-requests',
+    component: () => import('./pages/ShiftRequests'),
+  },
+  { name: 'HRMS Leaves', path: '/hrms/leaves', component: () => import('./pages/Leaves') },
+  { name: 'HRMS Leave Request', path: '/hrms/leaves/new', component: () => import('./pages/LeaveRequestForm') },
+  { name: 'HRMS Leave Detail', path: '/hrms/leaves/:id', component: () => import('./pages/LeaveRequestForm') },
+  { name: 'HRMS Leave List', path: '/hrms/leaves/list', component: () => import('./pages/LeaveList') },
+  { name: 'HRMS Expense Claims', path: '/hrms/expense-claims', component: () => import('./pages/ExpenseClaims') },
+  { name: 'HRMS Expense Claim', path: '/hrms/expense-claims/new', component: () => import('./pages/ExpenseClaimForm') },
+  {
+    name: 'HRMS Expense Claim Detail',
+    path: '/hrms/expense-claims/:id',
+    component: () => import('./pages/ExpenseClaimForm'),
+  },
+  { name: 'HRMS Claim List', path: '/hrms/expense-claims/list', component: () => import('./pages/ClaimList') },
+  {
+    name: 'HRMS Employee Advances',
+    path: '/hrms/employee-advances',
+    component: () => import('./pages/EmployeeAdvances'),
+  },
+  {
+    name: 'HRMS Employee Advance',
+    path: '/hrms/employee-advances/new',
+    component: () => import('./pages/EmployeeAdvanceForm'),
+  },
+  {
+    name: 'HRMS Employee Advance Detail',
+    path: '/hrms/employee-advances/:id',
+    component: () => import('./pages/EmployeeAdvanceForm'),
+  },
+  {
+    name: 'HRMS Employee Checkins',
+    path: '/hrms/attendance/checkins',
+    component: () => import('./pages/EmployeeCheckins'),
+  },
+  {
+    name: 'HRMS Shift Assignments',
+    path: '/hrms/attendance/assignments',
+    component: () => import('./pages/ShiftAssignments'),
+  },
+  { name: 'HRMS Salary Slips', path: '/hrms/salary-slips', component: () => import('./pages/SalarySlips') },
+  { name: 'HRMS Salary Slip', path: '/hrms/salary-slips/:id', component: () => import('./pages/SalarySlipDetail') },
+  { name: 'HRMS Profile', path: '/hrms/profile', component: () => import('./pages/Profile') },
+  { name: 'HRMS Notifications', path: '/hrms/notifications', component: () => import('./pages/Notifications') },
+  { name: 'HRMS Settings', path: '/hrms/settings', component: () => import('./pages/Settings') },
+  { name: 'HRMS Roster', path: '/hrms/roster', component: () => import('./pages/Roster') },
+  { name: 'HRMS Organizational Chart', path: '/hrms/organizational-chart', component: () => import('./pages/OrganizationalChart') },
+  { name: 'HRMS Invalid Employee', path: '/hrms/invalid-employee', component: () => import('./pages/InvalidEmployee') },
+  { name: 'HRMS Leave Control Panel', path: '/hrms/tools/leave-control-panel', component: () => import('./pages/HrmsBulkToolPage') },
+  { name: 'HRMS Shift Assignment Tool', path: '/hrms/tools/shift-assignment-tool', component: () => import('./pages/HrmsBulkToolPage') },
+  { name: 'HRMS Employee Attendance Tool', path: '/hrms/tools/employee-attendance-tool', component: () => import('./pages/HrmsBulkToolPage') },
+  { name: 'HRMS Bulk Salary Structure Assignment', path: '/hrms/tools/bulk-salary-structure-assignment', component: () => import('./pages/HrmsBulkToolPage') },
+]

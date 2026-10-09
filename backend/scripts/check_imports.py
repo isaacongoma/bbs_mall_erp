@@ -19,14 +19,14 @@ missing = {}
 for path in sorted((ROOT / "apps").rglob("*.py")):
     if any(part in {"migrations", "tests", "__pycache__", "scripts"} for part in path.parts) or path.name.startswith("test_"):
         continue
-    if not (str(path).startswith(str(ROOT / "apps" / "erpnext")) or str(path).startswith(str(ROOT / "apps" / "frappe"))):
+    if not any(str(path).startswith(str(ROOT / "apps" / app)) for app in ("erpnext", "frappe", "hrms")):
         continue
     try:
         tree = ast.parse(path.read_text(encoding="utf-8"))
     except SyntaxError:
         continue
     for node in ast.walk(tree):
-        if isinstance(node, ast.ImportFrom) and node.module and node.level == 0 and node.module.split(".")[0] in {"erpnext", "frappe"}:
+        if isinstance(node, ast.ImportFrom) and node.module and node.level == 0 and node.module.split(".")[0] in {"erpnext", "frappe", "hrms"}:
             try:
                 module = importlib.import_module(node.module)
             except ModuleNotFoundError as exc:

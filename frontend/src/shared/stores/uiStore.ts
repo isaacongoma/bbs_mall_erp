@@ -25,6 +25,7 @@ interface UiState {
   showQuickEntryModal: boolean
   quickEntryProps: Record<string, any>
   showAboutModal: boolean
+  showPasskeys: boolean
   showChangePasswordModal: boolean
   showCreateDocumentModal: boolean
   createDocumentDoctype: string
@@ -45,6 +46,7 @@ export const useUiStore = create<UiState>((set, get) => ({
   showQuickEntryModal: false,
   quickEntryProps: {},
   showAboutModal: false,
+  showPasskeys: false,
   showChangePasswordModal: false,
   showCreateDocumentModal: false,
   createDocumentDoctype: '',

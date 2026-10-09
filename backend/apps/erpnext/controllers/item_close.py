@@ -7,7 +7,6 @@ always: Sales Order re-checks the credit limit only on the literal "Draft".
 Reusing each doctype's own value keeps reopening a row indistinguishable from
 reopening the document by hand.
 """
-from __future__ import annotations
 
 import frappe
 from frappe import _

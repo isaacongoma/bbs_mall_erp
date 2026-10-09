@@ -1,0 +1,948 @@
+{
+ "skipped_new": [
+  [
+   "Purchase Invoice",
+   "is_old_subcontracting_flow"
+  ],
+  [
+   "Purchase Invoice Item",
+   "bom"
+  ],
+  [
+   "Purchase Order",
+   "is_old_subcontracting_flow"
+  ],
+  [
+   "Purchase Order",
+   "supplied_items"
+  ],
+  [
+   "Purchase Order Item",
+   "include_exploded_items"
+  ],
+  [
+   "DocType",
+   "index_web_pages_for_search"
+  ],
+  [
+   "DocType",
+   "website_search_field"
+  ],
+  [
+   "DocType Layout",
+   "route"
+  ],
+  [
+   "DocType Layout",
+   "client_script"
+  ],
+  [
+   "Report",
+   "letter_head"
+  ],
+  [
+   "User",
+   "banner_image"
+  ],
+  [
+   "Dashboard Chart",
+   "empty_state_message"
+  ],
+  [
+   "Onboarding Step",
+   "module_onboarding"
+  ],
+  [
+   "Onboarding Step Map",
+   "is_optional"
+  ],
+  [
+   "Notification",
+   "notification_title"
+  ],
+  [
+   "Notification",
+   "notification_message"
+  ],
+  [
+   "BOM",
+   "set_rate_of_sub_assembly_item_based_on_bom"
+  ],
+  [
+   "Job Card",
+   "operation_row_number"
+  ],
+  [
+   "Work Order Additional Item",
+   "type"
+  ],
+  [
+   "Print Format",
+   "preview_image"
+  ],
+  [
+   "Sales Order Item",
+   "ensure_delivery_based_on_produced_serial_no"
+  ],
+  [
+   "Inventory Dimension",
+   "mandatory_depends_on_backend"
+  ],
+  [
+   "Purchase Receipt",
+   "is_old_subcontracting_flow"
+  ],
+  [
+   "Purchase Receipt Item",
+   "include_exploded_items"
+  ],
+  [
+   "Purchase Receipt Item",
+   "bom"
+  ],
+  [
+   "Serial and Batch Entry",
+   "fg_serial_no"
+  ],
+  [
+   "Serial and Batch Entry",
+   "fg_batch_no"
+  ],
+  [
+   "Stock Settings",
+   "default_warehouse"
+  ],
+  [
+   "Stock Settings",
+   "sample_retention_warehouse"
+  ],
+  [
+   "Stock Settings",
+   "auto_map_raw_materials_to_finished_goods"
+  ]
+ ],
+ "hidden_local": [
+  [
+   "Accounts Settings",
+   "preview_mode"
+  ],
+  [
+   "Payment Reconciliation",
+   "currency"
+  ],
+  [
+   "Payment Reconciliation",
+   "total_invoice_amount"
+  ],
+  [
+   "Payment Reconciliation",
+   "total_payment_amount"
+  ],
+  [
+   "Payment Reconciliation",
+   "difference_amount"
+  ],
+  [
+   "POS Invoice Item",
+   "is_product_bundle"
+  ],
+  [
+   "POS Invoice Item",
+   "product_bundle"
+  ],
+  [
+   "POS Profile",
+   "receipt_email_template"
+  ],
+  [
+   "POS Profile",
+   "allow_warehouse_change"
+  ],
+  [
+   "Sales Invoice",
+   "shipping_contact_person"
+  ],
+  [
+   "Sales Invoice",
+   "shipping_contact_display"
+  ],
+  [
+   "Sales Invoice",
+   "shipping_contact_mobile"
+  ],
+  [
+   "Sales Invoice",
+   "shipping_contact_email"
+  ],
+  [
+   "Sales Invoice Item",
+   "is_product_bundle"
+  ],
+  [
+   "Sales Invoice Item",
+   "product_bundle"
+  ],
+  [
+   "Subscription",
+   "next_billing_period_start"
+  ],
+  [
+   "Subscription",
+   "next_billing_period_end"
+  ],
+  [
+   "Purchase Order",
+   "remarks"
+  ],
+  [
+   "Purchase Order Item",
+   "closed"
+  ],
+  [
+   "Request for Quotation Item",
+   "cost_center"
+  ],
+  [
+   "Supplier",
+   "restrict_to_companies"
+  ],
+  [
+   "Supplier",
+   "allowed_companies"
+  ],
+  [
+   "Supplier Quotation Item",
+   "ordered_qty"
+  ],
+  [
+   "Custom DocPerm",
+   "is_app_disabled"
+  ],
+  [
+   "DocField",
+   "ignore_versioning"
+  ],
+  [
+   "DocField",
+   "min_value"
+  ],
+  [
+   "DocField",
+   "max_value"
+  ],
+  [
+   "DocType Layout",
+   "title"
+  ],
+  [
+   "DocType Layout",
+   "is_child_table"
+  ],
+  [
+   "DocType Layout",
+   "child_tables"
+  ],
+  [
+   "DocType Layout",
+   "is_standard"
+  ],
+  [
+   "DocType Layout",
+   "module"
+  ],
+  [
+   "DocType Layout",
+   "based_on"
+  ],
+  [
+   "DocType Layout",
+   "default_print_format"
+  ],
+  [
+   "DocType Layout",
+   "default_email_template"
+  ],
+  [
+   "DocType Layout",
+   "condition"
+  ],
+  [
+   "DocType Layout Field",
+   "hidden"
+  ],
+  [
+   "DocType Layout Field",
+   "reqd"
+  ],
+  [
+   "DocType Layout Field",
+   "read_only"
+  ],
+  [
+   "DocType Layout Field",
+   "default"
+  ],
+  [
+   "DocType Layout Field",
+   "description"
+  ],
+  [
+   "DocType Layout Field",
+   "bold"
+  ],
+  [
+   "DocType Layout Field",
+   "allow_in_quick_entry"
+  ],
+  [
+   "DocType Layout Field",
+   "in_list_view"
+  ],
+  [
+   "DocType Layout Field",
+   "in_standard_filter"
+  ],
+  [
+   "DocType Layout Field",
+   "depends_on"
+  ],
+  [
+   "DocType Layout Field",
+   "mandatory_depends_on"
+  ],
+  [
+   "DocType Layout Field",
+   "read_only_depends_on"
+  ],
+  [
+   "Installed Application",
+   "disabled"
+  ],
+  [
+   "Installed Application",
+   "disable_application"
+  ],
+  [
+   "Installed Application",
+   "enable_application"
+  ],
+  [
+   "Page",
+   "type"
+  ],
+  [
+   "Page",
+   "island"
+  ],
+  [
+   "Report",
+   "generate_csv"
+  ],
+  [
+   "Report",
+   "default_print_format"
+  ],
+  [
+   "Report",
+   "default_letter_head"
+  ],
+  [
+   "Scheduled Job Type",
+   "queue"
+  ],
+  [
+   "Server Script",
+   "queue"
+  ],
+  [
+   "Customize Form Field",
+   "min_value"
+  ],
+  [
+   "Customize Form Field",
+   "max_value"
+  ],
+  [
+   "Customize Form Field",
+   "ignore_versioning"
+  ],
+  [
+   "Custom Field",
+   "ignore_versioning"
+  ],
+  [
+   "Custom Field",
+   "min_value"
+  ],
+  [
+   "Custom Field",
+   "max_value"
+  ],
+  [
+   "Custom Field",
+   "is_app_disabled"
+  ],
+  [
+   "Property Setter",
+   "is_app_disabled"
+  ],
+  [
+   "Sidebar Item",
+   "route"
+  ],
+  [
+   "Workspace Link",
+   "doctype_layout"
+  ],
+  [
+   "IMAP Folder",
+   "sync_from_uid"
+  ],
+  [
+   "OAuth Client",
+   "is_dynamic_client"
+  ],
+  [
+   "Social Login Key",
+   "trust_email_without_verified_claim"
+  ],
+  [
+   "Social Login Key",
+   "tenant_id"
+  ],
+  [
+   "Social Login Key",
+   "trust_any_tenant"
+  ],
+  [
+   "Webhook",
+   "max_retries"
+  ],
+  [
+   "Webhook Request Log",
+   "status"
+  ],
+  [
+   "Webhook Request Log",
+   "attempt"
+  ],
+  [
+   "Webhook Request Log",
+   "next_retry"
+  ],
+  [
+   "Blanket Order",
+   "status"
+  ],
+  [
+   "Blanket Order Item",
+   "stock_uom"
+  ],
+  [
+   "Blanket Order Item",
+   "closed"
+  ],
+  [
+   "BOM",
+   "set_qty_based_on_percentage"
+  ],
+  [
+   "BOM Item",
+   "set_rate_of_sub_assembly_item_based_on_bom"
+  ],
+  [
+   "BOM Item",
+   "percentage"
+  ],
+  [
+   "BOM Item",
+   "is_balance_item"
+  ],
+  [
+   "BOM Operation",
+   "batch_split"
+  ],
+  [
+   "BOM Operation",
+   "weight_per_piece"
+  ],
+  [
+   "Job Card",
+   "batch_split"
+  ],
+  [
+   "Job Card",
+   "weight_per_piece"
+  ],
+  [
+   "Manufacturing Settings",
+   "allow_alternative_finished_goods"
+  ],
+  [
+   "Material Request Plan Item",
+   "supplier"
+  ],
+  [
+   "Operation",
+   "work_instruction"
+  ],
+  [
+   "Production Plan",
+   "no_of_shifts"
+  ],
+  [
+   "Production Plan Item",
+   "planned_end_date"
+  ],
+  [
+   "Production Plan Sub Assembly Item",
+   "schedule_end_date"
+  ],
+  [
+   "Work Order Additional Item",
+   "secondary_item_type"
+  ],
+  [
+   "Work Order Item",
+   "requested_qty"
+  ],
+  [
+   "Work Order Item",
+   "picked_qty"
+  ],
+  [
+   "Work Order Operation",
+   "batch_split"
+  ],
+  [
+   "Work Order Operation",
+   "weight_per_piece"
+  ],
+  [
+   "Letter Head",
+   "standard"
+  ],
+  [
+   "Letter Head",
+   "letter_head_for"
+  ],
+  [
+   "Letter Head",
+   "module"
+  ],
+  [
+   "Print Format",
+   "published_on"
+  ],
+  [
+   "Print Format",
+   "published_by"
+  ],
+  [
+   "Customer",
+   "on_hold"
+  ],
+  [
+   "Customer",
+   "release_date"
+  ],
+  [
+   "Customer",
+   "restrict_to_companies"
+  ],
+  [
+   "Customer",
+   "allowed_companies"
+  ],
+  [
+   "Product Bundle",
+   "is_active"
+  ],
+  [
+   "Product Bundle",
+   "amended_from"
+  ],
+  [
+   "Quotation",
+   "revision_of"
+  ],
+  [
+   "Quotation",
+   "is_latest_revision"
+  ],
+  [
+   "Quotation",
+   "is_active"
+  ],
+  [
+   "Quotation Item",
+   "is_product_bundle"
+  ],
+  [
+   "Quotation Item",
+   "product_bundle"
+  ],
+  [
+   "Sales Order",
+   "shipping_contact_person"
+  ],
+  [
+   "Sales Order",
+   "shipping_contact_display"
+  ],
+  [
+   "Sales Order",
+   "shipping_contact_mobile"
+  ],
+  [
+   "Sales Order",
+   "shipping_contact_email"
+  ],
+  [
+   "Sales Order Item",
+   "is_product_bundle"
+  ],
+  [
+   "Sales Order Item",
+   "product_bundle"
+  ],
+  [
+   "Sales Order Item",
+   "skip_delivery"
+  ],
+  [
+   "Sales Order Item",
+   "closed"
+  ],
+  [
+   "Selling Settings",
+   "skip_delivery_note_for_service_items"
+  ],
+  [
+   "Selling Settings",
+   "enable_proforma_invoice"
+  ],
+  [
+   "Selling Settings",
+   "default_proforma_print_format"
+  ],
+  [
+   "Selling Settings",
+   "proforma_email_template"
+  ],
+  [
+   "Company",
+   "bank_charges_account"
+  ],
+  [
+   "Company",
+   "exchange_gain_account"
+  ],
+  [
+   "Company",
+   "exchange_loss_account"
+  ],
+  [
+   "Company",
+   "default_purchase_price_variance_account"
+  ],
+  [
+   "Company",
+   "default_manufacturing_variance_account"
+  ],
+  [
+   "Company",
+   "default_warehouse"
+  ],
+  [
+   "Company",
+   "sample_retention_warehouse"
+  ],
+  [
+   "Company",
+   "default_letter_head_report"
+  ],
+  [
+   "Company",
+   "disable_sdbnb_in_sr"
+  ],
+  [
+   "Company",
+   "stock_delivered_but_not_billed"
+  ],
+  [
+   "Company",
+   "enable_stock_delivered_but_not_billed"
+  ],
+  [
+   "Delivery Note",
+   "shipping_contact_person"
+  ],
+  [
+   "Delivery Note",
+   "shipping_contact_display"
+  ],
+  [
+   "Delivery Note",
+   "shipping_contact_mobile"
+  ],
+  [
+   "Delivery Note",
+   "shipping_contact_email"
+  ],
+  [
+   "Delivery Note Item",
+   "is_product_bundle"
+  ],
+  [
+   "Delivery Note Item",
+   "product_bundle"
+  ],
+  [
+   "Delivery Note Item",
+   "closed"
+  ],
+  [
+   "Inventory Dimension",
+   "mandatory_depends_on"
+  ],
+  [
+   "Item",
+   "restrict_to_companies"
+  ],
+  [
+   "Item",
+   "allowed_companies"
+  ],
+  [
+   "Item Default",
+   "vf_default_warehouse"
+  ],
+  [
+   "Item Default",
+   "vf_default_price_list"
+  ],
+  [
+   "Item Default",
+   "vf_default_discount_account"
+  ],
+  [
+   "Item Default",
+   "vf_default_inventory_account"
+  ],
+  [
+   "Item Default",
+   "purchase_price_variance_account"
+  ],
+  [
+   "Item Default",
+   "manufacturing_variance_account"
+  ],
+  [
+   "Item Default",
+   "vf_buying_cost_center"
+  ],
+  [
+   "Item Default",
+   "vf_default_supplier"
+  ],
+  [
+   "Item Default",
+   "vf_expense_account"
+  ],
+  [
+   "Item Default",
+   "vf_default_provisional_account"
+  ],
+  [
+   "Item Default",
+   "vf_purchase_expense_account"
+  ],
+  [
+   "Item Default",
+   "vf_purchase_expense_contra_account"
+  ],
+  [
+   "Item Default",
+   "vf_expenses_added_to_stock_account"
+  ],
+  [
+   "Item Default",
+   "vf_expenses_added_to_stock_contra_account"
+  ],
+  [
+   "Item Default",
+   "vf_selling_cost_center"
+  ],
+  [
+   "Item Default",
+   "vf_income_account"
+  ],
+  [
+   "Item Default",
+   "vf_default_cogs_account"
+  ],
+  [
+   "Item Default",
+   "vf_deferred_expense_account"
+  ],
+  [
+   "Item Default",
+   "vf_deferred_revenue_account"
+  ],
+  [
+   "Item Lead Time",
+   "supplier_lead_times"
+  ],
+  [
+   "Packed Item",
+   "product_bundle"
+  ],
+  [
+   "Packed Item",
+   "reserve_stock"
+  ],
+  [
+   "Purchase Receipt Item",
+   "closed"
+  ],
+  [
+   "Stock Entry",
+   "weight_per_piece"
+  ],
+  [
+   "Stock Entry",
+   "is_fg_conversion"
+  ],
+  [
+   "Stock Entry Type",
+   "batch_split"
+  ],
+  [
+   "Stock Settings",
+   "use_inline_serial_batch_editor"
+  ],
+  [
+   "Website Settings",
+   "max_signups_per_minute"
+  ],
+  [
+   "Custom DocPerm",
+   "is_app_disabled"
+  ],
+  [
+   "Job Applicant",
+   "open_resume_button"
+  ],
+  [
+   "Shift Type",
+   "absent_buffer_days"
+  ]
+ ],
+ "type_mismatch": [
+  [
+   "Asset Activity",
+   [
+    "subject",
+    "Text Editor",
+    "Small Text"
+   ]
+  ],
+  [
+   "Asset Depreciation Schedule",
+   [
+    "notes",
+    "Text Editor",
+    "Small Text"
+   ]
+  ],
+  [
+   "Job Card Item",
+   [
+    "description",
+    "Text Editor",
+    "Text"
+   ]
+  ],
+  [
+   "Production Plan Sub Assembly Item",
+   [
+    "description",
+    "Text Editor",
+    "Small Text"
+   ]
+  ],
+  [
+   "Work Order",
+   [
+    "description",
+    "Text Editor",
+    "Small Text"
+   ]
+  ],
+  [
+   "Work Order Item",
+   [
+    "description",
+    "Text Editor",
+    "Text"
+   ]
+  ],
+  [
+   "Project User",
+   [
+    "project_status",
+    "Text Editor",
+    "Text"
+   ]
+  ],
+  [
+   "Sales Team",
+   [
+    "commission_rate",
+    "Percent",
+    "Data"
+   ]
+  ],
+  [
+   "Global Defaults",
+   [
+    "hide_currency_symbol",
+    "Check",
+    "Select"
+   ]
+  ],
+  [
+   "Sales Person",
+   [
+    "commission_rate",
+    "Percent",
+    "Data"
+   ]
+  ],
+  [
+   "Delivery Stop",
+   [
+    "customer_address",
+    "Text Editor",
+    "Small Text"
+   ]
+  ],
+  [
+   "Delivery Stop",
+   [
+    "customer_contact",
+    "Text Editor",
+    "Small Text"
+   ]
+  ],
+  [
+   "Job Applicant",
+   [
+    "resume_link",
+    "Data",
+    "Attach"
+   ]
+  ]
+ ]
+}

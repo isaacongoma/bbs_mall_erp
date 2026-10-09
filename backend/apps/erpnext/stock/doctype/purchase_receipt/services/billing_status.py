@@ -3,7 +3,6 @@
 Purchase Invoice imports the module-level allocation helpers from here —
 Purchase Receipt owns the shared buying billing logic.
 """
-from __future__ import annotations
 
 import frappe
 from frappe import _

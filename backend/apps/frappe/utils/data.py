@@ -1325,18 +1325,6 @@ def remainder(numerator: NumericType, denominator: NumericType, precision: int =
 	return flt(_remainder, precision)
 
 
-def safe_div(numerator: NumericType, denominator: NumericType, precision: int = 2) -> float:
-	"""
-	SafeMath division that returns zero when divided by zero.
-	"""
-	precision = cint(precision)
-
-	if denominator == 0:
-		_res = 0.0
-	else:
-		_res = float(numerator) / denominator
-
-	return flt(_res, precision)
 
 
 def round_based_on_smallest_currency_fraction(value, currency, precision=2):
@@ -2017,11 +2005,6 @@ def get_link_to_form(doctype: str, name: str | None = None, label: str | None = 
 	return f"""<a href="{get_url_to_form(doctype, name)}">{label}</a>"""
 
 
-def get_url_to_workspace(workspace: str, is_public: bool):
-	slug = lambda x: x
-
-	url_prefix = "/desk/" if is_public else "/desk/private/"
-	return url_prefix + slug(workspace)
 
 
 def get_link_to_report(
@@ -2307,81 +2290,6 @@ def compare(val1: Any, condition: str, val2: Any, fieldtype: str | None = None) 
 	return False
 
 
-def get_filter(doctype: str, filters: FilterSignature, filters_config=None) -> "frappe._dict":
-	"""Return a `_dict` like:
-
-	{
-	        "doctype": ...
-	        "fieldname": ...
-	        "operator": ...
-	        "value": ...
-	        "fieldtype": ...
-	}
-	"""
-	from frappe.database.utils import NestedSetHierarchy
-	from frappe.model import child_table_fields, default_fields, optional_fields
-
-	ft: FilterTuple
-	if isinstance(filters, FilterTuple):
-		ft = filters
-	elif not isinstance(filters, Filters):
-		ft = Filters(filters, doctype=doctype)[0]
-	else:
-		ft = filters[0]
-
-	f = frappe._dict(doctype=ft[0], fieldname=ft[1], operator=ft[2], value=ft[3])
-
-	f.fieldname = sanitize_column(f.fieldname)
-
-	valid_operators = (
-		"=",
-		"!=",
-		">",
-		"<",
-		">=",
-		"<=",
-		"like",
-		"not like",
-		"in",
-		"not in",
-		"is",
-		"between",
-		"timespan",
-		"previous",
-		"next",
-		*NestedSetHierarchy,
-	)
-
-	if filters_config:
-		additional_operators = [key.lower() for key in filters_config]
-		valid_operators = tuple(set(valid_operators + tuple(additional_operators)))
-
-	if f.operator.lower() not in valid_operators:
-		frappe.throw(frappe._("Operator must be one of {0}").format(", ".join(valid_operators)))
-
-	if f.doctype and (f.fieldname not in default_fields + optional_fields + child_table_fields):
-		try:
-			meta = frappe.get_meta(f.doctype)
-		except frappe.exceptions.DoesNotExistError:
-			meta = None
-		if meta is not None and not meta.has_field(f.fieldname):
-			for df in meta.get_table_fields(include_computed=True):
-				try:
-					child_meta = frappe.get_meta(df.options)
-				except frappe.exceptions.DoesNotExistError:
-					continue
-				if child_meta.has_field(f.fieldname):
-					f.doctype = df.options
-					break
-
-	try:
-		df = frappe.get_meta(f.doctype).get_field(f.fieldname) if f.doctype else None
-	except frappe.exceptions.DoesNotExistError:
-		df = None
-
-	f.fieldtype = df.fieldtype if df else None
-
-	return f
 
 
 def make_filter_tuple(doctype, key, value):
@@ -3072,3 +2980,94 @@ def scrub(txt: str) -> str:
 def unscrub(txt: str) -> str:
 	"""Return titlified string. e.g. `sales_order` becomes `Sales Order`."""
 	return txt.replace("_", " ").replace("-", " ").title()
+
+
+def safe_div(numerator: NumericType, denominator: NumericType, precision: int = 2) -> float:
+    """
+    SafeMath division that returns zero when divided by zero.
+    """
+    precision = cint(precision)
+
+    if denominator == 0:
+        _res = 0.0
+    else:
+        _res = float(numerator) / denominator
+
+    return flt(_res, precision)
+
+
+def get_url_to_workspace(workspace: str, is_public: bool):
+    from frappe.desk.utils import slug
+
+    url_prefix = "/desk/" if is_public else "/desk/private/"
+    return url_prefix + slug(workspace)
+
+
+def get_filter(doctype: str, filters: FilterSignature, filters_config=None) -> "frappe._dict":
+    """Return a `_dict` like:
+
+    {
+            "doctype": ...
+            "fieldname": ...
+            "operator": ...
+            "value": ...
+            "fieldtype": ...
+    }
+    """
+    from frappe.database.utils import NestedSetHierarchy
+    from frappe.model import child_table_fields, default_fields, optional_fields
+
+    ft: FilterTuple
+    if isinstance(filters, FilterTuple):
+        ft = filters
+    elif not isinstance(filters, Filters):
+        ft = Filters(filters, doctype=doctype)[0]
+    else:
+        ft = filters[0]
+
+    f = frappe._dict(doctype=ft[0], fieldname=ft[1], operator=ft[2], value=ft[3])
+
+    f.fieldname = sanitize_column(f.fieldname)
+
+    valid_operators = (
+        "=",
+        "!=",
+        ">",
+        "<",
+        ">=",
+        "<=",
+        "like",
+        "not like",
+        "in",
+        "not in",
+        "is",
+        "between",
+        "timespan",
+        "previous",
+        "next",
+        *NestedSetHierarchy,
+    )
+
+    if filters_config:
+        additional_operators = [key.lower() for key in filters_config]
+        valid_operators = tuple(set(valid_operators + tuple(additional_operators)))
+
+    if f.operator.lower() not in valid_operators:
+        frappe.throw(frappe._("Operator must be one of {0}").format(", ".join(valid_operators)))
+
+    if f.doctype and (f.fieldname not in default_fields + optional_fields + child_table_fields):
+        meta = frappe.get_meta(f.doctype)
+        if not meta.has_field(f.fieldname):
+            for df in meta.get_table_fields(include_computed=True):
+                if frappe.get_meta(df.options).has_field(f.fieldname):
+                    f.doctype = df.options
+                    break
+
+    try:
+        df = frappe.get_meta(f.doctype).get_field(f.fieldname) if f.doctype else None
+    except frappe.exceptions.DoesNotExistError:
+        df = None
+
+    f.fieldtype = df.fieldtype if df else None
+
+    return f

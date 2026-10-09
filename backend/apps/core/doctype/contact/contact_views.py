@@ -3,20 +3,25 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from apps.core import contacts
 from apps.core.doctype.contact import contact_api
-from apps.core.doctype.contact.contact import Contact
 from apps.core.doctype.contact.contact_serializer import ContactSerializer
 
 
 class ContactViewSet(viewsets.ModelViewSet):
-    queryset = Contact.objects.select_related("salutation", "gender", "address").prefetch_related(
-        "email_ids", "phone_nos"
-    )
     serializer_class = ContactSerializer
     lookup_field = "name"
     filterset_fields = ("status",)
     search_fields = ("first_name", "last_name", "full_name", "email_id", "company_name")
     ordering_fields = ("modified", "creation")
+
+    def get_queryset(self):
+        return contacts.contact_model().objects.all().order_by("-modified")
+
+    def perform_destroy(self, instance):
+        from apps.frappe.runtime import delete_doc
+
+        delete_doc("Contact", instance.name, ignore_permissions=True, force=True)
 
 
 @api_view(["POST"])

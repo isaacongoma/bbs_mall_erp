@@ -1,10 +1,32 @@
 {
  "allow_roles": [
   {
-   "role": "Manufacturing Manager"
+   "name": "n2hm5ru3uh",
+   "owner": "Administrator",
+   "creation": "2026-02-20 13:31:02.066000",
+   "modified": "2026-10-07 14:26:27.387122",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 1,
+   "role": "Manufacturing Manager",
+   "parent": "Manufacturing Onboarding",
+   "parentfield": "allow_roles",
+   "parenttype": "Module Onboarding",
+   "doctype": "Onboarding Permission"
   },
   {
-   "role": "Manufacturing User"
+   "name": "n2hen78i2c",
+   "owner": "Administrator",
+   "creation": "2026-02-20 13:31:02.066000",
+   "modified": "2026-10-07 14:26:27.387122",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 2,
+   "role": "Manufacturing User",
+   "parent": "Manufacturing Onboarding",
+   "parentfield": "allow_roles",
+   "parenttype": "Module Onboarding",
+   "doctype": "Onboarding Permission"
   }
  ],
  "creation": "2026-02-20 13:31:02.066000",
@@ -19,26 +41,110 @@
  "owner": "Administrator",
  "steps": [
   {
-   "step": "Create Raw Materials"
+   "name": "n2h28u3pu1",
+   "owner": "Administrator",
+   "creation": "2026-02-20 13:31:02.066000",
+   "modified": "2026-10-07 14:26:27.387122",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 1,
+   "step": "Create Raw Materials",
+   "is_optional": 0,
+   "parent": "Manufacturing Onboarding",
+   "parentfield": "steps",
+   "parenttype": "Module Onboarding",
+   "doctype": "Onboarding Step Map"
   },
   {
-   "step": "Create Finished Goods"
+   "name": "n2h5j2kgig",
+   "owner": "Administrator",
+   "creation": "2026-02-20 13:31:02.066000",
+   "modified": "2026-10-07 14:26:27.387122",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 2,
+   "step": "Create Finished Goods",
+   "is_optional": 0,
+   "parent": "Manufacturing Onboarding",
+   "parentfield": "steps",
+   "parenttype": "Module Onboarding",
+   "doctype": "Onboarding Step Map"
   },
   {
-   "step": "Create Operations"
+   "name": "n2h7votvva",
+   "owner": "Administrator",
+   "creation": "2026-02-20 13:31:02.066000",
+   "modified": "2026-10-07 14:26:27.387122",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 3,
+   "step": "Create Bill of Materials",
+   "is_optional": 0,
+   "parent": "Manufacturing Onboarding",
+   "parentfield": "steps",
+   "parenttype": "Module Onboarding",
+   "doctype": "Onboarding Step Map"
   },
   {
-   "step": "Create Bill of Materials"
+   "name": "n2h6qn2nqu",
+   "owner": "Administrator",
+   "creation": "2026-02-20 13:31:02.066000",
+   "modified": "2026-10-07 14:26:27.387122",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 4,
+   "step": "Create Work Order",
+   "is_optional": 0,
+   "parent": "Manufacturing Onboarding",
+   "parentfield": "steps",
+   "parenttype": "Module Onboarding",
+   "doctype": "Onboarding Step Map"
   },
   {
-   "step": "Create Work Order"
+   "name": "n2haemprog",
+   "owner": "Administrator",
+   "creation": "2026-02-20 13:31:02.066000",
+   "modified": "2026-10-07 14:26:27.387122",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 5,
+   "step": "Finish Work Order",
+   "is_optional": 0,
+   "parent": "Manufacturing Onboarding",
+   "parentfield": "steps",
+   "parenttype": "Module Onboarding",
+   "doctype": "Onboarding Step Map"
   },
   {
-   "step": "View Work Order Summary Report"
+   "name": "n2h3vmn2mj",
+   "owner": "Administrator",
+   "creation": "2026-02-20 13:31:02.066000",
+   "modified": "2026-10-07 14:26:27.387122",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 6,
+   "step": "Create Production Plan",
+   "is_optional": 1,
+   "parent": "Manufacturing Onboarding",
+   "parentfield": "steps",
+   "parenttype": "Module Onboarding",
+   "doctype": "Onboarding Step Map"
   },
   {
-   "step": "Review Manufacturing Settings"
+   "name": "n2h2jh895i",
+   "owner": "Administrator",
+   "creation": "2026-02-20 13:31:02.066000",
+   "modified": "2026-10-07 14:26:27.387122",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 7,
+   "step": "View Work Order Summary Report",
+   "is_optional": 1,
+   "parent": "Manufacturing Onboarding",
+   "parentfield": "steps",
+   "parenttype": "Module Onboarding",
+   "doctype": "Onboarding Step Map"
   }
  ],
- "title": "Manufacturing Setup"
+ "title": "Plan and run production"
 }

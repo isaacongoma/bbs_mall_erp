@@ -8,10 +8,12 @@ from django.core.management import call_command
 from django.test import Client, TestCase
 
 from apps.core.models import User
-from apps.core.doctype.docshare.docshare import DocShare
+from apps.erpnext.tests.meta_patch import meta_for
 from apps.erpnext.registry import get_meta, get_model
 from apps.frappe import exceptions, session
+from apps.frappe.runtime import local
 from apps.frappe.models import HasRole, UserPermission
+import frappe
 from apps.frappe import get_doc, new_doc
 from apps.frappe.permissions import get_permitted_fields, has_permission, has_user_permission
 
@@ -59,7 +61,7 @@ class ErpnextFoundationTests(TestCase):
         self.assertFalse(model.objects.filter(pk="Enterprise Branch").exists())
 
     def test_mandatory_and_unique_validation(self):
-        with self.assertRaisesMessage(Exception, "branch is required"):
+        with self.assertRaisesMessage(Exception, "Branch is required"):
             new_doc("Branch").insert()
 
         first = new_doc("Branch")
@@ -80,7 +82,7 @@ class ErpnextFoundationTests(TestCase):
         doc.from_uom = "Missing UOM"
         doc.to_uom = "Missing UOM"
         doc.value = 1
-        with self.assertRaisesMessage(Exception, "Could not find UOM: Missing UOM"):
+        with self.assertRaisesMessage(Exception, "Could not find From: Missing UOM, To: Missing UOM"):
             doc.insert()
 
     def test_rest_create_detail_update_and_meta(self):
@@ -166,7 +168,7 @@ class ErpnextFoundationTests(TestCase):
             email="shared-user@bbs-erp.local",
             password="admin",
         )
-        DocShare.objects.create(user=user, share_doctype="Branch", share_name=branch.name, read=True)
+        get_model("DocShare").objects.create(name="foundation-branch-share", user=user.email, share_doctype="Branch", share_name=branch.name, read=1)
 
         session.user = user.email
         loaded = get_doc("Branch", branch.name)
@@ -217,15 +219,15 @@ class ErpnextFoundationTests(TestCase):
                 {"role": "HR User", "read": 1, "permlevel": 0},
             ],
         }
-        with patch("apps.erpnext.registry.get_meta", return_value=meta):
+        with patch("apps.erpnext.registry.get_meta", side_effect=meta_for("Patched DocType", meta)):
             HasRole.objects.create(name="permlevel-user-hr", parent=user.email, role="HR User")
-            fields = get_permitted_fields("Patched DocType", user=user)
+            fields = get_permitted_fields("Patched DocType", user=user.email)
         self.assertIn("public_field", fields)
         self.assertNotIn("private_field", fields)
 
         meta["permissions"].append({"role": "HR User", "read": 1, "permlevel": 1})
-        with patch("apps.erpnext.registry.get_meta", return_value=meta):
-            fields = get_permitted_fields("Patched DocType", user=user)
+        with patch("apps.erpnext.registry.get_meta", side_effect=meta_for("Patched DocType", meta)):
+            fields = get_permitted_fields("Patched DocType", user=user.email)
         self.assertIn("private_field", fields)
 
     def test_permlevel_above_zero_does_not_grant_document_access(self):
@@ -241,12 +243,13 @@ class ErpnextFoundationTests(TestCase):
                 {"role": "HR User", "read": 1, "permlevel": 1},
             ],
         }
-        with patch("apps.erpnext.registry.get_meta", return_value=meta):
-            self.assertFalse(has_permission("Patched DocType", "read", user=user))
+        with patch("apps.erpnext.registry.get_meta", side_effect=meta_for("Patched DocType", meta)):
+            self.assertFalse(has_permission("Patched DocType", "read", user=user.email))
 
         meta["permissions"].append({"role": "HR User", "read": 1, "permlevel": 0})
-        with patch("apps.erpnext.registry.get_meta", return_value=meta):
-            self.assertTrue(has_permission("Patched DocType", "read", user=user))
+        local.role_permissions.clear()
+        with patch("apps.erpnext.registry.get_meta", side_effect=meta_for("Patched DocType", meta)):
+            self.assertTrue(has_permission("Patched DocType", "read", user=user.email))
 
     def test_user_permission_multiple_values_are_or_for_list_and_detail(self):
         allowed_a = new_doc("Branch")
@@ -341,9 +344,9 @@ class ErpnextFoundationTests(TestCase):
             "permissions": [],
             "module": "Setup",
         }
-        doc = SimpleNamespace(name="Example", ignored_branch="Denied Branch")
-        with patch("apps.erpnext.registry.get_meta", return_value=meta):
-            self.assertTrue(has_user_permission("Patched DocType", doc=doc, user=user))
+        doc = frappe.get_doc({"doctype": "Branch", "branch": "Example", "ignored_branch": "Denied Branch"})
+        with patch("apps.erpnext.registry.get_meta", side_effect=meta_for("Branch", meta)):
+            self.assertTrue(has_user_permission(doc, user=user.email))
 
     def test_user_permission_tree_descendants_respect_hide_descendants(self):
         parent = new_doc("Customer Group")
@@ -397,7 +400,7 @@ class ErpnextFoundationTests(TestCase):
             "permissions": [],
             "module": "Setup",
         }
-        with patch("apps.erpnext.registry.get_meta", return_value=meta):
+        with patch("apps.erpnext.registry.get_meta", side_effect=meta_for("Branch", meta)):
             with self.assertRaises(exceptions.CannotChangeConstantError):
                 doc.save(ignore_permissions=True)
 
@@ -417,7 +420,7 @@ class ErpnextFoundationTests(TestCase):
             "permissions": [],
             "module": "Setup",
         }
-        with patch("apps.erpnext.registry.get_meta", return_value=meta):
+        with patch("apps.erpnext.registry.get_meta", side_effect=meta_for("Branch", meta)):
             doc.save(ignore_permissions=True)
         self.assertEqual(get_doc("Branch", doc.name).branch, "Submitted Branch Blocked")
 
@@ -442,7 +445,7 @@ class ErpnextFoundationTests(TestCase):
         doc.from_uom = uom.name
         doc.to_uom = uom.name
         doc.value = 1
-        with patch("apps.erpnext.registry.get_meta", return_value=meta):
+        with patch("apps.erpnext.registry.get_meta", side_effect=meta_for("UOM Conversion Factor", meta)):
             doc.insert(ignore_permissions=True)
         self.assertEqual(doc.category, "Weight")
 

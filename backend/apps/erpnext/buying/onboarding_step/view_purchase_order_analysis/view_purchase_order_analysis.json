@@ -1,6 +1,6 @@
 {
  "action": "View Report",
- "action_label": "View Purchase Order Analysis",
+ "action_label": "Open Purchase Order Analysis",
  "creation": "2026-02-23 20:26:29.245112",
  "docstatus": 0,
  "doctype": "Onboarding Step",
@@ -13,11 +13,13 @@
  "name": "View Purchase Order Analysis",
  "owner": "Administrator",
  "reference_report": "Purchase Order Analysis",
- "report_description": "View Purchase Order Analysis",
+ "report_description": "What you ordered, what arrived and what is still to come.",
  "report_reference_doctype": "Purchase Order",
  "report_type": "Script Report",
  "show_form_tour": 0,
- "show_full_form": 0,
- "title": "View Purchase Order Analysis",
- "validate_action": 1
+ "show_full_form": 1,
+ "title": "Track your orders",
+ "validate_action": 1,
+ "description": "What you ordered, what has arrived, and what is still to come.",
+ "intro_video_url": "https://www.youtube.com/watch?v=Eg9DJye39jk"
 }

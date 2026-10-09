@@ -410,39 +410,6 @@ def get_linked_contacts_query(link_doctype: str, link_name: str):
     )
 
 
-@frappe.whitelist()
-def address_query(links: str | list):
-    links = [
-        {"link_doctype": d.get("link_doctype"), "link_name": d.get("link_name")}
-        for d in frappe.parse_json(links)
-    ]
-    result = []
-
-    for link in links:
-        if not frappe.has_permission(
-            doctype=link.get("link_doctype"), ptype="read", doc=link.get("link_name")
-        ):
-            continue
-
-        res = frappe.db.sql(
-            """
-            SELECT `tabAddress`.name
-            FROM `tabAddress`, `tabDynamic Link`
-            WHERE `tabDynamic Link`.parenttype='Address'
-                AND `tabDynamic Link`.parent=`tabAddress`.name
-                AND `tabDynamic Link`.link_doctype = %(link_doctype)s
-                AND `tabDynamic Link`.link_name = %(link_name)s
-        """,
-            {
-                "link_doctype": link.get("link_doctype"),
-                "link_name": link.get("link_name"),
-            },
-            as_dict=True,
-        )
-
-        result.extend([l.name for l in res])
-
-    return result
 
 
 def get_contact_with_phone_number(number):
@@ -517,3 +484,38 @@ def get_contact_display_list(doctype: str, name: str) -> list[dict]:
         fields=["*"],
         order_by="is_primary_contact DESC, creation ASC",
     )
+
+
+@frappe.whitelist()
+def address_query(links: str | list):
+    links = [
+        {"link_doctype": d.get("link_doctype"), "link_name": d.get("link_name")}
+        for d in frappe.parse_json(links)
+    ]
+    result = []
+
+    for link in links:
+        if not frappe.has_permission(
+            doctype=link.get("link_doctype"), ptype="read", doc=link.get("link_name")
+        ):
+            continue
+
+        res = frappe.db.sql(
+            """
+            SELECT `tabAddress`.name
+            FROM `tabAddress`, `tabDynamic Link`
+            WHERE `tabDynamic Link`.parenttype='Address'
+                AND `tabDynamic Link`.parent=`tabAddress`.name
+                AND `tabDynamic Link`.link_doctype = %(link_doctype)s
+                AND `tabDynamic Link`.link_name = %(link_name)s
+        """,
+            {
+                "link_doctype": link.get("link_doctype"),
+                "link_name": link.get("link_name"),
+            },
+            as_dict=True,
+        )
+
+        result.extend([l.name for l in res])
+
+    return result

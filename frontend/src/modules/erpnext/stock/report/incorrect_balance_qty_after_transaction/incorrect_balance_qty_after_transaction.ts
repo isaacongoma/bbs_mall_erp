@@ -1,0 +1,24 @@
+import { __, frappe } from '@/shared/frappe'
+frappe.query_reports['Incorrect Balance Qty After Transaction'] = {
+  filters: [
+    {
+      label: __('Company'),
+      fieldtype: 'Link',
+      fieldname: 'company',
+      options: 'Company',
+      default: frappe.defaults.get_user_default('Company'),
+      reqd: 1,
+    },
+    {
+      label: __('Item Code'),
+      fieldtype: 'Link',
+      fieldname: 'item_code',
+      options: 'Item',
+    },
+    {
+      label: __('Warehouse'),
+      fieldtype: 'Link',
+      fieldname: 'warehouse',
+    },
+  ],
+}

@@ -1,4 +1,3 @@
-from __future__ import annotations
 from collections.abc import Generator
 
 import requests
@@ -32,7 +31,6 @@ def get_country(fields: list | None = None) -> dict:
 
 
 def get_date_range(start_date: str, end_date: str) -> list[str]:
-    """returns list of dates between start and end dates"""
     no_of_days = date_diff(end_date, start_date) + 1
     return [add_days(start_date, i) for i in range(no_of_days)]
 

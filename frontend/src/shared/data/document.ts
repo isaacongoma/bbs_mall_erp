@@ -26,9 +26,17 @@ type AnyRecord = Record<string, any>
 
 export interface DocumentExtras {
   actions: AnyRecord[]
+  mappedCreates: MappedCreate[]
   statuses: AnyRecord[]
   fieldHtmlMap: Record<string, string>
   fieldPropertyOverrides: Record<string, Partial<DocField>>
+}
+
+export interface MappedCreate {
+  label: string
+  method: string
+  args?: AnyRecord | null
+  selectedChildren?: AnyRecord | null
 }
 
 export class NewDocument extends Observable {
@@ -74,7 +82,7 @@ export function unmarkDocumentAsDeleted(doctype: string, docname: string): void 
 }
 
 function attachExtras<T extends Observable>(target: T): T & DocumentExtras {
-  const state: DocumentExtras = { actions: [], statuses: [], fieldHtmlMap: {}, fieldPropertyOverrides: {} }
+  const state: DocumentExtras = { actions: [], mappedCreates: [], statuses: [], fieldHtmlMap: {}, fieldPropertyOverrides: {} }
   for (const key of Object.keys(state) as Array<keyof DocumentExtras>) {
     Object.defineProperty(target, key, {
       enumerable: false,

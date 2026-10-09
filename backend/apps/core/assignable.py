@@ -39,24 +39,31 @@ class AssignableMixin:
         set_assignment_status(self.doctype_label, self.pk, "Open", "Cancelled", users=[agent])
 
     def share_with_agent(self, agent):
-        from apps.core.doctype.docshare.docshare import DocShare
+        from apps.erpnext.registry import get_model
 
+        DocShare = get_model("DocShare")
         if not agent:
             return
 
-        agent_id = getattr(agent, "pk", agent)
+        agent_user = getattr(agent, "email", None) or str(getattr(agent, "pk", agent))
         existing = DocShare.objects.filter(share_doctype=self.doctype_label, share_name=self.pk)
-        shared_with = {d.user_id for d in existing} | {agent_id}
+        shared_with = {d.user for d in existing} | {agent_user}
 
-        for user_id in shared_with:
-            if user_id == agent_id:
+        for user in shared_with:
+            if user == agent_user:
                 DocShare.objects.get_or_create(
-                    user_id=agent_id,
+                    user=agent_user,
                     share_doctype=self.doctype_label,
                     share_name=self.pk,
-                    defaults={"read": True, "write": True},
+                    defaults={"read": 1, "write": 1, "name": frappe_hash()},
                 )
             else:
                 DocShare.objects.filter(
-                    user_id=user_id, share_doctype=self.doctype_label, share_name=self.pk
+                    user=user, share_doctype=self.doctype_label, share_name=self.pk
                 ).delete()
+
+
+def frappe_hash():
+    from apps.frappe.utils.data import generate_hash
+
+    return generate_hash(length=10)

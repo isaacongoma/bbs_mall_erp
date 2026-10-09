@@ -34,8 +34,8 @@ class HrmsStage1SetupTests(TestCase):
     def test_hrms_hooks_are_merged(self):
         self.assertIn("Employee", get_hooks("override_doctype_class"))
         self.assertIn("daily_long", get_hooks("scheduler_events"))
-        self.assertNotIn("Expense Claim", get_hooks("invoice_doctypes"))
-        self.assertIn(("invoice_doctypes", "Expense Claim"), SKIPPED_UNREGISTERED_HOOK_DOCTYPES)
+        self.assertIn("Expense Claim", get_hooks("invoice_doctypes"))
+        self.assertNotIn(("invoice_doctypes", "Expense Claim"), SKIPPED_UNREGISTERED_HOOK_DOCTYPES)
 
     def test_leave_type_compensatory_and_earned_leave_are_mutually_exclusive(self):
         doc = new_doc("Leave Type")

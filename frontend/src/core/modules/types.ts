@@ -65,6 +65,7 @@ export interface ModuleDefinition {
   label: string
   icon?: ComponentType<{ className?: string }> | string
   railOrder?: number
+  rail?: boolean
   endpoints?: ModuleEndpoints
   routes?: ModuleRoute[]
   guards?: RouteGuard[]

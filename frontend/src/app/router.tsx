@@ -8,10 +8,12 @@ import {
 import { useAuthStore } from '@/core/auth/authStore'
 import { getModuleRoutes } from '@/core/modules/registry'
 import type { ModuleRoute } from '@/core/modules/types'
-import { matchLocation } from '@/core/navigation'
+import { canonicalPath, matchLocation } from '@/core/navigation'
+import { loadDeskBoot } from '@/shared/frappe/boot'
 import { runRouteGuards } from '@/core/navigation/guards'
 import { AppRoot } from './components/AppRoot'
 import { RouteError } from './components/RouteError'
+import { DeskSwitch } from './components/DeskSwitch'
 
 const NO_BASENAME = '/'
 
@@ -30,7 +32,13 @@ function createGuardLoader(basename: string) {
   return async ({ request }: LoaderFunctionArgs) => {
     if (!useAuthStore.getState().access) return null
     const url = new URL(request.url)
-    const to = matchLocation(stripBasename(url.pathname, basename), url.search, url.hash)
+    const pathname = stripBasename(url.pathname, basename)
+    if (/^\/(app|desk)(\/|$)/.test(pathname)) {
+      await loadDeskBoot().catch(() => undefined)
+      const canonical = canonicalPath(pathname)
+      if (canonical !== pathname) return redirect(`${canonical}${url.search}${url.hash}`)
+    }
+    const to = matchLocation(pathname, url.search, url.hash)
     const target = await runRouteGuards(to)
     if (target) return redirect(target)
     return null
@@ -57,7 +65,7 @@ export function buildRouteObjects(basename: string = NO_BASENAME): RouteObject[]
       ErrorBoundary: RouteError,
       loader: createGuardLoader(normalizeBasename(basename)),
       shouldRevalidate: () => true,
-      children: getModuleRoutes().flatMap(toRouteObjects),
+      children: [...getModuleRoutes().flatMap(toRouteObjects), { path: 'desk/*', Component: DeskSwitch }],
     },
   ]
 }

@@ -1,4 +1,7 @@
+import sys
+
 from django.db import connection
+from django.db.utils import OperationalError, ProgrammingError
 
 from apps.frappe.model.field_types import django_field, has_column
 
@@ -25,9 +28,18 @@ def sync_model(model, token):
     doctype = getattr(model, "doctype", None)
     if not doctype or doctype == "Custom Field":
         return
-    if _synced_tokens.get(doctype) == token:
+    if "makemigrations" in sys.argv:
         return
-    rows = [row for row in custom_field_rows(doctype) if has_column({"fieldtype": row.fieldtype, "is_virtual": row.is_virtual})]
+    sync_key = (connection.settings_dict["NAME"], doctype)
+    if _synced_tokens.get(sync_key) == token:
+        return
+    try:
+        custom_rows = custom_field_rows(doctype)
+    except (ProgrammingError, OperationalError):
+        if connection.in_atomic_block:
+            raise
+        return
+    rows = [row for row in custom_rows if has_column({"fieldtype": row.fieldtype, "is_virtual": row.is_virtual})]
     desired = {row.fieldname: row for row in rows}
     added = getattr(model, "_custom_fields", {})
 
@@ -43,21 +55,22 @@ def sync_model(model, token):
     existing_names = {field.name for field in model._meta.fields}
     for name, row in desired.items():
         if name in existing_names:
-            continue
-        field = django_field(
-            {
-                "fieldtype": row.fieldtype,
-                "default": row.default,
-                "length": row.length,
-            }
-        )
-        model.add_to_class(name, field)
-        added[name] = field
-        if not column_exists(model._meta.db_table, name):
+            field = model._meta.get_field(name)
+        else:
+            field = django_field(
+                {
+                    "fieldtype": row.fieldtype,
+                    "default": row.default,
+                    "length": row.length,
+                }
+            )
+            model.add_to_class(name, field)
+            added[name] = field
+        if name in added and not column_exists(model._meta.db_table, name):
             with connection.schema_editor() as editor:
                 editor.add_field(model, field)
     model._custom_fields = added
-    _synced_tokens[doctype] = token
+    _synced_tokens[sync_key] = token
 
 
 def drop_custom_column(model, name):

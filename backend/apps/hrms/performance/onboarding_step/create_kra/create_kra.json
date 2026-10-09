@@ -1,0 +1,21 @@
+{
+ "name": "Create KRA",
+ "owner": "Administrator",
+ "creation": "2026-10-05 12:00:00",
+ "modified": "2026-10-05 12:00:00",
+ "modified_by": "Administrator",
+ "docstatus": 0,
+ "idx": 0,
+ "title": "Add a key result area",
+ "is_complete": 0,
+ "is_skipped": 0,
+ "description": "An area an employee is measured on, such as quality or delivery. See [Appraisal Template](https://docs.frappe.io/hr/appraisal-template).",
+ "action": "Create Entry",
+ "action_label": "Create KRA",
+ "reference_document": "KRA",
+ "show_full_form": 0,
+ "show_form_tour": 0,
+ "is_single": 0,
+ "validate_action": 1,
+ "doctype": "Onboarding Step"
+}

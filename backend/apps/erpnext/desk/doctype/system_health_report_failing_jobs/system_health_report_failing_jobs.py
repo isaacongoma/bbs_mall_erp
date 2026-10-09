@@ -1,0 +1,4 @@
+from apps.frappe.desk.doctype.system_health_report_failing_jobs.system_health_report_failing_jobs import *
+from apps.frappe.desk.doctype.system_health_report_failing_jobs.system_health_report_failing_jobs import SystemHealthReportFailingJobs
+
+__all__ = ["SystemHealthReportFailingJobs"]

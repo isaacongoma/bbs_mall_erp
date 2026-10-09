@@ -10,8 +10,11 @@ import urllib.request
 from pathlib import Path
 
 from django.conf import settings
+from django.utils import timezone
 
-from apps.core.doctype.data_import.data_import import DataImport, DataImportLog
+from apps.core.identity import user_email
+from apps.erpnext.registry import get_model
+from apps.frappe.utils import generate_hash
 from apps.core.meta import get_doctype_meta
 
 PREVIEW_ROWS = 10
@@ -41,7 +44,7 @@ def _sheet_csv_url(url: str) -> str:
     return export + (f"&gid={gid.group(1)}" if gid else "")
 
 
-def read_rows(data_import: DataImport) -> list[list[str]]:
+def read_rows(data_import) -> list[list[str]]:
     if data_import.import_file:
         path = _file_path_from_url(data_import.import_file)
         if path is None:
@@ -95,7 +98,7 @@ def build_mapping(headers: list[str], fields: list[dict], column_to_field_map: d
     return mapping
 
 
-def _template_options(data_import: DataImport) -> dict:
+def _template_options(data_import) -> dict:
     if not data_import.template_options:
         return {}
     try:
@@ -104,7 +107,7 @@ def _template_options(data_import: DataImport) -> dict:
         return {}
 
 
-def get_preview(data_import: DataImport) -> dict:
+def get_preview(data_import) -> dict:
     rows = read_rows(data_import)
     if not rows:
         raise ImportSourceError("The file is empty")
@@ -162,6 +165,11 @@ def _find_viewset(model):
 
     for _prefix, viewset, _basename in router.registry:
         queryset = getattr(viewset, "queryset", None)
+        if queryset is None:
+            try:
+                queryset = viewset().get_queryset()
+            except Exception:
+                queryset = None
         if queryset is not None and queryset.model is model:
             return viewset
     return None
@@ -198,14 +206,15 @@ def _error_message(error: Exception) -> str:
     return text
 
 
-def run_import(data_import: DataImport, user) -> None:
+def run_import(data_import, user) -> None:
     rows = read_rows(data_import)
     headers, body = rows[0], rows[1:]
     fields = importable_fields(data_import.reference_doctype)
     options = _template_options(data_import)
     mapping = build_mapping(headers, fields, options.get("column_to_field_map") or {})
 
-    data_import.logs.all().delete()
+    log_model = get_model("Data Import Log")
+    log_model.objects.filter(data_import=data_import.name).delete()
     successes = failures = 0
     for number, row in enumerate(body):
         row_number = number + 2
@@ -225,14 +234,19 @@ def run_import(data_import: DataImport, user) -> None:
             successes += 1
         else:
             failures += 1
-        DataImportLog.objects.create(
-            data_import=data_import,
+        log_model.objects.create(
+            name=generate_hash(length=10),
+            data_import=data_import.name,
             log_index=number,
-            success=error is None,
+            success=1 if error is None else 0,
             docname=created["name"],
             messages=json.dumps([{"message": _error_message(error)}] if error else []),
             exception=repr(error) if error else "",
             row_indexes=json.dumps([row_number]),
+            owner=user_email(user) or "Administrator",
+            modified_by=user_email(user) or "Administrator",
+            creation=timezone.now(),
+            modified=timezone.now(),
         )
 
     if failures == 0:
@@ -241,20 +255,21 @@ def run_import(data_import: DataImport, user) -> None:
         data_import.status = "Error"
     else:
         data_import.status = "Partial Success"
+    data_import.modified = timezone.now()
     data_import.save(update_fields=["status", "modified"])
 
 
-def get_logs(data_import: DataImport) -> list[dict]:
+def get_logs(data_import) -> list[dict]:
     return [
         {
-            "name": str(log.pk),
-            "success": log.success,
+            "name": log.name,
+            "success": bool(log.success),
             "docname": log.docname,
             "messages": log.messages or "[]",
             "exception": log.exception,
             "row_indexes": log.row_indexes or "[]",
         }
-        for log in data_import.logs.all()
+        for log in get_model("Data Import Log").objects.filter(data_import=data_import.name).order_by("log_index")
     ]
 
 

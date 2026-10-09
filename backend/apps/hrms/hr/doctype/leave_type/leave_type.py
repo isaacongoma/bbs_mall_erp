@@ -5,7 +5,9 @@ from frappe.utils import today
 
 
 class LeaveType(Document):
-    doctype = "Leave Type"
+
+
+    doctype = 'Leave Type'
 
     def validate(self):
         self.validate_lwp()
@@ -39,14 +41,23 @@ class LeaveType(Document):
                 bold(_("Is Compensatory Leave")), bold(_("Is Earned Leave"))
             )
             frappe.throw(msg, title=_("Not Allowed"))
+
         if self.is_lwp and self.is_ppl:
             frappe.throw(_("Leave Type can either be without pay or partial pay"), title=_("Not Allowed"))
-        if self.is_ppl and (self.fraction_of_daily_salary_per_leave < 0 or self.fraction_of_daily_salary_per_leave > 1):
+
+        if self.is_ppl and (
+            self.fraction_of_daily_salary_per_leave < 0 or self.fraction_of_daily_salary_per_leave > 1
+        ):
             frappe.throw(_("The fraction of Daily Salary per Leave should be between 0 and 1"))
 
     def validate_allocated_earned_leave(self):
         old_configuration = self.get_doc_before_save()
-        if old_configuration and old_configuration.is_earned_leave and old_configuration.max_leaves_allowed > self.max_leaves_allowed:
+
+        if (
+            old_configuration
+            and old_configuration.is_earned_leave
+            and old_configuration.max_leaves_allowed > self.max_leaves_allowed
+        ):
             earned_leave_allocation_exists = frappe.db.exists(
                 "Leave Allocation",
                 {"leave_type": self.name, "from_date": ("<=", today()), "to_date": (">=", today())},

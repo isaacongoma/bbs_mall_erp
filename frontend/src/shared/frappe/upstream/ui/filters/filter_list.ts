@@ -1,0 +1,313 @@
+import { $, __, frappe } from '@/shared/frappe/runtime'
+
+frappe.ui.FilterGroup = class {
+  [key: string]: any
+  constructor(opts: any) {
+    $.extend(this, opts)
+    this.filters = this.filters || []
+    window.fltr = this
+    if (!this.filter_button) {
+      this.wrapper = this.parent
+      this.wrapper.append(this.get_filter_area_template())
+      this.set_filter_events()
+    } else {
+      this.make_popover()
+    }
+  }
+  make_popover(this: any) {
+    this.init_filter_popover()
+    this.set_clear_all_filters_event()
+    this.set_popover_events()
+  }
+  set_clear_all_filters_event(this: any) {
+    if (!this.filter_x_button) return
+    this.filter_x_button.on('click', () => {
+      this.toggle_empty_filters(true)
+      if (typeof this.base_list !== 'undefined') {
+        this.base_list.filter_area.clear()
+      } else {
+        this.clear_filters()
+      }
+      this.update_filter_button()
+    })
+  }
+  hide_popover(this: any) {
+    this.filter_button?.popover('hide')
+  }
+  init_filter_popover(this: any) {
+    this.filter_button.popover({
+      content: this.get_filter_area_template(),
+      template: `
+				<div class="filter-popover popover">
+					<div class="arrow"></div>
+					<div class="popover-body popover-content">
+					</div>
+				</div>
+			`,
+      html: true,
+      trigger: 'manual',
+      container: 'body',
+      placement: 'bottom',
+      offset: '-100px, 0',
+    })
+  }
+  toggle_empty_filters(this: any, show: any) {
+    this.wrapper && this.wrapper.find('.empty-filters').toggle(show)
+  }
+  set_popover_events(this: any) {
+    $(document.body).on('mousedown', (e: any) => {
+      if (this.wrapper && this.wrapper.is(':visible')) {
+        const in_datepicker =
+          $(e.target).is('.datepicker--cell') ||
+          $(e.target).closest('.datepicker--nav-title').length !== 0 ||
+          $(e.target).parents('.datepicker--nav-action').length !== 0 ||
+          $(e.target).parents('.datepicker').length !== 0 ||
+          $(e.target).is('.datepicker--button')
+        if (
+          $(e.target).parents('.filter-popover').length === 0 &&
+          $(e.target).parents('.filter-box').length === 0 &&
+          this.filter_button.find($(e.target)).length === 0 &&
+          !$(e.target).is(this.filter_button) &&
+          !in_datepicker
+        ) {
+          this.wrapper && this.hide_popover()
+        }
+      }
+    })
+    this.filter_button.on('click', () => {
+      this.filter_button.popover('toggle')
+    })
+    this.filter_button.on('shown.bs.popover', () => {
+      let hide_empty_filters = this.filters && this.filters.length > 0
+      if (!this.wrapper) {
+        this.wrapper = $('.filter-popover')
+        if (hide_empty_filters) {
+          this.toggle_empty_filters(false)
+          this.add_filters_to_popover(this.filters)
+        }
+        this.set_filter_events()
+      }
+      this.toggle_empty_filters(false)
+      !hide_empty_filters && this.add_filter(this.doctype, 'name')
+      this.filters[0]?.fieldselect?.$input?.focus()
+    })
+    this.filter_button.on('hidden.bs.popover', () => {
+      this.apply()
+    })
+    frappe.router.on('change', () => {
+      if (this.wrapper && this.wrapper.is(':visible')) {
+        this.hide_popover()
+      }
+    })
+  }
+  add_filters_to_popover(this: any, filters: any) {
+    filters.forEach((filter: any) => {
+      filter.parent = this.wrapper
+      filter.field = null
+      filter.make()
+    })
+  }
+  apply(this: any) {
+    this.update_filters()
+    this.on_change()
+  }
+  update_filter_button(this: any) {
+    if (!this.filter_button) return
+    const filters_applied = this.filters.length > 0
+    const button_label = filters_applied
+      ? __('Filters {0}', [`<span class="filter-label">${this.filters.length}</span>`])
+      : __('Filter')
+    this.filter_button.toggleClass('btn-default', !filters_applied).toggleClass('btn-primary-light', filters_applied)
+    this.filter_button.find('.filter-icon').toggleClass('active', filters_applied)
+    this.filter_button.find('.button-label').html(button_label)
+    this.filter_button.attr('title', `${this.filters.length} Filter${this.filters.length > 1 ? 's' : ''} Applied`)
+  }
+  set_filter_events(this: any) {
+    this.wrapper.find('.add-filter').on('click', () => {
+      this.toggle_empty_filters(false)
+      this.add_filter(this.doctype, 'name')
+      this.filters[this.filters.length - 1]?.fieldselect?.$input?.focus()
+    })
+    this.wrapper.find('.clear-filters').on('click', () => {
+      this.toggle_empty_filters(true)
+      this.clear_filters()
+      this.on_change()
+      this.hide_popover()
+    })
+    this.wrapper.find('.apply-filters').on('click', () => this.hide_popover())
+  }
+  add_filters(this: any, filters: any) {
+    let promises: any = []
+    for (const filter of filters) {
+      promises.push(() => this.add_filter(...filter))
+    }
+    return frappe.run_serially(promises).then(() => this.update_filters())
+  }
+  add_filter(this: any, doctype: any, fieldname: any, condition: any, value: any, hidden: any) {
+    if (!fieldname) return Promise.resolve()
+    if (!this.validate_args(doctype, fieldname)) return false
+    const is_new_filter = arguments.length < 2
+    if (is_new_filter && this.wrapper.find('.new-filter:visible').length) {
+      return Promise.resolve()
+    } else {
+      let args: any = [doctype, fieldname, condition, value, hidden]
+      const promise = this.push_new_filter(args, is_new_filter)
+      return promise && promise.then ? promise : Promise.resolve()
+    }
+  }
+  validate_args(doctype: any, fieldname: any) {
+    if (
+      doctype &&
+      fieldname &&
+      !frappe.meta.has_field(doctype, fieldname) &&
+      frappe.model.is_non_std_field(fieldname)
+    ) {
+      frappe.msgprint({
+        message: __('Invalid filter: {0}', [fieldname.bold()]),
+        indicator: 'red',
+      })
+      return false
+    }
+    return true
+  }
+  push_new_filter(this: any, args: any) {
+    if (this.filter_exists(args)) return
+    let filter = this._push_new_filter(...args)
+    if (filter && filter.value) {
+      return filter._filter_value_set
+    }
+  }
+  _push_new_filter(this: any, doctype: any, fieldname: any, condition: any, value: any, hidden: any = false) {
+    let args: any = {
+      parent: this.wrapper,
+      parent_doctype: this.doctype,
+      doctype: doctype,
+      _parent_doctype: this.parent_doctype,
+      fieldname: fieldname,
+      condition: condition,
+      value: value,
+      hidden: hidden,
+      index: this.filters.length + 1,
+      on_change: (update: any) => {
+        if (update) this.update_filters()
+        this.refresh_dynamic_link_filters()
+        this.on_change()
+      },
+      filter_items: (doctype: any, fieldname: any) => {
+        return !this.filter_exists([doctype, fieldname])
+      },
+      filter_list: this.base_list || this,
+    }
+    let filter = new frappe.ui.Filter(args)
+    this.filters.push(filter)
+    return filter
+  }
+  get_filter_value(this: any, fieldname: any) {
+    let filter_obj = this.filters.find((f: any) => f.fieldname == fieldname) || {}
+    return filter_obj.value
+  }
+  refresh_dynamic_link_filters(this: any) {
+    if (!this.filters) return
+    this.filters.forEach((f: any) => {
+      if (!f.field || f.field.df.original_type !== 'Dynamic Link') return
+      if (!f.link_friendly_conditions.has(f.get_condition())) return
+      f.set_field(f.field.df.parent, f.field.df.fieldname, null, f.get_condition())
+    })
+  }
+  filter_exists(this: any, filter_value: any) {
+    return this.filters
+      .filter((f: any) => f.field)
+      .some((f: any) => {
+        let f_value = f.get_value()
+        if (filter_value.length === 2) {
+          return filter_value[0] === f_value[0] && filter_value[1] === f_value[1]
+        }
+        return frappe.utils.arrays_equal(f_value.slice(0, 4), filter_value.slice(0, 4))
+      })
+  }
+  get_filters(this: any) {
+    return this.filters
+      .filter((f: any) => f.field)
+      .filter((f: any) => f.get_selected_value() != null)
+      .map((f: any) => {
+        return f.get_value()
+      })
+  }
+  update_filters(this: any) {
+    const filter_exists = (f: any) => ![undefined, null].includes(f.get_selected_value())
+    this.filters.map((f: any) => !filter_exists(f) && f.remove())
+    this.filters = this.filters.filter((f: any) => filter_exists(f) && f.field)
+    this.update_filter_button()
+    this.filters.length === 0 && this.toggle_empty_filters(true)
+  }
+  clear_filters(this: any) {
+    this.filters.map((f: any) => f.remove(true))
+    this.filters = []
+  }
+  get_filter(this: any, fieldname: any) {
+    return this.filters.filter((f: any) => {
+      return f.field && f.field.df.fieldname == fieldname
+    })[0]
+  }
+  get_filter_area_template(this: any) {
+    return $(`
+			<div class="filter-area">
+				<div class="filter-edit-area">
+					<div class="text-muted empty-filters text-center">
+						${__('No filters selected')}
+					</div>
+				</div>
+				<hr class="divider"></hr>
+				<div class="filter-action-buttons">
+					<button class="text-muted add-filter btn btn-xs">
+						+ ${__('Add a Filter')}
+					</button>
+					<div>
+						<button class="btn btn-secondary btn-xs clear-filters">
+							${__('Clear Filters')}
+						</button>
+						${
+              this.filter_button
+                ? `<button class="btn btn-primary btn-xs apply-filters">
+								${__('Apply Filters')}
+							</button>`
+                : ''
+            }
+					</div>
+				</div>
+			</div>`)
+  }
+  get_filters_as_object(this: any) {
+    return this.get_filters().reduce((acc: any, filter: any) => {
+      return Object.assign(acc, {
+        [filter[1]]: [filter[2], filter[3]],
+      })
+    }, {})
+  }
+  add_filters_to_filter_group(this: any, filters: any) {
+    if (filters && filters.length) {
+      this.toggle_empty_filters(false)
+      filters.forEach((filter: any) => {
+        this.add_filter(filter[0], filter[1], filter[2], filter[3])
+      })
+    }
+  }
+  add(this: any, filters: any, refresh: any = true) {
+    if (!filters || (Array.isArray(filters) && filters.length === 0)) return Promise.resolve()
+    if (typeof filters[0] === 'string') {
+      const filter = Array.from(arguments)
+      filters = [filter]
+    }
+    filters = filters.filter((f: any) => {
+      return !this.exists(f)
+    })
+    const { non_standard_filters, promise } = this.set_standard_filter(filters)
+    return promise
+      .then(() => {
+        return non_standard_filters.length > 0 && this.filter_list.add_filters(non_standard_filters)
+      })
+      .then(() => {
+        refresh && this.list_view.refresh()
+      })
+  }
+}

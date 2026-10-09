@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class EmailAccountGenerated(FrappeModel):
@@ -61,7 +61,7 @@ class EmailAccountGenerated(FrappeModel):
     backend_app_flow = models.SmallIntegerField(default=0)
     sent_folder_name = models.CharField(max_length=140, blank=True, null=True, default='')
     always_bcc = models.CharField(max_length=140, blank=True, null=True, default='')
-    last_received_at = models.DateTimeField(null=True, blank=True)
+    last_received_at = FrappeDateTimeField(null=True, blank=True)
     add_x_original_from = models.SmallIntegerField(default=1)
     add_reply_to_header = models.SmallIntegerField(default=1)
     dsn_notify_type = models.CharField(max_length=140, blank=True, null=True, default='')

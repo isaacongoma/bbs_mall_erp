@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class JobCardGenerated(FrappeModel):
@@ -37,13 +37,13 @@ class JobCardGenerated(FrappeModel):
     batch_no = models.CharField(max_length=140, blank=True, null=True, default='')
     quality_inspection_template = models.CharField(max_length=140, blank=True, null=True, default='')
     workstation_type = models.CharField(max_length=140, blank=True, null=True, default='')
-    expected_start_date = models.DateTimeField(null=True, blank=True)
-    expected_end_date = models.DateTimeField(null=True, blank=True)
+    expected_start_date = FrappeDateTimeField(null=True, blank=True)
+    expected_end_date = FrappeDateTimeField(null=True, blank=True)
     serial_and_batch_bundle = models.CharField(max_length=140, blank=True, null=True, default='')
     process_loss_qty = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     time_required = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
-    actual_start_date = models.DateTimeField(null=True, blank=True)
-    actual_end_date = models.DateTimeField(null=True, blank=True)
+    actual_start_date = FrappeDateTimeField(null=True, blank=True)
+    actual_end_date = FrappeDateTimeField(null=True, blank=True)
     finished_good = models.CharField(max_length=140, blank=True, null=True, default='')
     target_warehouse = models.CharField(max_length=140, blank=True, null=True, default='')
     operation_row_id = models.IntegerField(null=True, blank=True)

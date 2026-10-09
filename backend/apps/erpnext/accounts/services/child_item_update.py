@@ -1,5 +1,4 @@
 """Child item update service: ChildItemUpdater class and helpers for the update_child_qty_rate API."""
-from __future__ import annotations
 
 import frappe
 from frappe import _

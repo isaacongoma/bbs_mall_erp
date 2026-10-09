@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class WorkOrderGenerated(FrappeModel):
@@ -24,10 +24,10 @@ class WorkOrderGenerated(FrappeModel):
     wip_warehouse = models.CharField(max_length=140, blank=True, null=True, default='')
     fg_warehouse = models.CharField(max_length=140, blank=True, null=True, default='')
     scrap_warehouse = models.CharField(max_length=140, blank=True, null=True, default='')
-    planned_start_date = models.DateTimeField(null=True, blank=True)
-    actual_start_date = models.DateTimeField(null=True, blank=True)
-    planned_end_date = models.DateTimeField(null=True, blank=True)
-    actual_end_date = models.DateTimeField(null=True, blank=True)
+    planned_start_date = FrappeDateTimeField(null=True, blank=True)
+    actual_start_date = FrappeDateTimeField(null=True, blank=True)
+    planned_end_date = FrappeDateTimeField(null=True, blank=True)
+    actual_end_date = FrappeDateTimeField(null=True, blank=True)
     expected_delivery_date = models.DateField(null=True, blank=True)
     transfer_material_against = models.CharField(max_length=140, blank=True, null=True, default='')
     planned_operating_cost = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
@@ -60,6 +60,7 @@ class WorkOrderGenerated(FrappeModel):
     subcontracting_inward_order = models.CharField(max_length=140, blank=True, null=True, default='')
     subcontracting_inward_order_item = models.CharField(max_length=140, blank=True, null=True, default='')
     max_producible_qty = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
+    _seen = models.TextField(null=True, blank=True)
 
     class Meta:
         abstract = True

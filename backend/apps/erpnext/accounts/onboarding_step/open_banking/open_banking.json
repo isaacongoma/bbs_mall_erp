@@ -1,0 +1,21 @@
+{
+ "name": "Open Banking",
+ "owner": "Administrator",
+ "creation": "2026-10-04 01:25:22.677250",
+ "modified": "2026-10-04 01:33:32.465649",
+ "modified_by": "Administrator",
+ "docstatus": 0,
+ "idx": 0,
+ "title": "Match your bank statement",
+ "is_complete": 0,
+ "is_skipped": 0,
+ "description": "Import a statement from your bank and pair each line with a payment, so your books agree with it. See [Bank Reconciliation](https://docs.frappe.io/erpnext/user/manual/en/bank-reconciliation).",
+ "action": "Go to Page",
+ "action_label": "Open Banking",
+ "show_full_form": 0,
+ "show_form_tour": 0,
+ "is_single": 0,
+ "path": "/banking",
+ "validate_action": 1,
+ "doctype": "Onboarding Step"
+}

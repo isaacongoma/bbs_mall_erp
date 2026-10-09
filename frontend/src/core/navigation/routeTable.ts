@@ -1,4 +1,5 @@
 import { matchPath } from 'react-router-dom'
+import { toInternal } from './canonicalPath'
 import type { CurrentRoute, NamedLocation, RouteDefinition, RouteLocation, RouteParams } from './types'
 
 const definitions: RouteDefinition[] = []
@@ -74,7 +75,8 @@ function parseQuery(search: string): Record<string, string | string[]> {
   return result
 }
 
-export function matchLocation(pathname: string, search = '', hash = ''): CurrentRoute {
+export function matchLocation(rawPathname: string, search = '', hash = ''): CurrentRoute {
+  const pathname = toInternal(rawPathname)
   const base: CurrentRoute = {
     name: null,
     path: pathname,

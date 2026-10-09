@@ -18,5 +18,4 @@ def after_install():
             f" report the issue on {BUG_REPORT_URL} if not resolved.",
             fg="bright_red",
         )
-        print(repr(e))
         raise e

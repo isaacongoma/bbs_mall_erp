@@ -12,22 +12,17 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from apps.core.models import User, UserEmail
+from apps.core.models import User
 
 
-class UserEmailSerializer(serializers.ModelSerializer):
-    name = serializers.SerializerMethodField()
+def user_email_model():
+    from apps.erpnext.registry import get_model
 
-    class Meta:
-        model = UserEmail
-        fields = ("name", "email_account", "email_id")
-
-    def get_name(self, obj):
-        return str(obj.pk)
+    return get_model("User Email")
 
 
 class UserSerializer(serializers.ModelSerializer):
-    user_emails = UserEmailSerializer(many=True, required=False)
+    user_emails = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -37,14 +32,29 @@ class UserSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ("id", "email", "username", "is_staff", "is_superuser", "date_joined")
 
+    def get_user_emails(self, obj):
+        rows = user_email_model().objects.filter(parent=obj.email, parentfield="user_emails", parenttype="User").order_by("idx")
+        return [{"name": row.name, "email_account": row.email_account, "email_id": row.email_id} for row in rows]
+
     def update(self, instance, validated_data):
-        rows = validated_data.pop("user_emails", None)
+        rows = self.initial_data.get("user_emails") if hasattr(self, "initial_data") else None
         instance = super().update(instance, validated_data)
         if rows is not None:
-            instance.user_emails.all().delete()
-            UserEmail.objects.bulk_create(
+            from apps.frappe.utils.data import generate_hash
+
+            model = user_email_model()
+            model.objects.filter(parent=instance.email, parentfield="user_emails", parenttype="User").delete()
+            model.objects.bulk_create(
                 [
-                    UserEmail(user=instance, idx=index, email_account=row["email_account"], email_id=row["email_id"])
+                    model(
+                        name=generate_hash(length=10),
+                        parent=instance.email,
+                        parentfield="user_emails",
+                        parenttype="User",
+                        idx=index + 1,
+                        email_account=row["email_account"],
+                        email_id=row["email_id"],
+                    )
                     for index, row in enumerate(rows)
                 ]
             )

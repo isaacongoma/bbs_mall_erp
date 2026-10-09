@@ -39,6 +39,7 @@ export function decodeUserId(token: string | null): string | null {
 
 interface AuthState extends StoredTokens {
   login: (email: string, password: string) => Promise<void>
+  setTokens: (tokens: { access: string; refresh: string }) => void
   logout: () => void
   tryRefresh: () => Promise<boolean>
 }
@@ -57,6 +58,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (!response.ok) throw new Error('Invalid email or password')
     const data = (await response.json()) as { access: string; refresh: string }
     const tokens = { access: data.access, refresh: data.refresh }
+    persistTokens(tokens)
+    set(tokens)
+  },
+
+  setTokens(tokens) {
     persistTokens(tokens)
     set(tokens)
   },

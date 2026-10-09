@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { __ } from '@/core/i18n'
-import { Badge, Button, Combobox, Dialog, ErrorMessage, SortableList, TextInput } from '@/design-system'
+import { Button, Combobox, Dialog, ErrorMessage, SortableList } from '@/design-system'
 import { useMeta } from '../../hooks/useMeta'
 import type { DocField } from '../../types/meta'
 import { GRID_RESTRICTED_FIELD_TYPES } from '../../utils/fieldOptions'
 import { DragVerticalIcon } from '../Icons'
+import { Icon } from '../Icon'
 
 export interface GridFieldsEditorModalProps {
   open: boolean
@@ -20,6 +21,7 @@ interface GridFieldEntry {
   options?: unknown
   in_list_view?: number | boolean
   columns: number | string
+  sticky?: number | boolean
 }
 
 function toEntry(field: DocField & { columns?: number | string }): GridFieldEntry {
@@ -30,6 +32,7 @@ function toEntry(field: DocField & { columns?: number | string }): GridFieldEntr
     options: field.options,
     in_list_view: field.in_list_view,
     columns: field.columns || 2,
+    sticky: (field as { sticky?: number | boolean }).sticky,
   }
 }
 
@@ -44,7 +47,11 @@ export function GridFieldsEditorModal({
   const [error, setError] = useState<string | null>(null)
 
   const allFields = getFields({ restrictNoValueFields: false, restrictedFieldTypes: GRID_RESTRICTED_FIELD_TYPES })
-  const gridViewSettings = getGridViewSettings(parentDoctype) as Array<{ fieldname: string; columns: number }>
+  const gridViewSettings = getGridViewSettings(parentDoctype) as Array<{
+    fieldname: string
+    columns: number
+    sticky?: number | boolean
+  }>
 
   const oldFields: GridFieldEntry[] = (() => {
     if (!allFields.length) return []
@@ -52,7 +59,9 @@ export function GridFieldsEditorModal({
       return gridViewSettings
         .map((setting) => {
           const field = allFields.find((candidate) => candidate.fieldname === setting.fieldname)
-          return field ? toEntry({ ...field, columns: setting.columns }) : null
+          return field
+            ? toEntry({ ...field, columns: setting.columns, sticky: setting.sticky } as DocField & { columns?: number })
+            : null
         })
         .filter((entry): entry is GridFieldEntry => entry !== null)
     }
@@ -67,8 +76,6 @@ export function GridFieldsEditorModal({
     setBaseline(oldJson)
     if (untouched) setFields(JSON.parse(oldJson))
   }
-
-  const dirty = JSON.stringify(fields) !== oldJson
 
   const dropdownFields = allFields
     .filter((field) => !fields.some((entry) => entry.fieldname === field.fieldname))
@@ -88,7 +95,11 @@ export function GridFieldsEditorModal({
     saveUserSettings(
       parentDoctype,
       'GridView',
-      fields.map((field) => ({ fieldname: field.fieldname, columns: field.columns })),
+      fields.map((field) => ({
+        fieldname: field.fieldname,
+        columns: Math.max(1, Math.round(Number(field.columns) || 1)),
+        sticky: field.sticky ? 1 : 0,
+      })),
       () => {
         setLoading(false)
         onOpenChange(false)
@@ -96,67 +107,79 @@ export function GridFieldsEditorModal({
     )
   }
 
+  const WIDTH_UNIT = 50
+
   return (
-    <Dialog
-      open={open}
-      onOpenChange={onOpenChange}
-      titleContent={
-        <h3 className="flex items-center gap-2 text-3xl-semibold leading-6 text-ink-gray-9">
-          <div>{__('Edit Grid Fields Layout')}</div>
-          {dirty && <Badge label={__('Not Saved')} variant="subtle" theme="orange" />}
-        </h3>
-      }
-      actionsContent={() => (
-        <div className="flex items-center justify-end gap-2">
-          {dirty && <Button className="w-full" label={__('Reset')} onClick={reset} />}
-          <Button
-            className="w-full"
-            label={__('Save')}
-            variant="solid"
-            loading={loading}
-            disabled={!dirty}
-            onClick={update}
-          />
+    <Dialog open={open} onOpenChange={onOpenChange} size="xl" bare paddingTop="0px">
+      <div className="flex items-center justify-between border-b border-outline-gray-2 px-4 py-3">
+        <h3 className="text-xl font-medium text-ink-gray-9">{__('Configure Columns')}</h3>
+        <button
+          type="button"
+          aria-label={__('Close')}
+          className="p-1 text-ink-gray-7"
+          onClick={() => onOpenChange(false)}
+        >
+          <Icon icon="lucide-x" className="size-4" />
+        </button>
+      </div>
+      <div className="px-4 pb-3 pt-5">
+        <div className="mb-2 grid grid-cols-[28px_1fr_120px_110px_28px] items-center text-base font-semibold text-ink-gray-8">
+          <span />
+          <span className="pl-2">{__('Fieldname')}</span>
+          <span>{__('Column Width')}</span>
+          <span>{__('Sticky')}</span>
+          <span />
         </div>
-      )}
-    >
-      <div className="mt-4">
-        <div className="mb-2 text-base text-ink-gray-8">{__('Fields Order')}</div>
-        {oldFields.length > 0 && (
+        {fields.length > 0 && (
           <SortableList
             items={fields}
             itemKey="fieldname"
             className="flex flex-col gap-1"
             onChange={setFields}
             renderItem={(field) => (
-              <div className="flex items-center justify-between gap-2 rounded border border-outline-elevation-2 bg-surface-gray-2 px-1 py-0.5 text-base text-ink-gray-8">
-                <div className="flex items-center gap-2">
-                  <DragVerticalIcon className="h-3.5 cursor-grab" />
-                  <div>{field.label}</div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <TextInput
-                    value={field.columns}
-                    variant="outline"
-                    type="number"
-                    className="w-20"
+              <div className="grid grid-cols-[28px_1fr_120px_110px_28px] items-center rounded-md bg-surface-gray-2 py-1 text-base text-ink-gray-8">
+                <DragVerticalIcon className="mx-auto h-3.5 cursor-grab" />
+                <div className="pl-2">{field.label}</div>
+                <input
+                  type="number"
+                  value={Number(field.columns) * WIDTH_UNIT}
+                  onPointerDown={(event) => event.stopPropagation()}
+                  onChange={(event) =>
+                    setFields((current) =>
+                      current.map((entry) =>
+                        entry.fieldname === field.fieldname
+                          ? { ...entry, columns: Math.max(1, Math.round(Number(event.target.value) / WIDTH_UNIT)) }
+                          : entry,
+                      ),
+                    )
+                  }
+                  className="h-7 w-[100px] rounded border-0 bg-white px-2 text-right text-base text-ink-gray-8 focus:outline-none"
+                />
+                <div className="flex justify-center">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(field.sticky)}
                     onPointerDown={(event) => event.stopPropagation()}
-                    onChange={(value) =>
+                    onChange={(event) =>
                       setFields((current) =>
                         current.map((entry) =>
-                          entry.fieldname === field.fieldname ? { ...entry, columns: value } : entry,
+                          entry.fieldname === field.fieldname
+                            ? { ...entry, sticky: event.target.checked ? 1 : 0 }
+                            : entry,
                         ),
                       )
                     }
                   />
-                  <Button
-                    variant="ghost"
-                    icon="lucide-x"
-                    onClick={() =>
-                      setFields((current) => current.filter((entry) => entry.fieldname !== field.fieldname))
-                    }
-                  />
                 </div>
+                <button
+                  type="button"
+                  aria-label={__('Remove')}
+                  className="mx-auto text-ink-gray-5"
+                  onPointerDown={(event) => event.stopPropagation()}
+                  onClick={() => setFields((current) => current.filter((entry) => entry.fieldname !== field.fieldname))}
+                >
+                  <Icon icon="lucide-trash-2" className="size-3.5" />
+                </button>
               </div>
             )}
           />
@@ -170,12 +193,9 @@ export function GridFieldsEditorModal({
                 setFields((current) => [...current, toEntry(option as unknown as DocField)])
             }}
             trigger={({ open: isOpen, setOpen }) => (
-              <Button
-                className="mt-2 w-full"
-                label={__('Add Field')}
-                iconLeft="lucide-plus"
-                onClick={() => setOpen(!isOpen)}
-              />
+              <button type="button" className="mt-3 text-sm text-ink-gray-6" onClick={() => setOpen(!isOpen)}>
+                + {__('Add / Remove Columns')}
+              </button>
             )}
             itemLabel={({ item }) => (
               <div className="flex flex-col gap-1 text-ink-gray-9">
@@ -186,6 +206,10 @@ export function GridFieldsEditorModal({
           />
         )}
         {error && <ErrorMessage className="mt-3" message={error} />}
+      </div>
+      <div className="mt-4 flex items-center justify-end gap-2 border-t border-outline-gray-2 px-4 py-3">
+        <Button label={__('Reset to default')} onClick={reset} />
+        <Button label={__('Update')} variant="solid" loading={loading} onClick={update} />
       </div>
     </Dialog>
   )

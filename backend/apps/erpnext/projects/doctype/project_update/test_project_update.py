@@ -17,9 +17,10 @@ class TestProjectUpdate(ERPNextTestSuite):
         self.assertNotEqual(project.name, project.project_name)
 
         user = "_test_project_reminder@example.com"
-        from apps.core.models import User
-        if not User.objects.filter(email=user).exists():
-            User.objects.create_user(username=user, email=user, first_name="PR")
+        if not frappe.db.exists("User", user):
+            frappe.get_doc(
+                {"doctype": "User", "email": user, "first_name": "PR", "send_welcome_email": 0}
+            ).insert(ignore_permissions=True)
         if user not in [u.user for u in project.users]:
             project.append("users", {"user": user, "welcome_email_sent": 1})
             project.save()

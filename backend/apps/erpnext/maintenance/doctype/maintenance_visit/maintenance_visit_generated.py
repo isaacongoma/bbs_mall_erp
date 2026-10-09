@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class MaintenanceVisitGenerated(FrappeModel):
@@ -13,7 +13,7 @@ class MaintenanceVisitGenerated(FrappeModel):
     contact_mobile = models.CharField(max_length=140, blank=True, null=True, default='')
     contact_email = models.CharField(max_length=140, blank=True, null=True, default='')
     mntc_date = models.DateField(null=True, blank=True)
-    mntc_time = models.TimeField(null=True, blank=True)
+    mntc_time = FrappeTimeField(null=True, blank=True)
     completion_status = models.CharField(max_length=140, blank=True, null=True, default='')
     maintenance_type = models.CharField(max_length=140, blank=True, null=True, default='Unscheduled')
     customer_feedback = models.TextField(blank=True, null=True, default='')

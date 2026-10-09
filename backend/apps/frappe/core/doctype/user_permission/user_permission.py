@@ -1,4 +1,3 @@
-from __future__ import annotations
 
 import json
 from typing import Any
@@ -130,15 +129,6 @@ def get_user_permissions(user: str | None = None):
     return out
 
 
-def user_permission_exists(user, allow, for_value, applicable_for=None):
-    """Checks if similar user permission already exists"""
-    user_permissions = get_user_permissions(user).get(allow, [])
-    if not user_permissions:
-        return None
-    return find(
-        user_permissions,
-        lambda perm: perm["doc"] == for_value and perm.get("applicable_for") == applicable_for,
-    )
 
 
 @frappe.whitelist()
@@ -367,3 +357,14 @@ def update_applicable(already_applied, to_apply, user, doctype, docname):
                     "user": user,
                 },
             )
+
+
+def user_permission_exists(user, allow, for_value, applicable_for=None):
+    """Checks if similar user permission already exists"""
+    user_permissions = get_user_permissions(user).get(allow, [])
+    if not user_permissions:
+        return None
+    return find(
+        user_permissions,
+        lambda perm: perm["doc"] == for_value and perm.get("applicable_for") == applicable_for,
+    )

@@ -1,0 +1,156 @@
+import { __, cint, flt, frappe } from '@/shared/frappe'
+frappe.ui.form.on('Repost Item Valuation', {
+  setup: function (frm?: any) {
+    frm.set_query('warehouse', () => {
+      const filters: any = {
+        is_group: 0,
+      }
+      if (frm.doc.company) filters['company'] = frm.doc.company
+      return { filters: filters }
+    })
+    frm.set_query('voucher_type', () => {
+      return {
+        filters: {
+          name: [
+            'in',
+            [
+              'Purchase Receipt',
+              'Purchase Invoice',
+              'Delivery Note',
+              'Sales Invoice',
+              'Stock Entry',
+              'Stock Reconciliation',
+              'Subcontracting Receipt',
+            ],
+          ],
+        },
+      }
+    })
+    if (frm.doc.company) {
+      frm.set_query('voucher_no', () => {
+        return {
+          filters: {
+            company: frm.doc.company,
+            docstatus: 1,
+          },
+        }
+      })
+    }
+    if (frm.doc.status !== 'Completed') {
+      frm.trigger('setup_realtime_progress')
+    }
+  },
+  based_on: function (frm?: any) {
+    let fields_to_reset: any = []
+    if (frm.doc.based_on == 'Transaction') {
+      fields_to_reset = ['item_code', 'warehouse']
+    } else if (frm.doc.based_on == 'Item and Warehouse') {
+      fields_to_reset = ['voucher_type', 'voucher_no']
+    }
+    if (fields_to_reset) {
+      fields_to_reset.forEach((field?: any) => {
+        frm.set_value(field, undefined)
+      })
+    }
+  },
+  setup_realtime_progress: function (frm?: any) {
+    frappe.realtime.on('item_reposting_progress', (data?: any) => {
+      if (frm.doc.name !== data.name) {
+        return
+      }
+      if (frm.doc.status == 'In Progress') {
+        if (data.current_index) {
+          frm.doc.current_index = data.current_index
+          frm.doc.items_to_be_repost = data.items_to_be_repost
+        }
+        if (data.vouchers_posted) {
+          frm.doc.total_vouchers = data.total_vouchers
+          frm.doc.vouchers_posted = data.vouchers_posted
+        }
+        frm.dashboard.reset()
+        frm.trigger('show_reposting_progress')
+      }
+    })
+  },
+  refresh: function (frm?: any) {
+    if (frm.doc.status == 'Failed' && frm.doc.docstatus == 1) {
+      frm
+        .add_custom_button(__('Restart'), function () {
+          frm.trigger('restart_reposting')
+        })
+        .addClass('btn-primary')
+    }
+    frm.trigger('show_update_valuation_field')
+    if (frm.doc.status !== 'Completed') {
+      frm.trigger('show_reposting_progress')
+    }
+    if (frm.doc.status === 'Queued' && frm.doc.docstatus === 1) {
+      frm.trigger('execute_reposting')
+    }
+  },
+  show_update_valuation_field(frm?: any) {
+    frm.toggle_display(
+      'recalculate_valuation_rate',
+      ['Purchase Receipt', 'Purchase Invoice', 'Stock Entry'].includes(frm.doc.voucher_type),
+    )
+  },
+  execute_reposting(frm?: any) {
+    frm.add_custom_button(__('Start Reposting'), () => {
+      frappe.call({
+        method: 'erpnext.stock.doctype.repost_item_valuation.repost_item_valuation.execute_repost_item_valuation',
+        callback: function () {
+          frappe.msgprint(__('Reposting has been started in the background.'))
+        },
+      })
+    })
+  },
+  show_reposting_progress: function (frm?: any) {
+    let bars: any = []
+    let title = ''
+    let progress = 0.0
+    const total_count = frm.doc.items_to_be_repost ? JSON.parse(frm.doc.items_to_be_repost).length : 0
+    if (total_count > 1) {
+      progress = flt((cint(frm.doc.current_index) / total_count) * 100, 2) || 0.5
+      title = __('Reposting for Item-Wh Completed {0}%', [progress])
+      bars.push({
+        title: title,
+        width: progress + '%',
+        progress_class: 'progress-bar-success',
+      })
+      frm.dashboard.add_progress(__('Reposting Progress'), bars)
+    }
+    if (!frm.doc.vouchers_posted) {
+      return
+    }
+    bars = []
+    progress = flt((cint(frm.doc.vouchers_posted) / cint(frm.doc.total_vouchers)) * 100, 2) || 0.5
+    title = __('Reposting for Vouchers Completed {0}%', [progress])
+    bars.push({
+      title: title,
+      width: progress + '%',
+      progress_class: 'progress-bar-success',
+    })
+    frm.dashboard.add_progress(__('Reposting Vouchers Progress'), bars)
+  },
+  restart_reposting: function (frm?: any) {
+    frappe.call({
+      method: 'restart_reposting',
+      doc: frm.doc,
+      callback: function () {
+        frm.reload_doc()
+      },
+    })
+  },
+  voucher_type: function (frm?: any) {
+    frm.trigger('set_company_on_transaction')
+    frm.trigger('show_update_valuation_field')
+  },
+  voucher_no: function (frm?: any) {
+    frm.trigger('set_company_on_transaction')
+  },
+  set_company_on_transaction(frm?: any) {
+    if (frm.doc.voucher_no && frm.doc.voucher_type) {
+      frm.call('set_company')
+    }
+  },
+})

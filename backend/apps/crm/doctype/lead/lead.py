@@ -42,13 +42,13 @@ class CRMLead(ChildRowBufferMixin, AssignableMixin, BaseDocument):
     naming_series = models.CharField(max_length=40, default=NAMING_SERIES, editable=False)
 
     salutation = models.ForeignKey(
-        "core.Salutation", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+        "erpnext.Salutation", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
     first_name = models.CharField(max_length=140)
     middle_name = models.CharField(max_length=140, blank=True)
     last_name = models.CharField(max_length=140, blank=True)
     lead_name = models.CharField(max_length=270, blank=True)
-    gender = models.ForeignKey("core.Gender", on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    gender = models.ForeignKey("erpnext.Gender", on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
     email = models.EmailField(blank=True)
     mobile_no = models.CharField(max_length=30, blank=True)
     phone = models.CharField(max_length=30, blank=True)
@@ -63,13 +63,13 @@ class CRMLead(ChildRowBufferMixin, AssignableMixin, BaseDocument):
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="owned_leads"
     )
     source = models.ForeignKey(
-        "crm.CRMLeadSource", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+        "erpnext.UtmSource", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
     industry = models.ForeignKey(
-        "crm.CRMIndustry", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+        "erpnext.IndustryType", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
     territory = models.ForeignKey(
-        "crm.CRMTerritory", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+        "erpnext.Territory", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
     image = models.CharField(max_length=255, blank=True)
     converted = models.BooleanField(default=False)
@@ -104,7 +104,7 @@ class CRMLead(ChildRowBufferMixin, AssignableMixin, BaseDocument):
     facebook_form_id = models.CharField(max_length=140, blank=True)
 
     lost_reason = models.ForeignKey(
-        "crm.CRMLostReason", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+        "erpnext.OpportunityLostReason", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
     lost_notes = models.TextField(blank=True)
 
@@ -261,18 +261,12 @@ class CRMLead(ChildRowBufferMixin, AssignableMixin, BaseDocument):
     # -- conversion -----------------------------------------------------------
 
     def contact_exists(self):
-        from apps.core.doctype.contact.contact import Contact
-        from apps.core.doctype.contact_email.contact_email import ContactEmail
+        from apps.core import contacts
 
-        if not self.email:
-            return None
-        row = ContactEmail.objects.filter(email_id=self.email).first()
-        if not row:
-            return None
-        return Contact.objects.filter(pk=row.parent_id).first()
+        return contacts.find_by_email(self.email)
 
     def create_contact(self, existing_contact=None):
-        from apps.core.doctype.contact.contact import Contact
+        from apps.core import contacts
 
         if not self.lead_name:
             self.set_full_name()
@@ -283,24 +277,18 @@ class CRMLead(ChildRowBufferMixin, AssignableMixin, BaseDocument):
             self.update_lead_contact(existing_contact)
             return existing_contact
 
-        contact = Contact(
+        return contacts.create_contact(
             first_name=self.first_name or self.lead_name,
             last_name=self.last_name,
+            email=self.email,
+            phone=self.phone,
+            mobile_no=self.mobile_no,
             salutation=self.salutation,
             gender=self.gender,
             designation=self.job_title,
             company_name=self.organization,
             image=self.image or "",
         )
-        contact.save()
-        if self.email:
-            contact.email_ids.create(email_id=self.email, is_primary=True)
-        if self.phone:
-            contact.phone_nos.create(phone=self.phone, is_primary_phone=True)
-        if self.mobile_no:
-            contact.phone_nos.create(phone=self.mobile_no, is_primary_mobile_no=True)
-        contact.save()
-        return contact
 
     def update_lead_contact(self, contact):
         self.salutation = contact.salutation

@@ -25,14 +25,14 @@ class FiscalYearControllerTests(TestCase):
     def test_company_fiscal_year_overlap_matches_upstream_case(self):
         global_fy = frappe.new_doc("Fiscal Year")
         global_fy.year = "_Test Global FY 2001"
-        global_fy.year_start_date = "2001-04-01"
-        global_fy.year_end_date = "2002-03-31"
+        global_fy.year_start_date = "2201-04-01"
+        global_fy.year_end_date = "2202-03-31"
         global_fy.insert()
 
         company_fy = frappe.new_doc("Fiscal Year")
         company_fy.year = "_Test Company FY 2001"
-        company_fy.year_start_date = "2001-01-01"
-        company_fy.year_end_date = "2001-12-31"
+        company_fy.year_start_date = "2201-01-01"
+        company_fy.year_end_date = "2201-12-31"
         company_fy.append("companies", {"company": "_Test Company"})
 
         company_fy.insert()
@@ -42,14 +42,14 @@ class FiscalYearControllerTests(TestCase):
     def test_global_fiscal_year_overlap_is_rejected(self):
         first = frappe.new_doc("Fiscal Year")
         first.year = "_Test Global FY 2020"
-        first.year_start_date = "2020-01-01"
-        first.year_end_date = "2020-12-31"
+        first.year_start_date = "2220-01-01"
+        first.year_end_date = "2220-12-31"
         first.insert()
 
         second = frappe.new_doc("Fiscal Year")
         second.year = "_Test Overlap FY 2020"
-        second.year_start_date = "2020-04-01"
-        second.year_end_date = "2021-03-31"
+        second.year_start_date = "2220-04-01"
+        second.year_end_date = "2221-03-31"
 
         with self.assertRaises(frappe.NameError):
             second.insert()
@@ -57,8 +57,8 @@ class FiscalYearControllerTests(TestCase):
     def test_get_from_and_to_date(self):
         fiscal_year = frappe.new_doc("Fiscal Year")
         fiscal_year.year = "_Test Lookup FY 2030"
-        fiscal_year.year_start_date = "2030-01-01"
-        fiscal_year.year_end_date = "2030-12-31"
+        fiscal_year.year_start_date = "2230-01-01"
+        fiscal_year.year_end_date = "2230-12-31"
         fiscal_year.insert()
 
         self.assertEqual(
@@ -69,6 +69,8 @@ class FiscalYearControllerTests(TestCase):
     def test_auto_create_fiscal_year_rolls_back_only_to_savepoint(self):
         follow_up_date = add_days(getdate(), 3)
         start_date = add_days(follow_up_date, -364)
+        frappe.db.delete("Fiscal Year Company")
+        frappe.db.delete("Fiscal Year")
 
         first = frappe.new_doc("Fiscal Year")
         first.year = "_Test Auto First"
@@ -86,8 +88,8 @@ class FiscalYearControllerTests(TestCase):
         original_new_doc = frappe.new_doc
         call_count = {"count": 0}
 
-        def new_doc_with_first_insert_failure(doctype):
-            doc = original_new_doc(doctype)
+        def new_doc_with_first_insert_failure(doctype, **kwargs):
+            doc = original_new_doc(doctype, **kwargs)
             call_count["count"] += 1
             if call_count["count"] == 1:
                 doc.insert = lambda *args, **kwargs: (_ for _ in ()).throw(frappe.NameError("duplicate"))

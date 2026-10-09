@@ -14,7 +14,9 @@
  "owner": "Administrator",
  "reference_document": "Purchase Invoice",
  "show_form_tour": 0,
- "show_full_form": 0,
- "title": "Create Purchase Invoice",
- "validate_action": 1
+ "show_full_form": 1,
+ "title": "Enter their bill",
+ "validate_action": 1,
+ "description": "The bill your supplier sent, so you know what you owe and when it is due. See [Purchase Invoice](https://docs.frappe.io/erpnext/user/manual/en/purchase-invoice).",
+ "intro_video_url": "https://www.youtube.com/watch?v=Cb4gYZuV60k"
 }

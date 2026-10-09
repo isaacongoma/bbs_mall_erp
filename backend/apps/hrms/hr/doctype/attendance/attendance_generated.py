@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class AttendanceGenerated(FrappeModel):
@@ -20,8 +20,8 @@ class AttendanceGenerated(FrappeModel):
     amended_from = models.CharField(max_length=140, blank=True, null=True, default='')
     late_entry = models.SmallIntegerField(default=0)
     early_exit = models.SmallIntegerField(default=0)
-    in_time = models.DateTimeField(null=True, blank=True)
-    out_time = models.DateTimeField(null=True, blank=True)
+    in_time = FrappeDateTimeField(null=True, blank=True)
+    out_time = FrappeDateTimeField(null=True, blank=True)
     half_day_status = models.CharField(max_length=140, blank=True, null=True, default='')
     modify_half_day_status = models.SmallIntegerField(default=0)
     overtime_type = models.CharField(max_length=140, blank=True, null=True, default='')

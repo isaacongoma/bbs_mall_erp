@@ -1,6 +1,8 @@
+from apps.core.migration_utils import tolerant_extra_columns
 from django.db import migrations
 
 
+@tolerant_extra_columns
 def copy_email_records(apps, schema_editor):
     from apps.core.crm_custom_fields import CRM_CUSTOM_FIELDS
     from apps.erpnext.registry import get_model
@@ -75,7 +77,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("core", "0017_unify_file"),
-        ("erpnext", "0023_custom_docperm_address_emailaccount"),
+        ("erpnext", "0027_standard_hidden_columns"),
     ]
 
     operations = [

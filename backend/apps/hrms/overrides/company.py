@@ -1,4 +1,3 @@
-from __future__ import annotations
 
 import json
 
@@ -189,9 +188,6 @@ def handle_linked_docs(doc, method=None):
 
 
 def delete_docs_with_company_field(doc, method=None):
-    """
-    Deletes records from linked doctypes where the 'company' field matches the company's name
-    """
     company_data_to_be_ignored = frappe.get_hooks("company_data_to_be_ignored") or []
     for doctype in company_data_to_be_ignored:
         records_to_delete = frappe.get_all(doctype, filters={"company": doc.name}, pluck="name")
@@ -200,9 +196,6 @@ def delete_docs_with_company_field(doc, method=None):
 
 
 def clear_company_field_for_single_doctypes(doc):
-    """
-    Clears the 'company' value in Single doctypes where applicable
-    """
     single_docs = get_single_doctypes_with_company_field()
     singles = frappe.qb.DocType("Singles")
     (

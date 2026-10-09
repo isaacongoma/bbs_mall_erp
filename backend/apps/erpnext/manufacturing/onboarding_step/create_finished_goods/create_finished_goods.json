@@ -1,6 +1,6 @@
 {
  "action": "Create Entry",
- "action_label": "Create Finished Good",
+ "action_label": "Add Item",
  "creation": "2026-02-23 20:34:23.487974",
  "docstatus": 0,
  "doctype": "Onboarding Step",
@@ -16,6 +16,7 @@
  "route_options": "{\n    \"item_group\": \"Products\"\n}",
  "show_form_tour": 0,
  "show_full_form": 1,
- "title": "Create Finished Goods",
- "validate_action": 1
+ "title": "Add a product you make",
+ "validate_action": 1,
+ "description": "What comes out at the end of production, kept in the Products group. See [Item](https://docs.frappe.io/erpnext/user/manual/en/item)."
 }

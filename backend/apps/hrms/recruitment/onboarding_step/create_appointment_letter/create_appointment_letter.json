@@ -1,0 +1,21 @@
+{
+ "name": "Create Appointment Letter",
+ "owner": "Administrator",
+ "creation": "2026-10-05 12:00:00",
+ "modified": "2026-10-05 12:00:00",
+ "modified_by": "Administrator",
+ "docstatus": 0,
+ "idx": 0,
+ "title": "Send an appointment letter",
+ "is_complete": 0,
+ "is_skipped": 0,
+ "description": "The formal letter that confirms the role and its terms. See [Appointment Letter](https://docs.frappe.io/hr/appointment-letter).",
+ "action": "Create Entry",
+ "action_label": "Create Appointment Letter",
+ "reference_document": "Appointment Letter",
+ "show_full_form": 1,
+ "show_form_tour": 0,
+ "is_single": 0,
+ "validate_action": 1,
+ "doctype": "Onboarding Step"
+}

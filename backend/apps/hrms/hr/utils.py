@@ -1,4 +1,3 @@
-from __future__ import annotations
 
 import calendar
 import datetime
@@ -95,10 +94,6 @@ def update_employee_work_history(employee, details, date=None, cancel=False):
 
 
 def get_formatted_value(value, fieldtype):
-    """
-    Since the fields in Internal Work History table are `Data` fields
-    format them as per relevant field types
-    """
     if not value:
         return
 
@@ -320,7 +315,6 @@ def get_leave_period(from_date: str | datetime.date, to_date: str | datetime.dat
 
 
 def generate_leave_encashment():
-    """Generates a draft leave encashment on allocation expiry"""
     from hrms.hr.doctype.leave_encashment.leave_encashment import create_leave_encashment
 
     if frappe.db.get_single_value("HR Settings", "auto_leave_encashment"):
@@ -347,7 +341,6 @@ def generate_leave_encashment():
 
 
 def allocate_earned_leaves():
-    """Allocate earned leaves to Employees"""
     e_leave_types = get_earned_leaves()
     today = frappe.flags.current_date or getdate()
     failed_allocations = []
@@ -602,7 +595,6 @@ def get_earned_leaves():
 
 
 def create_additional_leave_ledger_entry(allocation, leaves, date):
-    """Create leave ledger entry for leave types"""
     allocation.new_leaves_allocated = leaves
     allocation.from_date = date
     allocation.unused_leaves = 0
@@ -705,23 +697,12 @@ def get_sal_slip_total_benefit_given(employee, payroll_period, component=False):
 
 
 def get_holiday_dates_for_employee(employee, start_date, end_date):
-    """return a list of holiday dates for the given employee between start_date and end_date"""
     holidays = get_holidays_for_employee(employee, start_date, end_date)
 
     return [cstr(h.holiday_date) for h in holidays]
 
 
 def get_holidays_for_employee(employee, start_date, end_date, raise_exception=True, only_non_weekly=False):
-    """Get Holidays for a given employee
-
-    `employee` (str)
-    `start_date` (str or datetime)
-    `end_date` (str or datetime)
-    `raise_exception` (bool)
-    `only_non_weekly` (bool)
-
-    return: list of dicts with `holiday_date` and `description`
-    """
     from hrms.utils.holiday_list import get_holiday_list_ranges_for_employee, get_holidays_in_ranges
 
     holiday_list_ranges = get_holiday_list_ranges_for_employee(
@@ -846,7 +827,6 @@ def get_matching_queries(
     to_reference_date=None,
     common_filters=None,
 ):
-    """Returns matching queries for Bank Reconciliation"""
     queries = []
     if transaction.withdrawal > 0:
         if "expense_claim" in document_types:
@@ -1001,7 +981,6 @@ def get_distance_between_coordinates(lat1, long1, lat2, long2):
 
 
 def check_app_permission():
-    """Check if user has permission to access the app (for showing the app on app screen)"""
     if frappe.session.user == "Administrator":
         return True
 
@@ -1016,7 +995,6 @@ def check_app_permission():
 
 
 def get_exact_month_diff(string_ed_date: DateTimeLikeObject, string_st_date: DateTimeLikeObject) -> int:
-    """Return the difference between given two dates in months."""
     ed_date = getdate(string_ed_date)
     st_date = getdate(string_st_date)
     diff = (ed_date.year - st_date.year) * 12 + ed_date.month - st_date.month
@@ -1041,7 +1019,6 @@ def get_semester_end(date):
 
 
 def get_complete_month_count(date, effective_from):
-    """Returns count of complete months from effective_from to date, accounting for day-of-month."""
     month_count = (date.year - effective_from.year) * 12 + (date.month - effective_from.month)
     if date.day < effective_from.day and date != get_last_day(date):
         month_count -= 1
@@ -1049,7 +1026,6 @@ def get_complete_month_count(date, effective_from):
 
 
 def get_half_year_periods(date, effective_from):
-    """Return (start, end) of the half-year period containing date, relative to effective_from."""
     effective_from = getdate(effective_from)
     date = getdate(date)
 

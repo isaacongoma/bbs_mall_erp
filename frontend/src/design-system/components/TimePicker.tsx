@@ -361,7 +361,7 @@ export function TimePicker({
                     setOpen(!isOpen)
                   }}
                 >
-                  <LucideIcon name="chevron-down" className="size-4 cursor-pointer" />
+                  <LucideIcon name="chevron-down" className="dd-link size-4 cursor-pointer" />
                 </span>
               )
             }

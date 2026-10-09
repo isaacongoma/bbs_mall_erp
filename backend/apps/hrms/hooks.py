@@ -7,6 +7,19 @@ app_license = "GNU General Public License (v3)"
 required_apps = ["frappe/erpnext"]
 after_install = "hrms.install.after_install"
 after_migrate = "hrms.setup.update_select_perm_after_install"
+code_only_modules = {
+    "HR": [
+        "HR Setup",
+        "Shift & Attendance",
+        "Leaves",
+        "Expenses",
+        "Payroll",
+        "Performance",
+        "Tenure",
+        "Recruitment",
+        "Tax & Benefits",
+    ],
+}
 calendars = ["Leave Application"]
 website_generators = ["Job Opening"]
 has_upload_permission = {"Employee": "erpnext.setup.doctype.employee.employee.has_upload_permission"}
@@ -151,3 +164,9 @@ company_data_to_be_ignored = [
 ignore_translatable_strings_from = ["frappe", "erpnext"]
 employee_holiday_list = ["hrms.utils.holiday_list.get_holiday_list_for_employee"]
 repost_allowed_doctypes = ["Expense Claim"]
+
+regional_overrides = {
+    "Kenya": {
+        "hrms.payroll.doctype.salary_slip.salary_slip.apply_regional_deductions": "hrms.regional.kenya.utils.apply_regional_deductions"
+    }
+}

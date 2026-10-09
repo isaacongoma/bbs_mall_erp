@@ -1,3 +1,6 @@
+import { useState } from 'react'
+import { Icon } from '../Icon'
+import { sanitizeHTML } from '../../utils/text'
 import { getBoot, getSysDefaults } from '@/core/boot'
 import { __ } from '@/core/i18n'
 import {
@@ -35,6 +38,8 @@ import { UserAvatar } from '../UserAvatar'
 import { AttachControl } from '../Controls/AttachControl'
 import { ButtonControl } from '../Controls/ButtonControl'
 import { CommitInput, CommitTextarea } from '../Controls/CommitInput'
+import { CodeControl } from '../Controls/CodeControl'
+import { ColorPickerControl } from '../Controls/ColorPickerControl'
 import { DurationInput } from '../Controls/DurationInput'
 import { FormattedInput } from '../Controls/FormattedInput'
 import { GeolocationControl } from '../Controls/GeolocationControl'
@@ -42,13 +47,40 @@ import { Grid } from '../Controls/Grid'
 import { HtmlControl } from '../Controls/HtmlControl'
 import { Link } from '../Controls/Link'
 import { RatingInput } from '../Controls/RatingInput'
+import { IconControl, JsonControl, SignatureControl } from '../Controls/SpecialFieldControls'
 import { TableMultiselectInput } from '../Controls/TableMultiselectInput'
 import { TextEditorControl } from '../Controls/TextEditorControl'
 
 type FieldObj = DocField & Record<string, any>
 
+const DESCRIPTION_OUTSIDE = ['Link', 'Dynamic Link', 'Table MultiSelect', 'User']
+
+function userDate(value: string): string {
+  const datetime = (window as unknown as { frappe?: { datetime?: { str_to_user?: (input: string) => string } } }).frappe
+    ?.datetime
+  return datetime?.str_to_user ? datetime.str_to_user(value) : value
+}
+
+function DescriptionToggle({ html }: { html: string }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <button type="button" aria-label="Description" className="text-ink-gray-5" onClick={() => setOpen(!open)}>
+        <Icon icon="lucide-info" className="size-3.5" />
+      </button>
+      {open && (
+        <p
+          className="basis-full pl-[22px] text-[13px] leading-[1.6] text-ink-gray-5"
+          dangerouslySetInnerHTML={{ __html: sanitizeHTML(html) }}
+        />
+      )}
+    </>
+  )
+}
+
 export interface FieldProps {
   field: DocField
+  limitWidth?: boolean
 }
 
 function isExternalUrl(value: unknown): value is string {
@@ -91,8 +123,9 @@ function isFieldVisible(candidate: FieldObj, hidden: unknown, preview: boolean, 
   )
 }
 
-export function Field({ field: baseField }: FieldProps) {
+export function Field({ field: baseField, limitWidth = false }: FieldProps) {
   const layout = useFieldLayout()
+  const placeholderFor = (target: FieldObj) => (layout.standalone ? '' : getPlaceholder(target))
   const { data, doctype, preview, isGridRow, formDocument } = layout
   const { getUser, crmUsers } = useUsers()
   const meta = useMeta(doctype)
@@ -173,6 +206,13 @@ export function Field({ field: baseField }: FieldProps) {
 
   const value = data[field.fieldname]
   const disabled = Boolean(field.disabled)
+  const linkQuery = layout.resolveLinkQuery?.(field.fieldname, isGridRow ? data : null)
+  const linkFilters = linkQuery?.filters !== undefined ? linkQuery.filters : field.filters
+  const linkSearchContext = {
+    reference_doctype: doctype,
+    link_fieldname: field.fieldname,
+    ...(field.ignore_user_permissions ? { ignore_user_permissions: 1 } : {}),
+  }
 
   const resolvedHtml = (() => {
     if (field.fieldtype !== 'HTML') return ''
@@ -232,8 +272,18 @@ export function Field({ field: baseField }: FieldProps) {
       return (
         <FormControl
           type="text"
-          value={value ?? ''}
-          placeholder={getPlaceholder(field)}
+          value={
+            field.fieldtype === 'Float' &&
+            !Number(field.precision) &&
+            value !== null &&
+            value !== '' &&
+            Number.isInteger(flt(value))
+              ? String(flt(value))
+              : field.fieldtype === 'Date' && value
+                ? userDate(String(value))
+                : (value ?? '')
+          }
+          placeholder={placeholderFor(field)}
           disabled
           description={field.description}
         />
@@ -259,7 +309,7 @@ export function Field({ field: baseField }: FieldProps) {
             className={`form-control ${field.prefix ? 'prefix' : ''}`}
             value={value ?? ''}
             options={field.options}
-            placeholder={getPlaceholder(field)}
+            placeholder={placeholderFor(field)}
             disabled={disabled}
             description={field.description}
             onChange={(next: unknown) => fieldChange(next, field)}
@@ -268,23 +318,37 @@ export function Field({ field: baseField }: FieldProps) {
         )
       case field.fieldtype === 'Check':
         return (
-          <div className="flex items-center gap-2">
-            <Checkbox
-              className="form-control"
-              value={Boolean(value)}
-              disabled={disabled}
-              description={field.description}
-              onChange={(checked) => fieldChange(checked, field)}
-            />
-            <label
-              className="text-sm text-ink-gray-5"
-              onClick={() => {
-                if (!disabled) fieldChange(!value, field)
-              }}
-            >
-              {__(field.label)}
-              {field.mandatory && <span className="text-ink-red-6">*</span>}
-            </label>
+          <div className="flex flex-col gap-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <Checkbox
+                className="form-control"
+                value={Boolean(value)}
+                disabled={disabled}
+                onChange={(checked) => fieldChange(checked, field)}
+              />
+              <label
+                className={layout.standalone ? 'text-[13px] font-medium text-ink-gray-9' : 'text-sm text-ink-gray-7'}
+                onClick={() => {
+                  if (!disabled) fieldChange(!value, field)
+                }}
+              >
+                {__(field.label)}
+                {field.mandatory && <span className="text-ink-red-6">*</span>}
+              </label>
+              {field.description && field.show_description_on_click ? (
+                <DescriptionToggle html={String(field.description)} />
+              ) : null}
+            </div>
+            {field.description && !field.show_description_on_click ? (
+              <p
+                className={
+                  layout.standalone
+                    ? 'ml-[22px] text-[13px] leading-[1.6] text-ink-gray-5'
+                    : 'ml-6 text-xs text-ink-gray-5'
+                }
+                dangerouslySetInnerHTML={{ __html: sanitizeHTML(String(field.description)) }}
+              />
+            ) : null}
           </div>
         )
       case field.fieldtype === 'Link' || field.fieldtype === 'Dynamic Link':
@@ -294,8 +358,10 @@ export function Field({ field: baseField }: FieldProps) {
               className="form-control flex-1 truncate"
               value={value}
               doctype={field.fieldtype === 'Link' ? field.options : data[field.options]}
-              filters={field.filters}
-              placeholder={getPlaceholder(field)}
+              filters={linkFilters}
+              query={linkQuery?.query}
+              searchContext={linkSearchContext}
+              placeholder={placeholderFor(field)}
               disabled={disabled}
               onCreate={field.create}
               onChange={(next) => fieldChange(next, field)}
@@ -316,12 +382,12 @@ export function Field({ field: baseField }: FieldProps) {
       case field.fieldtype === 'User':
         return (
           <Link
-            className="form-control"
+            className="form-control w-full"
             value={value}
             valueLabel={value ? getUser(value).full_name : undefined}
             doctype={field.options}
             filters={field.filters}
-            placeholder={getPlaceholder(field)}
+            placeholder={placeholderFor(field)}
             hideMe
             onChange={(next) => fieldChange(next, field)}
             prefix={() => (value ? <UserAvatar className="mr-2" user={value} size="sm" /> : null)}
@@ -338,7 +404,7 @@ export function Field({ field: baseField }: FieldProps) {
           <Combobox
             value={value ?? null}
             options={autocompleteOptions()}
-            placeholder={getPlaceholder(field)}
+            placeholder={placeholderFor(field)}
             disabled={disabled}
             onChange={(next) => fieldChange(next, field)}
           />
@@ -348,7 +414,7 @@ export function Field({ field: baseField }: FieldProps) {
           <TimePicker
             value={value}
             format={getFormat('', '', false, true, false)}
-            placeholder={getPlaceholder(field)}
+            placeholder={placeholderFor(field)}
             disabled={disabled}
             onChange={(next) => fieldChange(next, field)}
           />
@@ -358,7 +424,7 @@ export function Field({ field: baseField }: FieldProps) {
           <DateTimePicker
             value={value}
             format={getFormat('', '', true, true, false)}
-            placeholder={getPlaceholder(field)}
+            placeholder={placeholderFor(field)}
             disabled={disabled}
             onChange={(next) => fieldChange(next, field)}
           />
@@ -368,16 +434,46 @@ export function Field({ field: baseField }: FieldProps) {
           <DatePicker
             value={value}
             format={getFormat('', '', true, false, false)}
-            placeholder={getPlaceholder(field)}
+            placeholder={placeholderFor(field)}
             disabled={disabled}
+            suffix={layout.standalone ? () => null : undefined}
             onChange={(next) => fieldChange(next, field)}
           />
         )
-      case ['Small Text', 'Text', 'Long Text', 'Code'].includes(field.fieldtype):
+      case field.fieldtype === 'Code':
+        return (
+          <CodeControl
+            value={value}
+            disabled={disabled}
+            description={field.description}
+            onCommit={(next) => fieldChange(next, field)}
+          />
+        )
+      case ['Small Text', 'Text', 'Long Text'].includes(field.fieldtype):
         return (
           <CommitTextarea
             value={value}
-            placeholder={getPlaceholder(field)}
+            placeholder={placeholderFor(field)}
+            disabled={disabled}
+            description={field.description}
+            onCommit={(next) => fieldChange(next, field)}
+          />
+        )
+      case field.fieldtype === 'Markdown':
+        return (
+          <CommitTextarea
+            value={value}
+            placeholder={placeholderFor(field)}
+            disabled={disabled}
+            description={field.description}
+            onCommit={(next) => fieldChange(next, field)}
+          />
+        )
+      case field.fieldtype === 'JSON':
+        return (
+          <JsonControl
+            value={value}
+            placeholder={placeholderFor(field)}
             disabled={disabled}
             description={field.description}
             onCommit={(next) => fieldChange(next, field)}
@@ -388,7 +484,7 @@ export function Field({ field: baseField }: FieldProps) {
           <CommitInput
             kind="password"
             value={value}
-            placeholder={getPlaceholder(field)}
+            placeholder={placeholderFor(field)}
             disabled={disabled}
             description={field.description}
             onCommit={(next) => fieldChange(next, field)}
@@ -398,7 +494,7 @@ export function Field({ field: baseField }: FieldProps) {
         return (
           <FormattedInput
             type="text"
-            placeholder={getPlaceholder(field)}
+            placeholder={placeholderFor(field)}
             value={value || '0'}
             disabled={disabled}
             description={field.description}
@@ -412,8 +508,12 @@ export function Field({ field: baseField }: FieldProps) {
         return (
           <FormattedInput
             type="text"
-            value={formatted[kind]}
-            placeholder={getPlaceholder(field)}
+            value={
+              kind === 'float' && flt(data[field.fieldname]) === 0
+                ? String(flt(data[field.fieldname]))
+                : formatted[kind]
+            }
+            placeholder={placeholderFor(field)}
             disabled={disabled}
             description={field.description}
             onCommit={(next) => fieldChange(flt(next), field)}
@@ -424,7 +524,7 @@ export function Field({ field: baseField }: FieldProps) {
         return (
           <DurationInput
             value={value}
-            placeholder={getPlaceholder(field)}
+            placeholder={placeholderFor(field)}
             disabled={disabled}
             description={field.description}
             onChange={(next) => fieldChange(next, field)}
@@ -450,36 +550,64 @@ export function Field({ field: baseField }: FieldProps) {
             onClick={() => void handleButtonClick()}
           />
         )
-      case field.fieldtype === 'Attach' || field.fieldtype === 'Attach Image':
+      case field.fieldtype === 'Attach' || field.fieldtype === 'Attach Image' || field.fieldtype === 'Image':
         return (
           <AttachControl
             value={value}
             doctype={doctype}
             docname={data.name}
             fieldname={field.fieldname}
-            imageOnly={field.fieldtype === 'Attach Image'}
+            imageOnly={field.fieldtype === 'Attach Image' || field.fieldtype === 'Image'}
             disabled={disabled}
             onChange={(next) => fieldChange(next, field)}
           />
         )
+      case field.fieldtype === 'Signature':
+        return <SignatureControl value={value} disabled={disabled} onChange={(next) => fieldChange(next, field)} />
+      case field.fieldtype === 'Barcode':
+        return (
+          <CommitInput
+            value={value}
+            placeholder={placeholderFor(field)}
+            disabled={disabled}
+            description={field.description}
+            onCommit={(next) => fieldChange(next, field)}
+          />
+        )
+      case field.fieldtype === 'Color':
+        return <ColorPickerControl value={value} disabled={disabled} onChange={(next) => fieldChange(next, field)} />
+      case field.fieldtype === 'Icon':
+        return (
+          <IconControl
+            value={value}
+            disabled={disabled}
+            placeholder={placeholderFor(field)}
+            onChange={(next) => fieldChange(next, field)}
+          />
+        )
       case field.fieldtype === 'HTML':
-        return <HtmlControl html={resolvedHtml} />
+        return (
+          <HtmlControl
+            html={resolvedHtml}
+            hostRef={(element) => layout.registerHtmlHost?.(field.fieldname, element, isGridRow ? data : null)}
+          />
+        )
       case field.fieldtype === 'Text Editor':
         return (
           <TextEditorControl
             value={value}
-            placeholder={getPlaceholder(field)}
+            placeholder={placeholderFor(field)}
             disabled={disabled}
             onChange={(next) => fieldChange(next, field)}
           />
         )
       case field.fieldtype === 'Geolocation':
         return <GeolocationControl value={value} disabled={disabled} onChange={(next) => fieldChange(next, field)} />
-      case field.options === 'Phone':
+      case field.fieldtype === 'Phone' || field.options === 'Phone':
         return (
           <CommitInput
             type="text"
-            placeholder={getPlaceholder(field)}
+            placeholder={placeholderFor(field)}
             value={value}
             disabled={disabled}
             description={field.description}
@@ -493,7 +621,7 @@ export function Field({ field: baseField }: FieldProps) {
             <CommitInput
               className="flex-1"
               type="text"
-              placeholder={getPlaceholder(field)}
+              placeholder={placeholderFor(field)}
               value={value}
               disabled={disabled}
               description={field.description}
@@ -514,16 +642,23 @@ export function Field({ field: baseField }: FieldProps) {
   })()
 
   return (
-    <div className="field" data-name={baseField.fieldname}>
+    <div
+      className={limitWidth ? 'field max-w-[50%] pr-[15px]' : 'field'}
+      data-name={baseField.fieldname}
+      data-bold={field.bold || field.reqd || (field.mandatory_depends_on && field.mandatory_via_depends_on) ? '1' : undefined}
+    >
       {showLabel && (
-        <div className="mb-2 text-sm text-ink-gray-5">
+        <div className={layout.standalone ? 'mb-2 text-base text-ink-gray-7' : 'mb-2 text-sm text-ink-gray-5'}>
           {__(field.label)}
           {(field.reqd || (field.mandatory_depends_on && field.mandatory_via_depends_on)) && (
-            <span className="text-ink-red-5">*</span>
+            <span className="text-ink-red-5">{layout.standalone ? ' *' : '*'}</span>
           )}
         </div>
       )}
       {control}
+      {field.description && DESCRIPTION_OUTSIDE.includes(field.fieldtype) ? (
+        <p data-slot="description" dangerouslySetInnerHTML={{ __html: sanitizeHTML(String(field.description)) }} />
+      ) : null}
     </div>
   )
 }

@@ -1,0 +1,3 @@
+from apps.frappe.desk.doctype.notification_subscribed_document.notification_subscribed_document import NotificationSubscribedDocument
+
+__all__ = ["NotificationSubscribedDocument"]

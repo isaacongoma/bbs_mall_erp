@@ -307,7 +307,7 @@ export function Select({
             {suffix ? (
               suffix(slotProps)
             ) : (
-              <LucideIcon name="chevron-down" className="ml-auto size-4 shrink-0 text-ink-gray-4" />
+              <LucideIcon name="chevron-down" className="dd-select ml-auto size-4 shrink-0 text-ink-gray-4" />
             )}
           </>
         )}

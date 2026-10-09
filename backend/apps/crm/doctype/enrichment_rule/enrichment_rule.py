@@ -14,7 +14,7 @@ class CRMEnrichmentRule(models.Model):
     enabled = models.BooleanField(default=True)
     target_value = models.CharField(max_length=140, blank=True)
     industry = models.ForeignKey(
-        "crm.CRMIndustry", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+        "erpnext.IndustryType", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
     weight = models.FloatField(default=1)
     match_scope = models.CharField(max_length=10, choices=MATCH_SCOPE_CHOICES, default="Full Text")

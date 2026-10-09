@@ -1,5 +1,4 @@
 """Internal transfer helpers: InternalTransferService for inter-company transaction validation and setup."""
-from __future__ import annotations
 
 import frappe
 from frappe import _, bold

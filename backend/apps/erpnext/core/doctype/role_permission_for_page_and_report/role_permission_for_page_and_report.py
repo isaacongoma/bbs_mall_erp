@@ -1,0 +1,5 @@
+from apps.frappe.core.doctype.role_permission_for_page_and_report.role_permission_for_page_and_report import *
+from apps.frappe.core.doctype.role_permission_for_page_and_report.role_permission_for_page_and_report import RolePermissionforPageandReport as RolePermissionForPageAndReport
+from apps.frappe.core.doctype.role_permission_for_page_and_report.role_permission_for_page_and_report import RolePermissionforPageandReport
+
+__all__ = ["RolePermissionForPageAndReport", "RolePermissionforPageandReport"]

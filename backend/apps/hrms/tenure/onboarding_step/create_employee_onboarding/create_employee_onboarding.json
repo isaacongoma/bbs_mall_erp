@@ -1,0 +1,22 @@
+{
+ "name": "Create Employee Onboarding",
+ "owner": "Administrator",
+ "creation": "2026-10-05 12:00:00",
+ "modified": "2026-10-05 13:00:00",
+ "modified_by": "Administrator",
+ "docstatus": 0,
+ "idx": 0,
+ "title": "Onboard a new hire",
+ "is_complete": 0,
+ "is_skipped": 0,
+ "description": "Tracks the joining tasks for one new employee. Submit it once they are done. See [Employee Onboarding](https://docs.frappe.io/hr/employee-onboarding).",
+ "intro_video_url": "https://www.youtube.com/watch?v=puBrk_2deek",
+ "action": "Create Entry",
+ "action_label": "Start Onboarding",
+ "reference_document": "Employee Onboarding",
+ "show_full_form": 1,
+ "show_form_tour": 0,
+ "is_single": 0,
+ "validate_action": 1,
+ "doctype": "Onboarding Step"
+}

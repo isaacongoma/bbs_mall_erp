@@ -1,36 +1,43 @@
 from __future__ import annotations
-
 import ast
+import copy
 import inspect
 import io
-import mimetypes
-import copy
 import json
+import mimetypes
 import types
-from functools import lru_cache
+from contextlib import contextmanager
+from functools import cache, lru_cache
+from itertools import chain
+from types import FunctionType, MethodType, ModuleType
+from typing import TYPE_CHECKING, Any
 
+import orjson
 import RestrictedPython.Guards
-from RestrictedPython import compile_restricted, safe_globals
+from RestrictedPython import PrintCollector, compile_restricted, safe_globals
+from RestrictedPython.transformer import RestrictingNodeTransformer
 
 import frappe
+import frappe.exceptions
+import frappe.integrations.utils
 import frappe.utils
 import frappe.utils.data
 from frappe import _
+from frappe.core.utils import html2text
+from frappe.frappeclient import FrappeClient
+from frappe.handler import execute_cmd
+from frappe.locale import get_date_format, get_number_format, get_time_format
+from frappe.model.delete_doc import delete_doc
+from frappe.model.mapper import get_mapped_doc
+from frappe.model.rename_doc import rename_doc
+from frappe.modules import scrub
+from frappe.utils.background_jobs import enqueue, get_jobs
 from frappe.utils.caching import site_cache
 from frappe.utils.inplacevar import protected_inplacevar
-
-
-def get_module_properties(module, filter_method):
-    data = {}
-    for key, obj in module.__dict__.items():
-        if key.startswith("_"):
-            continue
-
-        if filter_method(obj):
-            data[key] = obj
-    return data
-
-
+from frappe.utils.number_format import NumberFormat
+from frappe.utils.response import json_handler
+from frappe.website.utils import get_next_link, get_toc
+from frappe.www.printview import get_visible_columns
 
 
 class ServerScriptNotEnabled(frappe.PermissionError):
@@ -39,12 +46,8 @@ class ServerScriptNotEnabled(frappe.PermissionError):
 
 ARGUMENT_NOT_SET = object()
 
-
 SAFE_EXEC_CONFIG_KEY = "server_script_enabled"
-
-
 SERVER_SCRIPT_FILE_PREFIX = "<serverscript>"
-
 
 RENDER_EXEC_CONFIG_KEY = "disable_render_safe_exec"
 
@@ -63,12 +66,63 @@ class NamespaceDict(frappe._dict):
         return ret
 
 
+class FrappeTransformer(RestrictingNodeTransformer):
+    def check_name(self, node, name, *args, **kwargs):
+        if name == "_dict":
+            return
+
+        return super().check_name(node, name, *args, **kwargs)
+
+
+class FrappePrintCollector(PrintCollector):
+    """Collect written text, and return it when called."""
+
+    def _call_print(self, *objects, **kwargs):
+        output = io.StringIO()
+        print(*objects, file=output, **kwargs)
+        frappe.log(output.getvalue().strip())
+        output.close()
+
+
 def is_safe_exec_enabled() -> bool:
     return bool(frappe.get_common_site_config(cached=True).get(SAFE_EXEC_CONFIG_KEY))
 
 
 def is_render_exec_enabled() -> bool:
     return not bool(frappe.get_common_site_config(cached=True).get(RENDER_EXEC_CONFIG_KEY, 0))
+
+
+def safe_exec(
+    script: str,
+    _globals: dict | None = None,
+    _locals: dict | None = None,
+    *,
+    restrict_commit_rollback: bool = False,
+    script_filename: str | None = None,
+):
+    if not is_safe_exec_enabled():
+        msg = _("Server Scripts are disabled. Please enable server scripts from bench configuration.")
+        docs_cta = _("Read the documentation to know more")
+        msg += f"<br><a href='https://frappeframework.com/docs/user/en/desk/scripting/server-script' target='_blank' rel='noopener noreferrer'>{docs_cta}</a>"
+        frappe.throw(msg, ServerScriptNotEnabled, title="Server Scripts Disabled")
+
+    exec_globals = get_safe_globals()
+    if _globals:
+        exec_globals.update(_globals)
+
+    if restrict_commit_rollback:
+        exec_globals.frappe.db.pop("commit", None)
+        exec_globals.frappe.db.pop("rollback", None)
+        exec_globals.frappe.db.pop("add_index", None)
+
+    filename = SERVER_SCRIPT_FILE_PREFIX
+    if script_filename:
+        filename += f": {frappe.scrub(script_filename)}"
+
+    with safe_exec_flags():
+        exec(_compile_code(script, filename=filename), exec_globals, _locals)
+
+    return exec_globals, _locals
 
 
 @site_cache(maxsize=32)
@@ -103,6 +157,635 @@ def _validate_safe_eval_syntax(code):
             raise SyntaxError(f"Operation not allowed: line {node.lineno} column {node.col_offset}")
 
 
+@contextmanager
+def safe_exec_flags():
+    if frappe.flags.in_safe_exec is None:
+        frappe.flags.in_safe_exec = 0
+
+    frappe.flags.in_safe_exec += 1
+
+    try:
+        yield
+    finally:
+        frappe.flags.in_safe_exec -= 1
+        assert frappe.flags.in_safe_exec >= 0, "in_safe_exec flag must never go negative"
+
+
+class SafeDoc(frappe._dict):
+    """An extension of frappe._dict that exposes safer subset of methods."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for key, val in self.items():
+            if isinstance(val, list):
+                children = []
+                for v in val:
+                    if isinstance(v, dict):
+                        child = SafeDoc(v)
+                        object.__setattr__(child, "parent_doc", self)
+                        children.append(child)
+                    else:
+                        children.append(v)
+                self[key] = children
+
+    @property
+    def meta(self):
+        doctype = self.get("doctype")
+        if not isinstance(doctype, str):
+            return None
+        meta = frappe.get_meta(doctype)
+        return meta.as_dict() if meta else None
+
+    def get_formatted(
+        self,
+        fieldname,
+        doc=None,
+        currency=None,
+        absolute_value=False,
+        translated=False,
+        format=None,
+    ):
+        from frappe.utils.formatters import format_value
+
+        meta = frappe.get_meta(self.get("doctype")) if self.get("doctype") else None
+        df = meta.get_field(fieldname) if meta else None
+
+        if not df:
+            from frappe.model.meta import get_default_df
+
+            df = get_default_df(fieldname)
+
+        if (
+            df
+            and df.fieldtype == "Currency"
+            and not currency
+            and (currency_field := df.get("options"))
+            and (currency_value := self.get(currency_field))
+        ):
+            currency = frappe.db.get_value("Currency", currency_value, cache=True)
+
+        val = self.get(fieldname)
+
+        if translated:
+            val = _(val)
+
+        if not doc:
+            doc = getattr(self, "parent_doc", None) or self
+
+        if (absolute_value or doc.get("absolute_value")) and isinstance(val, int | float):
+            val = abs(val)
+
+        return format_value(val, df=df, doc=doc, currency=currency, format=format)
+
+    def get_label_from_fieldname(self, fieldname):
+        meta = frappe.get_meta(self.get("doctype")) if self.get("doctype") else None
+        df = meta.get_field(fieldname) if meta else None
+        return _(df.label) if df and df.label else None
+
+    def in_format_data(self, fieldname):
+        doc = getattr(self, "parent_doc", None) or self
+        format_data_map = doc.get("format_data_map")
+        if format_data_map:
+            return fieldname in format_data_map
+        return True
+
+    def is_print_hide(self, fieldname, df=None, for_print=True):
+        meta = frappe.get_meta(self.get("doctype")) if self.get("doctype") else None
+        meta_df = meta.get_field(fieldname) if meta else None
+
+        if meta_df and meta_df.get("__print_hide"):
+            return True
+
+        print_hide = 0
+
+        if self.get(fieldname) == 0 and not (meta and meta.istable):
+            print_hide = (df and df.print_hide_if_no_value) or (meta_df and meta_df.print_hide_if_no_value)
+
+        if not print_hide:
+            if df and df.print_hide is not None:
+                print_hide = df.print_hide
+            elif meta_df:
+                print_hide = meta_df.print_hide
+
+        return print_hide
+
+
+def get_doc_as_dict(*args, **kwargs):
+    return SafeDoc(frappe.get_doc(*args, **kwargs).as_dict())
+
+
+def safer_get_last_doc(*args, **kwargs):
+    return SafeDoc(frappe.get_last_doc(*args, **kwargs).as_dict())
+
+
+def safer_get_cached_doc(*args, **kwargs):
+    return SafeDoc(frappe.get_cached_doc(*args, **kwargs).as_dict())
+
+
+def remove_unsafe_fields(fields):
+    return [f for f in fields if "(" not in f]
+
+
+def safe_get_list(*args, **kwargs):
+    if args and len(args) > 1 and isinstance(args[1], list):
+        args = list(args)
+        args[1] = remove_unsafe_fields(args[1])
+
+    kwargs["run"] = True
+    fields = kwargs.get("fields", [])
+    if fields:
+        kwargs["fields"] = remove_unsafe_fields(fields)
+
+    return frappe.db.get_list(
+        *args,
+        **kwargs,
+    )
+
+
+def safe_get_all(*args, **kwargs):
+    kwargs["ignore_permissions"] = True
+    if "limit_page_length" not in kwargs:
+        kwargs["limit_page_length"] = 0
+
+    return safe_get_list(*args, **kwargs)
+
+
+def safer_get_meta(doctype, cached=True):
+    assert isinstance(doctype, str)
+    assert isinstance(cached, bool)
+
+    doc = frappe.get_meta(doctype, cached=cached)
+    return doc.as_dict() if doc else None
+
+
+def safer_log_error(
+    title=None, message=None, reference_doctype=None, reference_name=None, *, defer_insert=False
+):
+    assert isinstance(title, (str, type(None)))
+    assert isinstance(message, (str, type(None)))
+    assert isinstance(reference_doctype, (str, type(None)))
+    assert isinstance(reference_name, (str, int, type(None)))
+    assert isinstance(defer_insert, bool)
+
+    frappe.log_error(
+        title=title,
+        message=message,
+        reference_doctype=reference_doctype,
+        reference_name=reference_name,
+        defer_insert=defer_insert,
+    )
+    return {}
+
+
+def safer_get_visible_columns(data, _table_meta, df):
+    if not df.get("options"):
+        return []
+    real_meta = frappe.get_meta(df.get("options"))
+    cols = get_visible_columns(data, real_meta, df)
+    if cols is None:
+        return None
+    return [c if isinstance(c, dict) else c.as_dict() for c in cols]
+
+
+def safe_get_value(*args, **kwargs):
+    kwargs["run"] = True
+    return frappe.db.get_value(*args, **kwargs)
+
+
+def safe_get_single_value(*args, **kwargs):
+    kwargs["run"] = True
+    return frappe.db.get_single_value(*args, **kwargs)
+
+
+def safe_render_template(*args, **kwargs):
+    kwargs.pop("restrict_globals", None)
+    return frappe.render_template(*args, restrict_globals=True, **kwargs)
+
+
+ALLOWED_SCHEMES = frozenset({"http", "https"})
+SAFE_REQUEST_TIMEOUT = (10, 300)
+
+
+class BlockedRequest(frappe.ValidationError):
+    pass
+
+
+def validate_request_address(ip: str):
+    import ipaddress
+
+    try:
+        addr = ipaddress.ip_address(ip)
+    except ValueError:
+        raise BlockedRequest(f"Could not parse address: {ip}")
+
+    if not addr.is_global:
+        raise BlockedRequest("Requests to internal network addresses are not permitted")
+
+
+def validate_request_url(url: str):
+    """Reject anything that isn't a plain http(s) request to a globally routable host."""
+    import socket
+    from urllib.parse import urlparse
+
+    parsed = urlparse(url)
+
+    if parsed.scheme not in ALLOWED_SCHEMES:
+        raise BlockedRequest(f"URL scheme '{parsed.scheme}' is not permitted")
+
+    hostname = parsed.hostname
+    if not hostname:
+        raise BlockedRequest("Invalid URL: no hostname")
+
+    try:
+        port = parsed.port or (443 if parsed.scheme == "https" else 80)
+    except ValueError:
+        raise BlockedRequest("Invalid URL: bad port")
+
+    try:
+        addr_info = socket.getaddrinfo(hostname, port, proto=socket.IPPROTO_TCP)
+    except socket.gaierror:
+        raise BlockedRequest(f"Could not resolve host: {hostname}")
+
+    if not addr_info:
+        raise BlockedRequest(f"Could not resolve host: {hostname}")
+
+    for record in addr_info:
+        validate_request_address(record[4][0])
+
+
+@cache
+def _get_ssrf_guarded_adapter_class():
+    """Validate at two layers, because checking the URL string once covers neither
+    redirects (the guard never sees hop 1..n) nor DNS rebinding (the name is resolved
+    again, independently, when the socket is opened)."""
+    from requests.adapters import HTTPAdapter
+    from urllib3.connection import HTTPConnection, HTTPSConnection
+    from urllib3.connectionpool import HTTPConnectionPool, HTTPSConnectionPool
+
+    def guarded_connection(base):
+        class GuardedConnection(base):
+            def _new_conn(self):
+                sock = super()._new_conn()
+                try:
+                    validate_request_address(sock.getpeername()[0])
+                except Exception:
+                    sock.close()
+                    raise
+                return sock
+
+        return GuardedConnection
+
+    class GuardedHTTPConnectionPool(HTTPConnectionPool):
+        ConnectionCls = guarded_connection(HTTPConnection)
+
+    class GuardedHTTPSConnectionPool(HTTPSConnectionPool):
+        ConnectionCls = guarded_connection(HTTPSConnection)
+
+    class SSRFGuardedAdapter(HTTPAdapter):
+        def init_poolmanager(self, *args, **kwargs):
+            super().init_poolmanager(*args, **kwargs)
+            self.poolmanager.pool_classes_by_scheme = {
+                "http": GuardedHTTPConnectionPool,
+                "https": GuardedHTTPSConnectionPool,
+            }
+
+        def send(self, request, **kwargs):
+            if kwargs.get("proxies"):
+                raise BlockedRequest("Proxied requests are not permitted")
+            validate_request_url(request.url)
+            return super().send(request, **kwargs)
+
+    return SSRFGuardedAdapter
+
+
+def get_safe_request_session():
+    from requests.adapters import Retry
+
+    adapter = _get_ssrf_guarded_adapter_class()(max_retries=Retry(total=5, status_forcelist=[500]))
+    session = frappe.utils.get_request_session(adapter=adapter)
+    session.trust_env = False
+    return session
+
+
+def make_safe_request(method: str, url: str, **kwargs):
+    validate_request_url(url)
+    if kwargs.get("timeout") is None:
+        kwargs["timeout"] = SAFE_REQUEST_TIMEOUT
+    return frappe.integrations.utils.make_request(method, url, session=get_safe_request_session(), **kwargs)
+
+
+def make_safe_get_request(url: str, **kwargs):
+    return make_safe_request("GET", url, **kwargs)
+
+
+def make_safe_post_request(url: str, **kwargs):
+    return make_safe_request("POST", url, **kwargs)
+
+
+def make_safe_put_request(url: str, **kwargs):
+    return make_safe_request("PUT", url, **kwargs)
+
+
+def make_safe_patch_request(url: str, **kwargs):
+    return make_safe_request("PATCH", url, **kwargs)
+
+
+def make_safe_delete_request(url: str, **kwargs):
+    return make_safe_request("DELETE", url, **kwargs)
+
+
+def render_safe_globals():
+    """Safer subset of globals for rendering ops."""
+    datautils = frappe._dict()
+
+    if frappe.db:
+        date_format = get_date_format()
+        time_format = get_time_format()
+        number_format = get_number_format()
+    else:
+        date_format = "yyyy-mm-dd"
+        time_format = "HH:mm:ss"
+        number_format = NumberFormat.from_string("#,###.##")
+
+    datautils.update(SAFE_DATA_UTILS)
+
+    form_dict = getattr(frappe.local, "form_dict", frappe._dict())
+
+    if "_" in form_dict:
+        del frappe.local.form_dict["_"]
+
+    user = (getattr(frappe.local, "session", None) and frappe.local.session.user) or "Guest"
+
+    out = NamespaceDict(
+        json=NamespaceDict(loads=json.loads, dumps=json.dumps),
+        orjson=SAFE_ORJSON,
+        as_json=frappe.as_json,
+        dict=dict,
+        log=frappe.log,
+        _dict=frappe._dict,
+        args=form_dict,
+        frappe=NamespaceDict(
+            flags=frappe._dict(),
+            format=frappe.format_value,
+            format_value=frappe.format_value,
+            date_format=date_format,
+            time_format=time_format,
+            number_format=number_format,
+            format_date=frappe.utils.data.global_date_format,
+            form_dict=form_dict,
+            bold=frappe.bold,
+            errprint=frappe.errprint,
+            qb=frappe.qb,
+            get_meta=safer_get_meta,
+            get_doc=get_doc_as_dict,
+            get_last_doc=safer_get_last_doc,
+            get_cached_doc=safer_get_cached_doc,
+            get_list=safe_get_list,
+            get_all=safe_get_all,
+            get_hooks=get_hooks,
+            get_system_settings=frappe.get_system_settings,
+            utils=datautils,
+            get_url=frappe.utils.get_url,
+            render_template=safe_render_template,
+            msgprint=frappe.msgprint,
+            throw=frappe.throw,
+            user=user,
+            get_fullname=frappe.utils.get_fullname,
+            get_gravatar=frappe.utils.get_gravatar_url,
+            get_identicon=frappe.utils.get_identicon,
+            full_name=frappe.local.session.data.full_name
+            if getattr(frappe.local, "session", None) and getattr(frappe.local.session, "data", None)
+            else "Guest",
+            session=frappe._dict(
+                user=user,
+                csrf_token=frappe.local.session.data.csrf_token
+                if getattr(frappe.local, "session", None) and getattr(frappe.local.session, "data", None)
+                else "",
+            ),
+            request=frappe._dict(
+                path=frappe.local.request.path if getattr(frappe.local, "request", None) else "",
+            ),
+            make_get_request=make_safe_get_request,
+            socketio_port=frappe.conf.socketio_port,
+            sanitize_html=frappe.utils.sanitize_html,
+            log_error=safer_log_error,
+            log=frappe.log,
+            db=NamespaceDict(
+                get_list=safe_get_list,
+                get_all=safe_get_all,
+                get_value=safe_get_value,
+                get_single_value=safe_get_single_value,
+                get_default=frappe.db.get_default,
+                exists=frappe.db.exists,
+                count=frappe.db.count,
+                escape=frappe.db.escape,
+                sql=read_sql,
+            ),
+            website=NamespaceDict(
+                abs_url=frappe.website.utils.abs_url,
+                extract_title=frappe.website.utils.extract_title,
+                get_boot_data=frappe.website.utils.get_boot_data,
+                get_home_page=frappe.website.utils.get_home_page,
+                get_html_content_based_on_type=frappe.website.utils.get_html_content_based_on_type,
+            ),
+            lang=getattr(frappe.local, "lang", "en"),
+            json_handler=json_handler,
+        ),
+        style=frappe._dict(border_color="#d1d8dd"),
+        get_toc=get_toc,
+        get_next_link=get_next_link,
+        _=frappe._,
+        scrub=scrub,
+        guess_mimetype=mimetypes.guess_type,
+        html2text=html2text,
+        dev_server=frappe._dev_server,
+        get_visible_columns=safer_get_visible_columns,
+    )
+
+    out.frappe.update(SAFE_EXCEPTIONS)
+
+    if frappe.response:
+        out.frappe.response = frappe.response
+
+    out.update(safe_globals)
+
+    out._write_ = _write
+    out._getitem_ = _getitem
+    out._getattr_ = _getattr_for_safe_exec
+
+    out._print_ = FrappePrintCollector
+
+    out._getiter_ = iter
+    out._iter_unpack_sequence_ = RestrictedPython.Guards.guarded_iter_unpack_sequence
+    out._inplacevar_ = protected_inplacevar
+
+    out.update(get_python_builtins())
+
+    return out
+
+
+def _update_namespace(namespace: NamespaceDict, updates: NamespaceDict):
+    assert isinstance(namespace, NamespaceDict) and isinstance(updates, NamespaceDict), (
+        "Both values should be namespaces"
+    )
+    for key, value in updates.items():
+        if isinstance(value, NamespaceDict):
+            if key not in namespace:
+                namespace[key] = NamespaceDict()
+            _update_namespace(namespace[key], value)
+            continue
+
+        assert not isinstance(value, dict), f"{key=} Only NamespaceDict should be used everywhere"
+
+        original_value = namespace.get(key)
+        assert original_value is not value, f"Update contains same value for {key=}"
+        namespace[key] = value
+    return namespace
+
+
+def exec_safe_globals():
+    """Safer subset of globals for exec. ops."""
+
+    render_safe = render_safe_globals()
+    exec_safe = NamespaceDict(
+        run_script=run_script,
+        FrappeClient=FrappeClient,
+        get_visible_columns=get_visible_columns,
+        frappe=NamespaceDict(
+            call=call_whitelisted_function,
+            get_meta=frappe.get_meta,
+            copy_doc=frappe.copy_doc,
+            new_doc=frappe.new_doc,
+            get_doc=frappe.get_doc,
+            get_mapped_doc=get_mapped_doc,
+            rename_doc=rename_doc,
+            delete_doc=delete_doc,
+            sendmail=frappe.sendmail,
+            get_print=frappe.get_print,
+            attach_print=frappe.attach_print,
+            make_post_request=make_safe_post_request,
+            make_put_request=make_safe_put_request,
+            make_patch_request=make_safe_patch_request,
+            make_delete_request=make_safe_delete_request,
+            log_error=frappe.log_error,
+            get_list=frappe.get_list,
+            get_all=frappe.get_all,
+            get_cached_doc=frappe.get_cached_doc,
+            get_last_doc=frappe.get_last_doc,
+            render_template=frappe.render_template,
+            enqueue=safe_enqueue,
+            is_job_queued=is_job_queued,
+            db=NamespaceDict(
+                get_list=frappe.get_list,
+                get_all=frappe.get_all,
+                get_value=frappe.db.get_value,
+                set_value=frappe.db.set_value,
+                get_single_value=frappe.db.get_single_value,
+                add_index=frappe.db.add_index,
+                commit=frappe.db.commit,
+                rollback=frappe.db.rollback,
+                after_commit=frappe.db.after_commit,
+                before_commit=frappe.db.before_commit,
+                after_rollback=frappe.db.after_rollback,
+                before_rollback=frappe.db.before_rollback,
+            ),
+        ),
+    )
+    return _update_namespace(render_safe, exec_safe)
+
+
+def get_keys_for_autocomplete(
+    key: str,
+    value: Any,
+    prefix: str = "",
+    offset: int = 0,
+    meta: str = "ctx",
+    depth: int = 0,
+    max_depth: int | None = None,
+):
+    if max_depth and depth > max_depth:
+        return
+    full_key = f"{prefix}.{key}" if prefix else key
+    if key.startswith("_"):
+        return
+    if isinstance(value, NamespaceDict | dict) and value:
+        if key == "form_dict":
+            yield {"value": full_key, "score": offset + 7, "meta": meta}
+        else:
+            yield from chain.from_iterable(
+                get_keys_for_autocomplete(
+                    key,
+                    value,
+                    full_key,
+                    offset,
+                    meta,
+                    depth + 1,
+                    max_depth=max_depth,
+                )
+                for key, value in value.items()
+            )
+    else:
+        if isinstance(value, type) and issubclass(value, Exception):
+            score = offset + 0
+        elif isinstance(value, ModuleType):
+            score = offset + 10
+        elif isinstance(value, FunctionType | MethodType):
+            score = offset + 9
+        elif isinstance(value, type):
+            score = offset + 8
+        elif isinstance(value, dict):
+            score = offset + 7
+        else:
+            score = offset + 6
+        yield {"value": full_key, "score": score, "meta": meta}
+
+
+def is_job_queued(job_name, queue="default"):
+    """
+    :param job_name: used to identify a queued job, usually dotted path to function
+    :param queue: should be either long, default or short
+    """
+
+    site = frappe.local.site
+    queued_jobs = get_jobs(site=site, queue=queue, key="job_name").get(site)
+    return queued_jobs and job_name in queued_jobs
+
+
+def safe_enqueue(function, **kwargs):
+    """
+    Enqueue function to be executed using a background worker
+    Accepts frappe.enqueue params like job_name, queue, timeout, etc.
+    in addition to params to be passed to function
+
+    :param function: whitelisted function or API Method set in Server Script
+    """
+
+    return enqueue("frappe.utils.safe_exec.call_whitelisted_function", function=function, **kwargs)
+
+
+def call_whitelisted_function(function, **kwargs):
+    """Executes a whitelisted function or Server Script of type API"""
+
+    return call_with_form_dict(lambda: execute_cmd(function), kwargs)
+
+
+def run_script(script, **kwargs):
+    """run another server script"""
+
+    return call_with_form_dict(lambda: frappe.get_doc("Server Script", script).execute_method(), kwargs)
+
+
+def call_with_form_dict(function, kwargs):
+    form_dict = getattr(frappe.local, "form_dict", frappe._dict())
+    if kwargs:
+        frappe.local.form_dict = form_dict.copy().update(kwargs)
+
+    try:
+        return function()
+    finally:
+        frappe.local.form_dict = form_dict
+
+
 @lru_cache
 def _flatten(module):
     new_mod = NamespaceDict()
@@ -131,6 +814,58 @@ def get_python_builtins():
         "sum": sum,
         "tuple": tuple,
     }
+
+
+def get_hooks(hook: str | None = None, default=None, app_name: str | None = None) -> frappe._dict:
+    """Get hooks via `app/hooks.py`
+
+    :param hook: Name of the hook. Will gather all hooks for this name and return as a list.
+    :param default: Default if no hook found.
+    :param app_name: Filter by app."""
+
+    hooks = frappe.get_hooks(hook=hook, default=default, app_name=app_name)
+    return copy.deepcopy(hooks)
+
+
+def read_sql(query, *args, **kwargs):
+    """a wrapper for frappe.db.sql to allow reads"""
+    query = str(query)
+    check_safe_sql_query(query)
+    return frappe.db.sql(query, *args, **kwargs)
+
+
+def check_safe_sql_query(query: str, throw: bool = True) -> bool:
+    import re
+
+    """Check if SQL query is safe for running in restricted context.
+
+    Safe queries:
+            1. Read only 'select' or 'explain' queries
+    """
+
+    query = query.strip().lower()
+    whitelisted_statements = ("select", "explain")
+
+    if re.search(r"\binto\s+(outfile|dumpfile)\b", query):
+        if throw:
+            frappe.throw(
+                _("Read-Only queries are allowed"),
+                title=_("Unsafe SQL query"),
+                exc=frappe.PermissionError,
+            )
+        return False
+
+    if query.startswith(whitelisted_statements):
+        return True
+
+    if throw:
+        frappe.throw(
+            _("Read-Only queries are allowed"),
+            title=_("Unsafe SQL query"),
+            exc=frappe.PermissionError,
+        )
+
+    return False
 
 
 def _getitem(obj, key):
@@ -203,6 +938,17 @@ def _write(obj):
     ):
         raise SyntaxError(f"Not allowed to write to object {obj} of type {type(obj)}")
     return obj
+
+
+def get_module_properties(module, filter_method):
+    data = {}
+    for key, obj in module.__dict__.items():
+        if key.startswith("_"):
+            continue
+
+        if filter_method(obj):
+            data[key] = obj
+    return data
 
 
 VALID_UTILS = (
@@ -327,6 +1073,9 @@ VALID_UTILS = (
 
 
 SAFE_DATA_UTILS = {key: frappe.utils.data.__dict__[key] for key in VALID_UTILS}
+assert SAFE_DATA_UTILS.keys() == set(VALID_UTILS), (
+    "every whitelisted util name must resolve to a frappe.utils.data attribute"
+)
 
 
 WHITELISTED_SAFE_EVAL_GLOBALS = {
@@ -341,28 +1090,25 @@ WHITELISTED_SAFE_EVAL_GLOBALS = {
     "_inplacevar_": protected_inplacevar,
 }
 
+SAFE_ORJSON = NamespaceDict(loads=orjson.loads, dumps=orjson.dumps)
+for key, val in vars(orjson).items():
+    if key.startswith("OPT_"):
+        SAFE_ORJSON[key] = val
 
 SAFE_EXCEPTIONS = get_module_properties(
     frappe.exceptions, lambda obj: inspect.isclass(obj) and issubclass(obj, Exception)
 )
 
 
-def safe_exec(script, _globals=None, _locals=None, *, restrict_commit_rollback=False, script_filename=None):
-    exec_globals = dict(safe_globals)
-    exec_globals.update(WHITELISTED_SAFE_EVAL_GLOBALS)
-    exec_globals["frappe"] = frappe
-    if _globals:
-        exec_globals.update(_globals)
-    byte_code = compile_restricted(script, filename=script_filename or "<serverscript>", mode="exec")
-    exec(byte_code, exec_globals, _locals)
-    return exec_globals, _locals
+get_safe_globals = exec_safe_globals
 
 
-def get_safe_globals():
-    return frappe._dict(json=json, frappe=frappe._dict(utils=frappe._dict(SAFE_DATA_UTILS)))
-
-
-def safe_exec_flags():
-    from contextlib import nullcontext
-
-    return nullcontext()
+def safe_eval_condition(expression, scope=None):
+    names = {}
+    for key, value in (scope or {}).items():
+        names[key] = frappe._dict(value) if isinstance(value, dict) else value
+    referenced = {node.id for node in ast.walk(ast.parse(expression, mode="eval")) if isinstance(node, ast.Name)}
+    for name in referenced:
+        if name not in names and name not in WHITELISTED_SAFE_EVAL_GLOBALS and not name.startswith("_"):
+            names[name] = None
+    return safe_eval(expression, None, names)

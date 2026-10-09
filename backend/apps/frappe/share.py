@@ -1,4 +1,3 @@
-from __future__ import annotations
 
 
 import frappe
@@ -39,53 +38,6 @@ def add(
         notify=notify,
         **kwargs,
     )
-
-
-def add_docshare(
-    doctype, name, user=None, read=1, write=0, submit=0, share=0, everyone=0, flags=None, notify=0, **kwargs
-):
-    """Share the given document with a user."""
-    if not user:
-        user = frappe.session.user
-
-    share_perms = {
-        "read": 1,
-        "write": cint(write),
-        "submit": cint(submit),
-        "share": cint(share),
-    }
-    custom_perms = get_doctype_ptype_map().get(doctype, [])
-    if kwargs and custom_perms:
-        for ptype in custom_perms:
-            if ptype in kwargs:
-                share_perms[ptype] = cint(kwargs.get(ptype))
-
-    if not (flags or {}).get("ignore_share_permission"):
-        check_share_permission(doctype, name, share_perms, custom_perms)
-
-    if share_name := get_share_name(doctype, name, user, everyone):
-        doc = frappe.get_doc("DocShare", share_name)
-    else:
-        doc = frappe.new_doc("DocShare")
-        doc.update({"user": user, "share_doctype": doctype, "share_name": name, "everyone": cint(everyone)})
-
-    if flags:
-        doc.flags.update(flags)
-
-    doc.update(share_perms)
-    doc.save(ignore_permissions=True)
-    notify_assignment(user, doctype, name, everyone, notify=notify)
-
-    try:
-        should_follow = (user != name or doctype != "User") and frappe.get_cached_value(
-            "User", user, "follow_shared_documents"
-        )
-    except Exception:
-        should_follow = False
-    if should_follow:
-        _follow_document(doctype, name, user)
-
-    return doc
 
 
 def remove(doctype, name, user, flags=None):
@@ -280,3 +232,46 @@ def notify_assignment(shared_by, doctype, doc_name, everyone, notify=0):
     }
 
     enqueue_create_notification(shared_by, notification_doc)
+
+
+def add_docshare(
+    doctype, name, user=None, read=1, write=0, submit=0, share=0, everyone=0, flags=None, notify=0, **kwargs
+):
+    """Share the given document with a user."""
+    if not user:
+        user = frappe.session.user
+
+    share_perms = {
+        "read": 1,
+        "write": cint(write),
+        "submit": cint(submit),
+        "share": cint(share),
+    }
+    custom_perms = get_doctype_ptype_map().get(doctype, [])
+    if kwargs and custom_perms:
+        for ptype in custom_perms:
+            if ptype in kwargs:
+                share_perms[ptype] = cint(kwargs.get(ptype))
+
+    if not (flags or {}).get("ignore_share_permission"):
+        check_share_permission(doctype, name, share_perms, custom_perms)
+
+    if share_name := get_share_name(doctype, name, user, everyone):
+        doc = frappe.get_doc("DocShare", share_name)
+    else:
+        doc = frappe.new_doc("DocShare")
+        doc.update({"user": user, "share_doctype": doctype, "share_name": name, "everyone": cint(everyone)})
+
+    if flags:
+        doc.flags.update(flags)
+
+    doc.update(share_perms)
+    doc.save(ignore_permissions=True)
+    notify_assignment(user, doctype, name, everyone, notify=notify)
+
+    if (user != name or doctype != "User") and frappe.get_cached_value(
+        "User", user, "follow_shared_documents"
+    ):
+        _follow_document(doctype, name, user)
+
+    return doc

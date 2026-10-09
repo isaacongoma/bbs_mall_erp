@@ -2,8 +2,19 @@
  "app": "erpnext",
  "charts": [
   {
+   "name": "n655ue6bk2",
+   "owner": "Administrator",
+   "creation": "2020-03-02 15:48:23.224699",
+   "modified": "2026-10-07 14:26:38.949783",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 1,
    "chart_name": "Issues Opened",
-   "label": "Issues Opened"
+   "label": "Issues Opened",
+   "parent": "Support",
+   "parentfield": "charts",
+   "parenttype": "Workspace",
+   "doctype": "Workspace Chart"
   }
  ],
  "content": "[{\"id\": \"729b633ade\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Issues Opened\", \"col\": 12}}, {\"id\": \"160ec56bec\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Open Issues\", \"col\": 4}}, {\"id\": \"104a187e86\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Overdue Issues\", \"col\": 4}}, {\"id\": \"7f4c92f841\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Resolved Issues\", \"col\": 4}}]",
@@ -24,16 +35,49 @@
  "name": "Support",
  "number_cards": [
   {
+   "name": "n651t53v3b",
+   "owner": "Administrator",
+   "creation": "2020-03-02 15:48:23.224699",
+   "modified": "2026-10-07 14:26:38.949783",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 1,
+   "number_card_name": "Open Issues",
    "label": "Open Issues",
-   "number_card_name": "Open Issues"
+   "parent": "Support",
+   "parentfield": "number_cards",
+   "parenttype": "Workspace",
+   "doctype": "Workspace Number Card"
   },
   {
+   "name": "n65e55i77o",
+   "owner": "Administrator",
+   "creation": "2020-03-02 15:48:23.224699",
+   "modified": "2026-10-07 14:26:38.949783",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 2,
+   "number_card_name": "Overdue Issues",
    "label": "Overdue Issues",
-   "number_card_name": "Overdue Issues"
+   "parent": "Support",
+   "parentfield": "number_cards",
+   "parenttype": "Workspace",
+   "doctype": "Workspace Number Card"
   },
   {
+   "name": "n656q03k4c",
+   "owner": "Administrator",
+   "creation": "2020-03-02 15:48:23.224699",
+   "modified": "2026-10-07 14:26:38.949783",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 3,
+   "number_card_name": "Resolved Issues",
    "label": "Resolved Issues",
-   "number_card_name": "Resolved Issues"
+   "parent": "Support",
+   "parentfield": "number_cards",
+   "parenttype": "Workspace",
+   "doctype": "Workspace Number Card"
   }
  ],
  "owner": "Administrator",
@@ -42,7 +86,7 @@
  "quick_lists": [],
  "restrict_to_domain": "",
  "roles": [],
- "sequence_id": 12.0,
+ "sequence_id": 12,
  "shortcuts": [],
  "sidebar_items": [
   {

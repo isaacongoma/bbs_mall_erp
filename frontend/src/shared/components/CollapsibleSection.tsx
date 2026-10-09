@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { __ } from '@/core/i18n'
 import { Badge, cn } from '@/design-system'
+import { Icon } from './Icon'
 
 export interface CollapsibleSectionApi {
   opened: boolean
@@ -29,9 +30,9 @@ export interface CollapsibleSectionProps {
 
 function Chevron({ opened }: { opened: boolean }) {
   return (
-    <span
-      className={cn('lucide-chevron-right h-4 transition-all duration-300 ease-in-out', opened && 'rotate-90')}
-      aria-hidden="true"
+    <Icon
+      icon="lucide-chevron-right"
+      className={cn('size-4 transition-all duration-300 ease-in-out', opened && 'rotate-90')}
     />
   )
 }

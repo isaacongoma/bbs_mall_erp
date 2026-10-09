@@ -14,7 +14,9 @@
  "owner": "Administrator",
  "reference_document": "Work Order",
  "show_form_tour": 0,
- "show_full_form": 0,
- "title": "Create Work Order",
- "validate_action": 1
+ "show_full_form": 1,
+ "title": "Plan a work order",
+ "validate_action": 1,
+ "description": "Decide how many to make. The raw materials you need are worked out from the BOM. See [Work Order](https://docs.frappe.io/erpnext/user/manual/en/work-order).",
+ "intro_video_url": "https://www.youtube.com/watch?v=O2DBcberucw"
 }

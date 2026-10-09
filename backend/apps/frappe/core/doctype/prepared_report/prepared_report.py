@@ -1,7 +1,9 @@
-from __future__ import annotations
 import gzip
 import json
-import resource
+try:
+    import resource
+except ModuleNotFoundError:
+    resource = None
 from contextlib import suppress
 from typing import Any
 
@@ -100,64 +102,6 @@ class PreparedReport(Document):
         return file_to_send
 
 
-def generate_report(prepared_report):
-    update_job_id(prepared_report)
-
-    instance: PreparedReport = frappe.get_doc("Prepared Report", prepared_report)
-    report = frappe.get_doc("Report", instance.report_name)
-
-    add_data_to_monitor(report=instance.report_name)
-
-    try:
-        report.custom_columns = []
-
-        if report.report_type == "Custom Report":
-            custom_report_doc = report
-            report = get_reference_report(custom_report_doc)
-            report.custom_report = instance.report_name
-            report.prepared_report = custom_report_doc.prepared_report
-            report.disable_prepared_report_automation = custom_report_doc.disable_prepared_report_automation
-            if custom_report_doc.json:
-                data = json.loads(custom_report_doc.json)
-                if data:
-                    report.custom_columns = data["columns"]
-
-        result = generate_report_result(report=report, filters=instance.filters, user=instance.owner)
-
-        create_json_gz_file(result, instance.doctype, instance.name, instance.report_name)
-
-        if report.generate_csv:
-            _enqueue_json_to_csv_conversion(prepared_report)
-
-        instance.status = "Completed"
-
-        frappe.get_doc(
-            {
-                "doctype": "Notification Log",
-                "subject": f"{instance.report_name} report is ready.",
-                "for_user": frappe.session.user,
-                "document_type": "Report",
-                "document_name": report.name,
-                "link": f"/desk/query-report/{report.name}?prepared_report_name={instance.name}",
-            }
-        ).insert(ignore_permissions=True)
-
-    except Exception:
-        _save_error(instance, error=frappe.get_traceback(with_context=True))
-        return
-
-    instance.reload()
-    instance.status = "Completed"
-    instance.report_end_time = frappe.utils.now()
-    instance.peak_memory_usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-    add_data_to_monitor(peak_memory_usage=instance.peak_memory_usage)
-    instance.save(ignore_permissions=True)
-
-    frappe.publish_realtime(
-        "report_generated",
-        {"report_name": instance.report_name, "name": instance.name},
-        user=frappe.session.user,
-    )
 
 
 @dangerously_reconnect_on_connection_abort
@@ -416,3 +360,63 @@ def convert_json_to_csv(prepared_report_name):
             "link": _file.file_url,
         }
     ).insert(ignore_permissions=True)
+
+
+def generate_report(prepared_report):
+    update_job_id(prepared_report)
+
+    instance: PreparedReport = frappe.get_doc("Prepared Report", prepared_report)
+    report = frappe.get_doc("Report", instance.report_name)
+
+    add_data_to_monitor(report=instance.report_name)
+
+    try:
+        report.custom_columns = []
+
+        if report.report_type == "Custom Report":
+            custom_report_doc = report
+            report = get_reference_report(custom_report_doc)
+            report.custom_report = instance.report_name
+            report.prepared_report = custom_report_doc.prepared_report
+            report.disable_prepared_report_automation = custom_report_doc.disable_prepared_report_automation
+            if custom_report_doc.json:
+                data = json.loads(custom_report_doc.json)
+                if data:
+                    report.custom_columns = data["columns"]
+
+        result = generate_report_result(report=report, filters=instance.filters, user=instance.owner)
+
+        create_json_gz_file(result, instance.doctype, instance.name, instance.report_name)
+
+        if report.generate_csv:
+            _enqueue_json_to_csv_conversion(prepared_report)
+
+        instance.status = "Completed"
+
+        frappe.get_doc(
+            {
+                "doctype": "Notification Log",
+                "subject": f"{instance.report_name} report is ready.",
+                "for_user": frappe.session.user,
+                "document_type": "Report",
+                "document_name": report.name,
+                "link": f"/desk/query-report/{report.name}?prepared_report_name={instance.name}",
+            }
+        ).insert(ignore_permissions=True)
+
+    except Exception:
+        _save_error(instance, error=frappe.get_traceback(with_context=True))
+        return
+
+    instance.reload()
+    instance.status = "Completed"
+    instance.report_end_time = frappe.utils.now()
+    instance.peak_memory_usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    add_data_to_monitor(peak_memory_usage=instance.peak_memory_usage)
+    instance.save(ignore_permissions=True)
+
+    frappe.publish_realtime(
+        "report_generated",
+        {"report_name": instance.report_name, "name": instance.name},
+        user=frappe.session.user,
+    )

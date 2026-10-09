@@ -1,22 +1,14 @@
 from contextlib import contextmanager
 from datetime import date, timedelta
 
-from django.test import TestCase
-
 import frappe
-from apps.erpnext.setup.doctype.holiday_list.holiday_list import HolidayList, local_country_name
-from apps.frappe.runtime import get_doc, session
-from apps.frappe.utils import getdate
+from frappe.utils import get_datetime, getdate
+
+from erpnext.setup.doctype.holiday_list.holiday_list import local_country_name
+from erpnext.tests.utils import ERPNextTestSuite
 
 
-class TestHolidayList(TestCase):
-    def setUp(self):
-        session.user = "Administrator"
-
-    def test_controller_class_is_resolved(self):
-        holiday_list = make_holiday_list("test_controller_class")
-        self.assertIsInstance(get_doc("Holiday List", holiday_list.name), HolidayList)
-
+class TestHolidayList(ERPNextTestSuite):
     def test_holiday_list(self):
         today_date = getdate()
         test_holiday_dates = [today_date - timedelta(days=5), today_date - timedelta(days=4)]
@@ -27,7 +19,7 @@ class TestHolidayList(TestCase):
                 {"holiday_date": test_holiday_dates[1], "description": "test holiday2"},
             ],
         )
-        fetched_holiday_list = frappe.db.get_value("Holiday List", holiday_list.name)
+        fetched_holiday_list = frappe.get_value("Holiday List", holiday_list.name)
         self.assertEqual(holiday_list.name, fetched_holiday_list)
 
     def test_weekly_off(self):
@@ -40,18 +32,15 @@ class TestHolidayList(TestCase):
         holidays = [holiday.holiday_date for holiday in holiday_list.holidays]
 
         self.assertNotIn(date(2022, 12, 25), holidays)
-        for expected in (
-            date(2023, 1, 1),
-            date(2023, 1, 8),
-            date(2023, 1, 15),
-            date(2023, 1, 22),
-            date(2023, 1, 29),
-            date(2023, 2, 5),
-            date(2023, 2, 12),
-            date(2023, 2, 19),
-            date(2023, 2, 26),
-        ):
-            self.assertIn(expected, holidays)
+        self.assertIn(date(2023, 1, 1), holidays)
+        self.assertIn(date(2023, 1, 8), holidays)
+        self.assertIn(date(2023, 1, 15), holidays)
+        self.assertIn(date(2023, 1, 22), holidays)
+        self.assertIn(date(2023, 1, 29), holidays)
+        self.assertIn(date(2023, 2, 5), holidays)
+        self.assertIn(date(2023, 2, 12), holidays)
+        self.assertIn(date(2023, 2, 19), holidays)
+        self.assertIn(date(2023, 2, 26), holidays)
         self.assertNotIn(date(2023, 3, 5), holidays)
 
     def test_total_holidays_includes_half_days(self):
@@ -61,7 +50,11 @@ class TestHolidayList(TestCase):
             to_date="2023-01-03",
             holiday_dates=[
                 {"holiday_date": "2023-01-01", "description": "Full-day holiday"},
-                {"holiday_date": "2023-01-02", "description": "Half-day holiday", "is_half_day": 1},
+                {
+                    "holiday_date": "2023-01-02",
+                    "description": "Half-day holiday",
+                    "is_half_day": 1,
+                },
             ],
         )
 
@@ -93,7 +86,9 @@ class TestHolidayList(TestCase):
         holiday_list.from_date = "2023-01-01"
         holiday_list.to_date = "2023-01-02"
         holiday_list.country = "DE"
-        holiday_list.append("holidays", {"holiday_date": "2023-01-02", "description": "Half day", "is_half_day": 1})
+        holiday_list.append(
+            "holidays", {"holiday_date": "2023-01-02", "description": "Half day", "is_half_day": 1}
+        )
 
         holiday_list.get_local_holidays()
         self.assertEqual(len(holiday_list.holidays), 2)
@@ -102,6 +97,38 @@ class TestHolidayList(TestCase):
         holiday_list.get_local_holidays()
         self.assertEqual(len(holiday_list.holidays), 2)
         self.assertEqual(holiday_list.total_holidays, 1.5)
+
+    def test_recalculate_existing_holiday_list_totals(self):
+        from erpnext.patches.v16_0.recalculate_holiday_list_totals import execute
+
+        cases = (("mixed", [0, 1], 1.5), ("half", [1, 1, 1], 1.5), ("full", [0, 0], 2), ("empty", [], 0))
+        holiday_lists = []
+        for name, half_days, expected in cases:
+            holiday_list = make_holiday_list(
+                f"test_backfill_holidays_{name}",
+                from_date="2023-01-01",
+                to_date="2023-01-03",
+                holiday_dates=[
+                    {
+                        "holiday_date": date(2023, 1, idx),
+                        "description": "Test holiday",
+                        "is_half_day": is_half_day,
+                    }
+                    for idx, is_half_day in enumerate(half_days, start=1)
+                ],
+            )
+            holiday_list.db_set("total_holidays", len(half_days) or 1, update_modified=False)
+            holiday_lists.append((holiday_list, expected))
+
+        for _ in range(2):
+            execute()
+            for holiday_list, expected in holiday_lists:
+                with self.subTest(holiday_list=holiday_list.name):
+                    total, modified = frappe.db.get_value(
+                        "Holiday List", holiday_list.name, ["total_holidays", "modified"]
+                    )
+                    self.assertEqual(total, expected)
+                    self.assertEqual(modified, get_datetime(holiday_list.modified))
 
     def test_local_holidays(self):
         holiday_list = frappe.new_doc("Holiday List")
@@ -112,56 +139,50 @@ class TestHolidayList(TestCase):
         holiday_list.get_local_holidays()
 
         holidays = holiday_list.get_holidays()
-        for expected in (
-            date(2022, 1, 1),
-            date(2022, 4, 15),
-            date(2022, 4, 18),
-            date(2022, 5, 1),
-            date(2022, 5, 26),
-            date(2022, 6, 6),
-            date(2022, 10, 3),
-            date(2022, 10, 31),
-            date(2022, 11, 16),
-            date(2022, 12, 25),
-            date(2022, 12, 26),
-            date(2023, 1, 1),
-            date(2023, 4, 7),
-            date(2023, 4, 10),
-            date(2023, 5, 1),
-            date(2023, 5, 18),
-            date(2023, 5, 29),
-            date(2023, 10, 3),
-            date(2023, 10, 31),
-            date(2023, 11, 22),
-            date(2023, 12, 25),
-            date(2023, 12, 26),
-            date(2024, 1, 1),
-            date(2024, 3, 29),
-            date(2024, 4, 1),
-            date(2024, 5, 1),
-            date(2024, 5, 9),
-            date(2024, 5, 20),
-            date(2024, 10, 3),
-            date(2024, 10, 31),
-            date(2024, 11, 20),
-            date(2024, 12, 25),
-            date(2024, 12, 26),
-        ):
-            self.assertIn(expected, holidays)
+        self.assertIn(date(2022, 1, 1), holidays)
+        self.assertIn(date(2022, 4, 15), holidays)
+        self.assertIn(date(2022, 4, 18), holidays)
+        self.assertIn(date(2022, 5, 1), holidays)
+        self.assertIn(date(2022, 5, 26), holidays)
+        self.assertIn(date(2022, 6, 6), holidays)
+        self.assertIn(date(2022, 10, 3), holidays)
+        self.assertIn(date(2022, 10, 31), holidays)
+        self.assertIn(date(2022, 11, 16), holidays)
+        self.assertIn(date(2022, 12, 25), holidays)
+        self.assertIn(date(2022, 12, 26), holidays)
+        self.assertIn(date(2023, 1, 1), holidays)
+        self.assertIn(date(2023, 4, 7), holidays)
+        self.assertIn(date(2023, 4, 10), holidays)
+        self.assertIn(date(2023, 5, 1), holidays)
+        self.assertIn(date(2023, 5, 18), holidays)
+        self.assertIn(date(2023, 5, 29), holidays)
+        self.assertIn(date(2023, 10, 3), holidays)
+        self.assertIn(date(2023, 10, 31), holidays)
+        self.assertIn(date(2023, 11, 22), holidays)
+        self.assertIn(date(2023, 12, 25), holidays)
+        self.assertIn(date(2023, 12, 26), holidays)
+        self.assertIn(date(2024, 1, 1), holidays)
+        self.assertIn(date(2024, 3, 29), holidays)
+        self.assertIn(date(2024, 4, 1), holidays)
+        self.assertIn(date(2024, 5, 1), holidays)
+        self.assertIn(date(2024, 5, 9), holidays)
+        self.assertIn(date(2024, 5, 20), holidays)
+        self.assertIn(date(2024, 10, 3), holidays)
+        self.assertIn(date(2024, 10, 31), holidays)
+        self.assertIn(date(2024, 11, 20), holidays)
+        self.assertIn(date(2024, 12, 25), holidays)
+        self.assertIn(date(2024, 12, 26), holidays)
 
-        for unexpected in (
-            date(2022, 1, 2),
-            date(2023, 4, 16),
-            date(2024, 4, 19),
-            date(2022, 5, 2),
-            date(2023, 5, 27),
-            date(2024, 6, 7),
-            date(2022, 10, 4),
-            date(2023, 10, 30),
-            date(2024, 11, 17),
-            date(2022, 12, 24),
-        ):
-            self.assertNotIn(unexpected, holidays)
+        self.assertNotIn(date(2022, 1, 2), holidays)
+        self.assertNotIn(date(2023, 4, 16), holidays)
+        self.assertNotIn(date(2024, 4, 19), holidays)
+        self.assertNotIn(date(2022, 5, 2), holidays)
+        self.assertNotIn(date(2023, 5, 27), holidays)
+        self.assertNotIn(date(2024, 6, 7), holidays)
+        self.assertNotIn(date(2022, 10, 4), holidays)
+        self.assertNotIn(date(2023, 10, 30), holidays)
+        self.assertNotIn(date(2024, 11, 17), holidays)
+        self.assertNotIn(date(2022, 12, 24), holidays)
 
     def test_localized_country_names(self):
         lang = frappe.local.lang
@@ -172,14 +193,6 @@ class TestHolidayList(TestCase):
         frappe.local.lang = "de"
         self.assertEqual(local_country_name("DE"), "Deutschland")
         frappe.local.lang = lang
-
-    def test_get_supported_countries(self):
-        holiday_list = frappe.new_doc("Holiday List")
-        result = holiday_list.get_supported_countries()
-        values = {country["value"] for country in result["countries"]}
-        self.assertIn("DE", values)
-        self.assertIn("KE", values)
-        self.assertIn("SN", result["subdivisions_by_country"]["DE"])
 
 
 def make_holiday_list(name, from_date=None, to_date=None, holiday_dates=None):
@@ -204,6 +217,9 @@ def make_holiday_list(name, from_date=None, to_date=None, holiday_dates=None):
 
 @contextmanager
 def set_holiday_list(holiday_list, company_name):
+    """
+    Context manager for setting holiday list in tests
+    """
     try:
         company = frappe.get_doc("Company", company_name)
         previous_holiday_list = company.default_holiday_list

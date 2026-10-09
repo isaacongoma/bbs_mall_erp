@@ -1,5 +1,4 @@
 """Status computation and display helpers for Sales Invoice."""
-from __future__ import annotations
 
 import frappe
 from frappe import _

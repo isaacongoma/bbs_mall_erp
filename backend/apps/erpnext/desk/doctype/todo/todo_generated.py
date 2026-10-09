@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class TodoGenerated(FrappeModel):
@@ -18,6 +18,7 @@ class TodoGenerated(FrappeModel):
     sender = models.CharField(max_length=140, blank=True, null=True, default='')
     assignment_rule = models.CharField(max_length=140, blank=True, null=True, default='')
     allocated_to = models.CharField(max_length=140, blank=True, null=True, default='')
+    _seen = models.TextField(null=True, blank=True)
 
     class Meta:
         abstract = True

@@ -1,0 +1,24 @@
+import { __, frappe } from '@/shared/frappe'
+frappe.query_reports['Item Shortage Report'] = {
+  filters: [
+    {
+      fieldname: 'company',
+      label: __('Company'),
+      fieldtype: 'Link',
+      width: '80',
+      options: 'Company',
+      reqd: 1,
+      default: frappe.defaults.get_default('company'),
+    },
+    {
+      fieldname: 'warehouse',
+      label: __('Warehouse'),
+      fieldtype: 'MultiSelectList',
+      options: 'Warehouse',
+      width: '100',
+      get_data: function (txt?: any) {
+        return frappe.db.get_link_options('Warehouse', txt)
+      },
+    },
+  ],
+}

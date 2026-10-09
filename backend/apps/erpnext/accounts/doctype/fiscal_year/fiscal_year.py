@@ -1,84 +1,93 @@
 import frappe
 from dateutil.relativedelta import relativedelta
-
-from apps.frappe.model.document import Document
-from apps.frappe.utils import add_days, add_years, cstr, getdate
-from apps.erpnext.registry import get_model
+from frappe import _, cint
+from frappe.model.document import Document
+from frappe.utils import add_days, add_years, cstr, getdate
 
 
 class FiscalYear(Document):
-    doctype = "Fiscal Year"
+
 
     def validate(self):
         self.validate_dates()
         self.validate_overlap()
 
     def on_update(self):
-        pass
+        frappe.cache().delete_key("fiscal_years")
 
     def on_trash(self):
-        pass
+        frappe.cache().delete_key("fiscal_years")
 
     def validate_dates(self):
         self.validate_from_to_dates("year_start_date", "year_end_date")
-        if self.get("is_short_year"):
+        if self.is_short_year:
             return
 
         date = getdate(self.year_start_date) + relativedelta(years=1) - relativedelta(days=1)
 
         if getdate(self.year_end_date) != date:
             frappe.throw(
-                "Fiscal Year End Date should be one year after Fiscal Year Start Date",
+                _("Fiscal Year End Date should be one year after Fiscal Year Start Date"),
                 frappe.exceptions.InvalidDates,
             )
 
     def validate_overlap(self):
+        fy = frappe.qb.DocType("Fiscal Year")
+
         name = self.name or self.year
 
-        FiscalYearModel = get_model("Fiscal Year")
-        existing_fiscal_years = FiscalYearModel.objects.filter(
-            year_start_date__lte=self.year_end_date,
-            year_end_date__gte=self.year_start_date
-        ).exclude(name=name).values("name")
+        existing_fiscal_years = (
+            frappe.qb.from_(fy)
+            .select(fy.name)
+            .where(
+                (fy.year_start_date <= self.year_end_date)
+                & (fy.year_end_date >= self.year_start_date)
+                & (fy.name != name)
+            )
+            .run(as_dict=True)
+        )
 
         if existing_fiscal_years:
-            FiscalYearCompanyModel = get_model("Fiscal Year Company")
             for existing in existing_fiscal_years:
-                company_for_existing = FiscalYearCompanyModel.objects.filter(
-                    parent=existing["name"]
-                ).values_list("company", flat=True)
+                company_for_existing = frappe.get_all(
+                    "Fiscal Year Company", filters={"parent": existing.name}, pluck="company"
+                )
 
                 overlap = False
                 if not self.get("companies") and not company_for_existing:
                     overlap = True
 
-                for d in self.get("companies", []):
-                    if getattr(d, "company", None) in company_for_existing:
+                for d in self.get("companies"):
+                    if d.company in company_for_existing:
                         overlap = True
 
                 if overlap:
                     frappe.throw(
-                        f"Year start date or end date is overlapping with {existing['name']}. To avoid please set company",
+                        _(
+                            "Year start date or end date is overlapping with {0}. To avoid please set company"
+                        ).format(frappe.get_desk_link("Fiscal Year", existing.name, open_in_new_tab=True)),
                         frappe.NameError,
                     )
 
 
 def auto_create_fiscal_year():
+    fy = frappe.qb.DocType("Fiscal Year")
+
     follow_up_date = add_days(getdate(), days=3)
-    FiscalYearModel = get_model("Fiscal Year")
+    fiscal_year = (
+        frappe.qb.from_(fy)
+        .select(fy.name)
+        .where((fy.year_end_date == follow_up_date) & (fy.is_short_year == 0))
+        .run()
+    )
 
-    fiscal_years = FiscalYearModel.objects.filter(
-        year_end_date=follow_up_date,
-        is_short_year=0,
-    ).values_list("name", flat=True)
-
-    for fy_name in fiscal_years:
+    for d in fiscal_year:
         frappe.db.savepoint("auto_create_fiscal_year")
         try:
-            current_fy = frappe.get_doc("Fiscal Year", fy_name)
+            current_fy = frappe.get_doc("Fiscal Year", d[0])
 
             new_fy = frappe.new_doc("Fiscal Year")
-            new_fy.disabled = int(current_fy.disabled or 0)
+            new_fy.disabled = cint(current_fy.disabled)
 
             new_fy.year_start_date = add_days(current_fy.year_end_date, 1)
             new_fy.year_end_date = add_years(current_fy.year_end_date, 1)
@@ -87,8 +96,8 @@ def auto_create_fiscal_year():
             end_year = cstr(new_fy.year_end_date.year)
             new_fy.year = start_year if start_year == end_year else (start_year + "-" + end_year)
 
-            for row in current_fy.get("companies", []):
-                new_fy.append("companies", {"company": getattr(row, "company", None)})
+            for row in current_fy.companies:
+                new_fy.append("companies", {"company": row.company})
 
             new_fy.auto_created = 1
 
@@ -98,11 +107,6 @@ def auto_create_fiscal_year():
 
 
 def get_from_and_to_date(fiscal_year):
-    FiscalYearModel = get_model("Fiscal Year")
-    try:
-        fy = FiscalYearModel.objects.get(name=fiscal_year)
-        return dict(from_date=fy.year_start_date, to_date=fy.year_end_date)
-    except LookupError:
-        return None
-    except FiscalYearModel.DoesNotExist:
-        return None
+    fields = ["year_start_date", "year_end_date"]
+    cached_results = frappe.get_cached_value("Fiscal Year", fiscal_year, fields, as_dict=1)
+    return dict(from_date=cached_results.year_start_date, to_date=cached_results.year_end_date)

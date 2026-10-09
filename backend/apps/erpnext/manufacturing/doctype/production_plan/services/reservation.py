@@ -1,5 +1,4 @@
 """Stock reservation for Production Plan (extracted from production_plan.py)."""
-from __future__ import annotations
 
 import frappe
 from frappe import _

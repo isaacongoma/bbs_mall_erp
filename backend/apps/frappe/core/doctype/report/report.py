@@ -513,6 +513,14 @@ def enable_prepared_report(report: str, site: str):
     frappe.destroy()
 
 
+
+
+def has_permission(doc, ptype=None, user=None, debug=False):
+    if ptype in ("read", "report") and not doc.is_permitted(user):
+        return False
+    return True
+
+
 def get_permission_query_conditions(user=None):
     """Hide reports whose Has Role table is set but does not include any role held by the
     current user — mirroring the gate applied on the run path by get_report_doc()."""
@@ -574,9 +582,3 @@ def get_permission_query_conditions(user=None):
         )
     )"""
     return role_condition
-
-
-def has_permission(doc, ptype=None, user=None, debug=False):
-    if ptype in ("read", "report") and not doc.is_permitted(user):
-        return False
-    return True

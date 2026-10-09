@@ -28,12 +28,9 @@ from apps.crm.doctype.global_settings.global_settings import CRMGlobalSettings  
 from apps.crm.doctype.holiday.holiday import CRMHoliday  # noqa: F401
 from apps.crm.doctype.holiday_list.holiday_list import CRMHolidayList  # noqa: F401
 from apps.crm.doctype.notification.notification import CRMNotification  # noqa: F401
-from apps.crm.doctype.industry.industry import CRMIndustry  # noqa: F401
 from apps.crm.doctype.lead.lead import CRMLead  # noqa: F401
-from apps.crm.doctype.lead_source.lead_source import CRMLeadSource  # noqa: F401
 from apps.crm.doctype.lead_status.lead_status import CRMLeadStatus  # noqa: F401
 from apps.crm.doctype.invitation.invitation import CRMInvitation  # noqa: F401
-from apps.crm.doctype.lost_reason.lost_reason import CRMLostReason  # noqa: F401
 from apps.crm.doctype.note.note import FCRMNote  # noqa: F401
 from apps.crm.doctype.organization.organization import CRMOrganization  # noqa: F401
 from apps.crm.doctype.products.products import CRMProductRow  # noqa: F401
@@ -48,7 +45,6 @@ from apps.crm.doctype.settings.settings import FCRMSettings  # noqa: F401
 from apps.crm.doctype.status_change_log.status_change_log import CRMStatusChangeLog  # noqa: F401
 from apps.crm.doctype.task.task import CRMTask  # noqa: F401
 from apps.crm.doctype.telephony_agent.telephony_agent import CRMTelephonyAgent  # noqa: F401
-from apps.crm.doctype.territory.territory import CRMTerritory  # noqa: F401
 from apps.crm.doctype.twilio_settings.twilio_settings import CRMTwilioSettings  # noqa: F401
 from apps.crm.doctype.view_settings.view_settings import CRMViewSettings  # noqa: F401
 from apps.crm.doctype.lead_sync_source.lead_sync_source import (  # noqa: F401

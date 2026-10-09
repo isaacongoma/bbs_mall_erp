@@ -35,6 +35,31 @@ const tabs: LayoutTab[] = [
   },
 ]
 
+const specialTabs: LayoutTab[] = [
+  {
+    name: 'tab_1',
+    label: '',
+    sections: [
+      {
+        name: 'section_1',
+        label: '',
+        columns: [
+          {
+            name: 'column_1',
+            fields: [
+              { fieldname: 'markdown', label: 'Markdown', fieldtype: 'Markdown' },
+              { fieldname: 'payload', label: 'Payload', fieldtype: 'JSON' },
+              { fieldname: 'barcode', label: 'Barcode', fieldtype: 'Barcode' },
+              { fieldname: 'phone', label: 'Phone', fieldtype: 'Phone' },
+              { fieldname: 'color', label: 'Color', fieldtype: 'Color' },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+]
+
 describe('FieldLayout', () => {
   it('renders fields, required markers and depends_on visibility', () => {
     render(<FieldLayout tabs={tabs} data={{ title: 'Hello', approved: 0 }} doctype="" context={{}} />)
@@ -67,5 +92,28 @@ describe('FieldLayout', () => {
     fireEvent.blur(input)
     expect(data.title).toBe('Changed')
     expect(screen.getByDisplayValue('Changed')).toBeInTheDocument()
+  })
+
+  it('renders special field controls and commits valid JSON and phone values', () => {
+    const onFieldChange = vi.fn()
+    render(
+      <FieldLayout
+        tabs={specialTabs}
+        data={{ markdown: '# Heading', payload: '{"enabled":true}', barcode: '12345', phone: '+254700000000', color: '#112233' }}
+        doctype=""
+        context={{ onFieldChange }}
+      />,
+    )
+
+    expect(screen.getByDisplayValue('# Heading')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('{"enabled":true}')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('12345')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('+254700000000')).toBeInTheDocument()
+    expect(screen.getByText('#112233')).toBeInTheDocument()
+
+    const json = screen.getByDisplayValue('{"enabled":true}')
+    fireEvent.change(json, { target: { value: '{"enabled":false}' } })
+    fireEvent.blur(json)
+    expect(onFieldChange).toHaveBeenCalledWith('payload', '{"enabled":false}', undefined)
   })
 })

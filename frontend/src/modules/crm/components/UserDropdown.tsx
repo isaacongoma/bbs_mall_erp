@@ -172,16 +172,21 @@ export function UserDropdown({ isCollapsed = false }: UserDropdownProps) {
     [setUi],
   )
 
+  const passkeys = useMemo<MenuOption>(
+    () => ({ icon: 'lucide-key-round', label: __('Passkeys'), onClick: () => setUi({ showPasskeys: true }) }),
+    [setUi],
+  )
+
   const allOptions = useMemo<MenuOptions>(() => {
     const groups = options as MenuGroupOption[]
     const first = groups[0]
     const rest = groups.slice(1)
     return [
       { group: 'Profile', hideLabel: true, items: [header, themeRow] },
-      { group: 'Account', hideLabel: true, items: [account, ...(first?.items ?? [])] },
+      { group: 'Account', hideLabel: true, items: [account, passkeys, ...(first?.items ?? [])] },
       ...rest,
     ]
-  }, [options, header, themeRow, account])
+  }, [options, header, themeRow, account, passkeys])
 
   return (
     <Dropdown options={allOptions} side="top" align="start" offset={8} matchTriggerWidth contentClassName="min-w-64">

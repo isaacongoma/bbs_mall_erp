@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class SerialAndBatchEntryGenerated(FrappeChildModel):
@@ -16,7 +16,7 @@ class SerialAndBatchEntryGenerated(FrappeChildModel):
     stock_queue = models.TextField(blank=True, null=True, default='')
     delivered_qty = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     reference_for_reservation = models.CharField(max_length=140, blank=True, null=True, default='')
-    posting_datetime = models.DateTimeField(null=True, blank=True)
+    posting_datetime = FrappeDateTimeField(null=True, blank=True)
     voucher_type = models.CharField(max_length=140, blank=True, null=True, default='')
     voucher_no = models.CharField(max_length=140, blank=True, null=True, default='')
     voucher_detail_no = models.CharField(max_length=140, blank=True, null=True, default='')

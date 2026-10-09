@@ -24,5 +24,6 @@
  "timespan": "Last Year",
  "type": "Line",
  "use_report_chart": 0,
- "y_axis": []
+ "y_axis": [],
+ "empty_state_message": "How much money sits in your bank accounts, month by month."
 }

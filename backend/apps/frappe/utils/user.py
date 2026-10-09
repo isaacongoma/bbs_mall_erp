@@ -1,4 +1,3 @@
-from __future__ import annotations
 
 from email.utils import formataddr
 
@@ -21,7 +20,7 @@ class UserPermissions:
 
     def __init__(self, name=""):
         self.defaults = None
-        self.name = name or frappe.session.get("user")
+        self.name = getattr(name, "name", name) or frappe.session.get("user")
         self.roles = []
 
         self.all_read = []

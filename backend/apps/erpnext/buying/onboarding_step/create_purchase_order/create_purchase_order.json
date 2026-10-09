@@ -16,6 +16,8 @@
  "reference_document": "Purchase Order",
  "show_form_tour": 0,
  "show_full_form": 1,
- "title": "Create Purchase Order",
- "validate_action": 1
+ "title": "Place a purchase order",
+ "validate_action": 1,
+ "description": "Order from the supplier. When the goods arrive, receive them and record the bill from the order itself. See [Purchase Order](https://docs.frappe.io/erpnext/user/manual/en/purchase-order).",
+ "intro_video_url": "https://www.youtube.com/watch?v=-IVZJHw_omU"
 }

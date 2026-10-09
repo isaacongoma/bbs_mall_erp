@@ -1,5 +1,4 @@
 """Resolve `show_title_field_in_link` titles for sets of link values."""
-from __future__ import annotations
 
 import frappe
 from frappe.model import get_permitted_fields

@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class TaskGenerated(FrappeTreeModel):
@@ -14,10 +14,10 @@ class TaskGenerated(FrappeTreeModel):
     priority = models.CharField(max_length=140, blank=True, null=True, default='')
     color = models.CharField(max_length=140, blank=True, null=True, default='')
     parent_task = models.CharField(max_length=140, blank=True, null=True, default='')
-    exp_start_date = models.DateTimeField(null=True, blank=True)
+    exp_start_date = FrappeDateTimeField(null=True, blank=True)
     expected_time = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     task_weight = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
-    exp_end_date = models.DateTimeField(null=True, blank=True)
+    exp_end_date = FrappeDateTimeField(null=True, blank=True)
     progress = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     is_milestone = models.SmallIntegerField(default=0)
     description = models.TextField(blank=True, null=True, default='')
@@ -40,6 +40,7 @@ class TaskGenerated(FrappeTreeModel):
     duration = models.IntegerField(null=True, blank=True)
     completed_on = models.DateField(null=True, blank=True)
     template_task = models.CharField(max_length=140, blank=True, null=True, default='')
+    _seen = models.TextField(null=True, blank=True)
 
     class Meta:
         abstract = True

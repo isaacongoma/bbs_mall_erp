@@ -1,15 +1,17 @@
 import { useSyncExternalStore, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import { cn } from '@/design-system'
 
 export interface LayoutHeaderProps {
   left?: ReactNode
   right?: ReactNode
   children?: ReactNode
+  className?: string
 }
 
 const noopSubscribe = () => () => undefined
 
-export function LayoutHeader({ left, right, children }: LayoutHeaderProps) {
+export function LayoutHeader({ left, right, children, className }: LayoutHeaderProps) {
   const target = useSyncExternalStore(
     noopSubscribe,
     () => document.getElementById('app-header'),
@@ -19,7 +21,7 @@ export function LayoutHeader({ left, right, children }: LayoutHeaderProps) {
 
   return createPortal(
     children ?? (
-      <header className="flex h-10.5 items-center justify-between py-[7px] pl-2 sm:pl-5">
+      <header className={cn('flex h-10.5 items-center justify-between py-[7px] pl-2 sm:pl-5', className)}>
         <div className="flex items-center gap-2">{left}</div>
         <div className="flex items-center gap-2">{right}</div>
       </header>

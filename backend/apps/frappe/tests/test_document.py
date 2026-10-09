@@ -7,6 +7,7 @@ from apps.frappe import exceptions
 from apps.frappe.models import HasRole
 from apps.frappe.runtime import get_doc, new_doc, session, local as frappe_local
 from apps.erpnext.registry import get_model
+from apps.erpnext.tests.meta_patch import meta_for
 
 User = get_user_model()
 
@@ -77,11 +78,12 @@ class DocumentLifecycleTests(TestCase):
     def test_get_doc_before_save_does_not_swallow_exceptions(self):
         doc = new_doc("Branch")
         doc.name = "Does Not Exist"
+        self.assertIsNone(doc.load_doc_before_save())
         self.assertIsNone(doc.get_doc_before_save())
-        
+
         doc.doctype = "Non Existent Doctype"
         with self.assertRaises(LookupError):
-            doc.get_doc_before_save()
+            doc.load_doc_before_save()
 
     def test_cancel_does_not_persist_when_before_cancel_fails(self):
         doc = get_doc("Branch", self.doc.name)
@@ -123,7 +125,7 @@ class DocumentLifecycleTests(TestCase):
         }
         doc.branch = "Not Allowed"
         with patch("apps.frappe.permissions.has_permission", return_value=True):
-            with patch("apps.erpnext.registry.get_meta", return_value=meta):
+            with patch("apps.erpnext.registry.get_meta", side_effect=meta_for("Branch", meta)):
                 doc.save()
         self.assertEqual(get_model("Branch").objects.get(pk=doc.name).branch, "Test Branch")
 
@@ -131,7 +133,7 @@ class DocumentLifecycleTests(TestCase):
         meta["permissions"].append({"role": "HR User", "read": 1, "write": 1, "permlevel": 1})
         doc.branch = "Allowed"
         with patch("apps.frappe.permissions.has_permission", return_value=True):
-            with patch("apps.erpnext.registry.get_meta", return_value=meta):
+            with patch("apps.erpnext.registry.get_meta", side_effect=meta_for("Branch", meta)):
                 doc.save()
         self.assertEqual(get_model("Branch").objects.get(pk=doc.name).branch, "Allowed")
         session.user = "Administrator"

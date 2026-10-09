@@ -1,0 +1,21 @@
+{
+ "name": "Complete Tenure Onboarding",
+ "owner": "Administrator",
+ "creation": "2026-10-05 12:00:00",
+ "modified": "2026-10-05 12:00:00",
+ "modified_by": "Administrator",
+ "docstatus": 0,
+ "idx": 0,
+ "title": "Welcome and see off employees",
+ "is_complete": 0,
+ "is_skipped": 0,
+ "description": "Track the joining tasks for a new hire and the exit tasks when someone leaves.",
+ "action": "Complete Onboarding",
+ "action_label": "Open Tenure",
+ "module_onboarding": "Tenure Onboarding",
+ "show_full_form": 0,
+ "show_form_tour": 0,
+ "is_single": 0,
+ "validate_action": 1,
+ "doctype": "Onboarding Step"
+}

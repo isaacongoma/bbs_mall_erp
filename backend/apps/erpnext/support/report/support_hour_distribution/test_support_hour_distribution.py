@@ -1,0 +1,41 @@
+import frappe
+from frappe.utils import get_datetime, getdate
+
+from erpnext.support.doctype.issue.test_issue import make_issue
+from erpnext.support.report.support_hour_distribution.support_hour_distribution import execute
+from erpnext.tests.utils import ERPNextTestSuite
+
+
+class TestSupportHourDistribution(ERPNextTestSuite):
+    def test_issue_buckets_into_expected_time_slot(self):
+        report_date = getdate()
+        issue = make_issue(customer="_Test Customer", index=1)
+        creation = get_datetime(f"{report_date.strftime('%Y-%m-%d')} 14:00:00")
+        frappe.db.set_value("Issue", issue.name, "creation", creation, update_modified=False)
+
+        filters = frappe._dict(
+            {
+                "from_date": report_date,
+                "to_date": report_date,
+                "periodicity": "Daily",
+            }
+        )
+
+        columns, data, _, chart = execute(filters)
+
+        self.assertEqual(len(data), 1)
+        row = data[0]
+        self.assertEqual(row["date"], report_date)
+
+        slot_start = get_datetime(f"{report_date.strftime('%Y-%m-%d')} 12:00:00")
+        slot_end = get_datetime(f"{report_date.strftime('%Y-%m-%d')} 15:00:00")
+        expected = frappe.db.count("Issue", {"creation": ["between", [slot_start, slot_end]]})
+        self.assertGreaterEqual(expected, 1)
+        self.assertEqual(row["12PM - 3PM"], expected)
+
+        self.assertEqual(len(columns), 9)
+
+        labels = chart["data"]["labels"]
+        values = chart["data"]["datasets"][0]["values"]
+        self.assertGreaterEqual(values[labels.index("12PM - 3PM")], 1)
+        self.assertEqual(row["12PM - 3PM"], values[labels.index("12PM - 3PM")])

@@ -14,7 +14,9 @@
  "owner": "Administrator",
  "reference_document": "Purchase Receipt",
  "show_form_tour": 0,
- "show_full_form": 0,
- "title": "Create Purchase Receipt",
- "validate_action": 1
+ "show_full_form": 1,
+ "title": "Receive goods from a supplier",
+ "validate_action": 1,
+ "description": "Stock goes up in the warehouse you receive into, and the bill can be made from the receipt. See [Purchase Receipt](https://docs.frappe.io/erpnext/user/manual/en/purchase-receipt).",
+ "intro_video_url": "https://www.youtube.com/watch?v=HnUzQvc8s6A"
 }

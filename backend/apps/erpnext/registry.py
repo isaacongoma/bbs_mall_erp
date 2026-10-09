@@ -19,6 +19,8 @@ def _meta_by_doctype():
         for path in base.glob("*/doctype/*/*.json"):
             with path.open(encoding="utf-8") as handle:
                 meta = json.load(handle)
+            if not isinstance(meta, dict) or "name" not in meta:
+                continue
             result[meta["name"]] = meta
             _doctype_app[meta["name"]] = app
     return result
@@ -55,6 +57,17 @@ def _cast_property(property_type, value):
     return value
 
 
+_DOCFIELD_TYPES: dict = {}
+
+
+def _docfield_property_type(prop):
+    if not _DOCFIELD_TYPES:
+        for field in (_meta_by_doctype().get("DocField") or {}).get("fields", []):
+            _DOCFIELD_TYPES[field.get("fieldname")] = field.get("fieldtype")
+        _DOCFIELD_TYPES.setdefault("__loaded__", "Data")
+    return _DOCFIELD_TYPES.get(prop)
+
+
 def _custom_field_to_df(row) -> dict:
     skip = {"name", "owner", "creation", "modified", "modified_by", "docstatus", "idx", "dt", "insert_after"}
     df = {}
@@ -73,6 +86,7 @@ def _apply_customizations(doctype: str, base: dict, token) -> dict:
     import copy
 
     meta = copy.deepcopy(base)
+    anchors = {}
     if token[2]:
         rows = list(get_model_unsynced("Custom Field").objects.filter(dt=doctype).order_by("idx", "creation"))
         for row in rows:
@@ -80,6 +94,7 @@ def _apply_customizations(doctype: str, base: dict, token) -> dict:
             fields = meta.setdefault("fields", [])
             names = [field.get("fieldname") for field in fields]
             anchor = row.insert_after
+            anchors[row.fieldname] = anchor
             if anchor and anchor in names:
                 fields.insert(names.index(anchor) + 1, df)
             else:
@@ -88,12 +103,53 @@ def _apply_customizations(doctype: str, base: dict, token) -> dict:
         property_rows = list(get_model_unsynced("Property Setter").objects.filter(doc_type=doctype).order_by("creation"))
         fields_by_name = {field.get("fieldname"): field for field in meta.get("fields", [])}
         for row in property_rows:
-            value = _cast_property(row.property_type, row.value)
+            property_type = row.property_type
+            if row.doctype_or_field == "DocField":
+                property_type = _docfield_property_type(row.property) or property_type
+            value = _cast_property(property_type, row.value)
             if row.doctype_or_field == "DocField" and row.field_name in fields_by_name:
                 fields_by_name[row.field_name][row.property] = value
             elif row.doctype_or_field == "DocType":
                 meta[row.property] = value
+                if row.property == "field_order":
+                    ordered_by_setter = True
+    _apply_field_order(meta, anchors)
     return meta
+
+
+def _apply_field_order(meta: dict, anchors: dict) -> None:
+    import json
+
+    raw = meta.get("field_order")
+    if not raw:
+        return
+    try:
+        order = json.loads(raw) if isinstance(raw, str) else list(raw)
+    except ValueError:
+        return
+    fields = meta.get("fields", [])
+    by_name = {field.get("fieldname"): field for field in fields}
+    ordered = [name for name in dict.fromkeys(order) if name in by_name]
+    placed = set(ordered)
+    pending = {}
+    for field in fields:
+        name = field.get("fieldname")
+        if name in placed:
+            continue
+        pending.setdefault(anchors.get(name) or ordered[-1] if ordered else None, []).append(name)
+    changed = True
+    while pending and changed:
+        changed = False
+        for anchor in list(pending):
+            if anchor in ordered:
+                index = ordered.index(anchor)
+                for name in pending.pop(anchor):
+                    index += 1
+                    ordered.insert(index, name)
+                changed = True
+    for names in pending.values():
+        ordered.extend(names)
+    meta["fields"] = [by_name[name] for name in ordered]
 
 
 def get_meta(doctype: str) -> dict:
@@ -106,7 +162,7 @@ def get_meta(doctype: str) -> dict:
     cached = _overlay_cache.get(doctype)
     if cached is not None and cached[0] == token:
         return cached[1]
-    result = _apply_customizations(doctype, meta, token) if (token[0] or token[2]) else meta
+    result = _apply_customizations(doctype, meta, token)
     _overlay_cache[doctype] = (token, result)
     return result
 
@@ -154,6 +210,19 @@ def get_controller(doctype: str):
     mod = module_name(meta.get("module") or "core")
     dt_module = module_name(doctype)
     app = _doctype_app.get(doctype, "erpnext")
-    module = import_module(f"apps.{app}.{mod}.doctype.{dt_module}.{dt_module}")
+    module = None
+    for candidate in dict.fromkeys((app, "frappe")):
+        try:
+            module = import_module(f"apps.{candidate}.{mod}.doctype.{dt_module}.{dt_module}")
+            break
+        except ModuleNotFoundError as error:
+            if error.name != f"apps.{candidate}.{mod}.doctype.{dt_module}.{dt_module}" and not str(error.name).startswith(f"apps.{candidate}.{mod}"):
+                raise
+    if module is None:
+        if meta.get("custom"):
+            from apps.frappe.model.document import Document
+
+            return Document
+        raise ModuleNotFoundError(f"apps.{app}.{mod}.doctype.{dt_module}.{dt_module}")
     exact = re.sub(r"[^0-9A-Za-z]", "", doctype)
     return getattr(module, exact, None) or getattr(module, class_name(doctype))

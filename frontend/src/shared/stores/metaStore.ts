@@ -21,6 +21,8 @@ function parseUserSettings(raw: string | undefined): any {
   }
 }
 
+const META_CACHE_VERSION = 'v4-frappe-meta'
+
 export const useMetaStore = create<MetaState>((set) => ({
   doctypesMeta: {},
   userSettings: {},
@@ -47,7 +49,7 @@ export function getMetaResource(doctype: string): Resource<DocTypeLoadResponse> 
     resource = createResource<DocTypeLoadResponse>({
       url: 'frappe.desk.form.load.getdoctype',
       params: { doctype, with_parent: 1, cached_timestamp: null },
-      cache: ['Meta', doctype],
+      cache: ['Meta', META_CACHE_VERSION, doctype],
       onData: (response) => useMetaStore.getState().setMeta(response, doctype),
     })
     resources.set(doctype, resource)
@@ -91,6 +93,21 @@ function precisionOf(df: DocField | undefined): number | null {
   return precision ? Number(precision) : null
 }
 
+interface FrappeFormatApi {
+  frappe: Record<string, any>
+  numberFormat: (value: unknown, format: string | null, precision: number | null) => string
+  currencyFormat: (value: unknown, currency: string, precision: number | null) => string
+}
+
+function frappeFormatApi(): FrappeFormatApi | null {
+  const scope = window as unknown as Record<string, any>
+  const frappe = scope.frappe
+  if (!frappe?.meta?.get_docfield || typeof scope.format_currency !== 'function' || typeof scope.format_number !== 'function') {
+    return null
+  }
+  return { frappe, numberFormat: scope.format_number, currencyFormat: scope.format_currency }
+}
+
 export function createMetaApi(
   doctype: string,
   doctypesMeta: Record<string, DocTypeMeta>,
@@ -99,15 +116,34 @@ export function createMetaApi(
   const meta = getMetaResource(doctype)
   const fieldDef = (fieldname: string) => doctypesMeta[doctype]?.fields.find((field) => field.fieldname === fieldname)
 
-  const getFloatWithPrecision = (fieldname: string, doc: DocRecord) =>
-    formatNumber(doc[fieldname], '', precisionOf(fieldDef(fieldname)))
+  const frappeField = (fieldname: string) => {
+    const api = frappeFormatApi()
+    const df = api?.frappe.meta.get_docfield(doctype, fieldname)
+    return api && df ? { api, df } : null
+  }
 
-  const getFormattedPercent = (fieldname: string, doc: DocRecord) => `${getFloatWithPrecision(fieldname, doc)}%`
+  const plainText = (html: unknown) => new DOMParser().parseFromString(String(html ?? ''), 'text/html').body.textContent ?? ''
+
+  const getFloatWithPrecision = (fieldname: string, doc: DocRecord) => {
+    const found = frappeField(fieldname)
+    if (found) return plainText(found.api.frappe.form.formatters.Float(doc[fieldname], found.df, {}, doc))
+    return formatNumber(doc[fieldname], '', precisionOf(fieldDef(fieldname)))
+  }
+
+  const getFormattedPercent = (fieldname: string, doc: DocRecord) => {
+    const found = frappeField(fieldname)
+    if (found) return plainText(found.api.frappe.form.formatters.Percent(doc[fieldname], found.df, {}, doc))
+    return `${getFloatWithPrecision(fieldname, doc)}%`
+  }
 
   const getCurrencyWithPrecision = (fieldname: string, doc: DocRecord) =>
     formatCurrency(doc[fieldname], '', '', precisionOf(fieldDef(fieldname)))
 
   const getFormattedCurrency = (fieldname: string, doc: DocRecord, parentDoc: DocRecord | null = null) => {
+    const found = frappeField(fieldname)
+    if (found) {
+      return plainText(found.api.frappe.form.formatters.Currency(doc[fieldname], found.df, {}, doc))
+    }
     let currency = getSysDefaults().currency || 'USD'
     const df = fieldDef(fieldname)
 

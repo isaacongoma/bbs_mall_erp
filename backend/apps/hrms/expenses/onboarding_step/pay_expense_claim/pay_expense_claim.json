@@ -1,0 +1,22 @@
+{
+ "name": "Pay Expense Claim",
+ "owner": "Administrator",
+ "creation": "2026-10-05 12:00:00",
+ "modified": "2026-10-06 13:10:00",
+ "modified_by": "Administrator",
+ "docstatus": 0,
+ "idx": 0,
+ "title": "Pay the employee back",
+ "is_complete": 0,
+ "is_skipped": 0,
+ "description": "Pick an approved claim from the list this opens and use Create > Payment on it. The payment is then linked to the claim and marks it paid. See [Expense Claim](https://docs.frappe.io/hr/expense-claim#payment-for-expense-claim).",
+ "action": "Go to Page",
+ "action_label": "Open Unpaid Claims",
+ "show_full_form": 0,
+ "show_form_tour": 0,
+ "is_single": 0,
+ "path": "List/Expense Claim",
+ "validate_action": 1,
+ "route_options": "{\n    \"approval_status\": \"Approved\",\n    \"status\": \"Unpaid\"\n}",
+ "doctype": "Onboarding Step"
+}

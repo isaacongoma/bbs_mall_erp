@@ -29,5 +29,6 @@
  "type": "Bar",
  "use_report_chart": 0,
  "value_based_on": "",
- "y_axis": []
+ "y_axis": [],
+ "empty_state_message": "What your stock is worth, by item group."
 }

@@ -1,4 +1,3 @@
-from __future__ import annotations
 
 
 import frappe
@@ -203,18 +202,6 @@ class SalaryStructureAssignment(Document):
             )
 
     def get_evaluated_components(self) -> frappe._dict:
-        """Evaluate all salary structure components for this assignment and return
-        fully-evaluated rows the salary slip can consume directly.
-
-        Earnings, deductions and employer contributions are evaluated in one
-        shared pass (so a deduction formula can reference an earning abbr), each
-        row carrying its full-cycle ``default_amount`` plus the flags the slip
-        needs. This is period-independent: the (period-dependent) timesheet wage
-        is built by the salary slip itself, not here. The slip consumes
-        ``default_amount`` directly and applies payment-days proration / tax on
-        top (it re-evaluates each formula once against its prorated context for
-        the actual ``amount``).
-        """
         _data, rows_by_type = self._evaluate_all_components()
 
         return frappe._dict(
@@ -224,8 +211,6 @@ class SalaryStructureAssignment(Document):
         )
 
     def get_timesheet_config(self) -> frappe._dict:
-        """Lightweight read of the linked structure's timesheet settings, needed
-        by the slip early (before component evaluation runs)."""
         ss = (
             frappe.get_cached_value(
                 "Salary Structure",
@@ -272,9 +257,6 @@ class SalaryStructureAssignment(Document):
         )
 
     def _evaluate_all_components(self) -> tuple[frappe._dict, dict]:
-        """Single shared-context pass over earnings -> deductions ->
-        employer_contributions. Returns the final context and evaluated rows by
-        type. Does not mutate the cached salary structure doc."""
         salary_structure = frappe.get_cached_doc("Salary Structure", self.salary_structure)
         data = self._get_component_eval_context()
 
@@ -302,20 +284,11 @@ class SalaryStructureAssignment(Document):
 
     @hrms.allow_regional
     def apply_regional_ctc_components(self, rows_by_type: dict, data: frappe._dict) -> None:
-        """Hook point for statutory employer contributions a formula cannot express.
-
-        Add rows via ``upsert_employer_contribution``. Never mutate ``self`` or the
-        cached Salary Structure -- both are shared across a Payroll Entry run.
-        """
         pass
 
     def upsert_employer_contribution(
         self, rows_by_type: dict, data: frappe._dict, salary_component: str, amount: float
     ) -> frappe._dict | None:
-        """Add or replace an employer contribution row, keyed by component.
-
-        A zero amount clears an existing row but never adds one.
-        """
         fields = [f for f in SALARY_COMPONENT_FLAGS if f != "abbr"] + ["salary_component_abbr"]
         component = frappe.db.get_value("Salary Component", salary_component, fields, as_dict=True)
         if not component:
@@ -370,10 +343,6 @@ class SalaryStructureAssignment(Document):
         return data
 
     def _evaluate_component_table(self, rows, data: frappe._dict) -> list:
-        """Evaluate one component table against the shared ``data`` (mutating it
-        with each component's full-cycle amount). Returns fresh ``frappe._dict``
-        rows (cache-safe copies). Raises a clear error on a bad formula/condition.
-        Rows whose condition is falsey are skipped (not added to the slip)."""
         evaluated_components = []
         for struct_row in rows:
             condition = sanitize_expression(struct_row.condition)

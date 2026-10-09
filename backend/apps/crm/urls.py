@@ -1,12 +1,11 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 
-from apps.core.automation_engine import api_views as automation_api_views
+from apps.frappe.automation_engine import rest as automation_api_views
 from apps.core.doctype.assignment_rule.assignment_rule_views import (
     AssignmentRuleViewSet, duplicate_assignment_rule, get_assignment_rules_list,
 )
-from apps.core.doctype.automation_flow.automation_flow_views import AutomationFlowViewSet
-from apps.core.doctype.background_task.background_task_views import BackgroundTaskViewSet
+from apps.frappe.automation_engine.rest import AutomationFlowViewSet, BackgroundTaskViewSet
 from apps.core.doctype.contact import contact_views
 from apps.core.doctype.data_import import data_import_views
 from apps.core.doctype.email_account.email_account_views import EmailAccountViewSet

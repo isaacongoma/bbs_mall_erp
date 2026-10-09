@@ -1,6 +1,20 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeModel
+from apps.frappe.doctype_columns import DocFieldColumns, DocTypeColumns
+from apps.frappe.model.base import FrappeChildModel, FrappeModel
+
+
+class Sessions(models.Model):
+    user = models.CharField(max_length=255, null=True, blank=True)
+    sid = models.CharField(max_length=255, null=True, blank=True, db_index=True)
+    sessiondata = models.TextField(null=True, blank=True)
+    ipaddress = models.CharField(max_length=16, null=True, blank=True)
+    lastupdate = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(max_length=20, null=True, blank=True)
+
+    class Meta:
+        db_table = "tabSessions"
+        verbose_name = "Sessions"
 
 
 class Series(models.Model):
@@ -22,6 +36,41 @@ class Singles(models.Model):
         constraints = [models.UniqueConstraint(fields=["doctype", "field"], name="uniq_tab_singles_doctype_field")]
 
 
+class UserSettings(models.Model):
+    user = models.CharField(max_length=180)
+    doctype = models.CharField(max_length=180)
+    data = models.TextField(blank=True, default="")
+
+    class Meta:
+        db_table = "__UserSettings"
+        constraints = [models.UniqueConstraint(fields=["user", "doctype"], name="uniq_user_settings_user_doctype")]
+
+
+class Auth(models.Model):
+    doctype = models.CharField(max_length=140)
+    name = models.CharField(max_length=255)
+    fieldname = models.CharField(max_length=140)
+    password = models.TextField()
+    encrypted = models.IntegerField(default=0)
+
+    class Meta:
+        db_table = "__Auth"
+        constraints = [models.UniqueConstraint(fields=["doctype", "name", "fieldname"], name="uniq_auth_doctype_name_field")]
+
+
+class GlobalSearch(models.Model):
+    doctype = models.CharField(max_length=100)
+    name = models.CharField(max_length=140)
+    title = models.CharField(max_length=140, blank=True, null=True)
+    content = models.TextField(blank=True, null=True)
+    route = models.CharField(max_length=140, blank=True, null=True)
+    published = models.IntegerField(default=0)
+
+    class Meta:
+        db_table = "__global_search"
+        constraints = [models.UniqueConstraint(fields=["doctype", "name"], name="uniq_global_search_doctype_name")]
+
+
 class Role(FrappeModel):
     doctype = "Role"
     role_name = models.CharField(max_length=140, unique=True)
@@ -37,22 +86,19 @@ class Role(FrappeModel):
         verbose_name = "Role"
 
 
-class HasRole(models.Model):
-    name = models.CharField(max_length=140, primary_key=True)
-    parent = models.CharField(max_length=140)
+class HasRole(FrappeChildModel):
+    doctype = "Has Role"
     parentfield = models.CharField(max_length=140, default="roles")
     parenttype = models.CharField(max_length=140, default="User")
     role = models.CharField(max_length=140)
-    idx = models.IntegerField(default=0)
 
     class Meta:
         db_table = "tabHas Role"
         indexes = [models.Index(fields=["parent"]), models.Index(fields=["role"])]
 
 
-class DocPerm(models.Model):
-    name = models.CharField(max_length=140, primary_key=True)
-    parent = models.CharField(max_length=140)
+class DocPerm(FrappeChildModel):
+    doctype = "DocPerm"
     parentfield = models.CharField(max_length=140, default="permissions")
     parenttype = models.CharField(max_length=140, default="DocType")
     role = models.CharField(max_length=140)
@@ -79,8 +125,8 @@ class DocPerm(models.Model):
         indexes = [models.Index(fields=["parent"]), models.Index(fields=["role"])]
 
 
-class UserPermission(models.Model):
-    name = models.CharField(max_length=140, primary_key=True)
+class UserPermission(FrappeModel):
+    doctype = "User Permission"
     user = models.CharField(max_length=140)
     allow = models.CharField(max_length=140)
     for_value = models.CharField(max_length=140)
@@ -94,7 +140,7 @@ class UserPermission(models.Model):
         indexes = [models.Index(fields=["user"]), models.Index(fields=["allow", "for_value"])]
 
 
-class DocTypeTable(models.Model):
+class DocTypeTable(DocTypeColumns, models.Model):
     name = models.CharField(max_length=140, primary_key=True)
     module = models.CharField(max_length=140, blank=True, default="")
     issingle = models.SmallIntegerField(default=0)
@@ -128,7 +174,7 @@ class DocTypeTable(models.Model):
         db_table = "tabDocType"
 
 
-class DocFieldTable(models.Model):
+class DocFieldTable(DocFieldColumns, models.Model):
     name = models.CharField(max_length=240, primary_key=True)
     parent = models.CharField(max_length=140, db_index=True)
     parenttype = models.CharField(max_length=140, default="DocType")

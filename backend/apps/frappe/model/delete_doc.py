@@ -1,14 +1,22 @@
-from __future__ import annotations
 
+import os
+import shutil
 from typing import Any
 
-import apps.frappe as frappe
-from apps.frappe.model.docstatus import DocStatus
-from apps.frappe.model.dynamic_links import get_dynamic_link_map
-from apps.frappe.model.naming import revert_series_if_last
-from apps.frappe.model.rename_doc import get_link_fields
-from apps.frappe.runtime import resolve_model
-from apps.frappe.utils.data import get_link_to_form
+import frappe
+import frappe.defaults
+import frappe.model.meta
+from frappe import _, get_module_path
+from frappe.desk.doctype.tag.tag import delete_tags_for_document
+from frappe.model.docstatus import DocStatus
+from frappe.model.dynamic_links import get_dynamic_link_map
+from frappe.model.naming import revert_series_if_last
+from frappe.model.utils import is_virtual_doctype
+from frappe.query_builder import DocType
+from frappe.utils.data import get_link_to_form
+from frappe.utils.file_manager import remove_all
+from frappe.utils.global_search import delete_for_document
+from frappe.utils.password import delete_all_passwords_for
 
 
 def delete_doc(
@@ -23,6 +31,48 @@ def delete_doc(
     ignore_missing: bool = True,
     delete_permanently: bool = False,
 ) -> bool | None:
+    """
+    Deletes a document and validates if it is not submitted and not linked in a live record.
+
+    Args:
+        doctype (str, optional): The document type to delete. If not provided,
+            retrieved from frappe.form_dict.get("dt"). Defaults to None.
+        name (str | int | list, optional): The name/ID of the document(s) to delete.
+            Can be a single name or a list of names. If not provided,
+            retrieved from frappe.form_dict.get("dn"). Defaults to None.
+        force (bool, optional): When True, bypasses link existence checks and allows
+            deletion of documents that are linked to other records. Also allows
+            deletion of standard DocTypes. Defaults to 0 (False).
+        ignore_doctypes (list, optional): A list of child doctypes to ignore when
+            deleting child table records associated with the document. Defaults to None.
+        for_reload (bool, optional): When True, indicates the deletion is for reloading
+            purposes (like during doctype updates). Skips certain validations like
+            permissions and on_trash methods, and automatically sets delete_permanently=True.
+            Defaults to False.
+        ignore_permissions (bool, optional): When True, bypasses permission checks
+            during deletion. Useful for system operations. Defaults to False.
+        flags (dict, optional): Additional flags to set on the document during the
+            deletion process. These flags affect document behavior during deletion.
+            Defaults to None.
+        ignore_on_trash (bool, optional): When True, skips calling the document's
+            on_trash method, which typically contains cleanup logic. Defaults to False.
+        ignore_missing (bool, optional): When True, doesn't raise an error if the
+            document doesn't exist and returns False. When False, raises
+            frappe.DoesNotExistError if document is missing. Defaults to True.
+        delete_permanently (bool, optional): When True, permanently deletes the document
+            without adding it to the "Deleted Document" table for recovery purposes.
+            When False, the document is soft-deleted and can be recovered. Defaults to False.
+
+    Raises:
+        frappe.DoesNotExistError: When document doesn't exist and ignore_missing=False.
+        frappe.LinkExistsError: When document is linked to other records and force=False.
+        frappe.PermissionError: When user doesn't have delete permissions and ignore_permissions=False.
+        frappe.ValidationError: When trying to delete a submitted document.
+        frappe.QueryTimeoutError: When document is locked by another user.
+
+    Returns:
+        bool: False if document doesn't exist and ignore_missing=True, otherwise None.
+    """
     if not ignore_doctypes:
         ignore_doctypes = []
 
@@ -30,7 +80,7 @@ def delete_doc(
         doctype = frappe.form_dict.get("dt")
         name = frappe.form_dict.get("dn")
 
-    is_virtual = _is_virtual_doctype(doctype)
+    is_virtual = is_virtual_doctype(doctype)
 
     names = name
     if isinstance(name, str) or isinstance(name, int):
@@ -41,11 +91,14 @@ def delete_doc(
             doc = frappe.get_doc(doctype, name)
             update_flags(doc, flags, ignore_permissions)
             check_permission_and_not_submitted(doc)
-            from apps.frappe.model.document import Document
+
+            from frappe.model.document import Document
 
             if type(doc).delete == Document.delete:
-                frappe.throw(_("{0} is a Virtual DocType and must implement its own delete() method.").format(doctype))
-            doc.flags.ignore_on_trash = ignore_on_trash
+                frappe.throw(
+                    _("{0} is a Virtual DocType and must implement its own delete() method.").format(doctype)
+                )
+
             doc.delete()
             continue
 
@@ -65,29 +118,45 @@ def delete_doc(
                     pass
                 else:
                     doc.run_method("before_reload")
+
             else:
                 doc = frappe.get_doc(doctype, name)
                 if not (doc.custom or frappe.conf.developer_mode or frappe.flags.in_patch or force):
                     frappe.throw(_("Standard DocType can not be deleted."))
+
                 update_flags(doc, flags, ignore_permissions)
                 check_permission_and_not_submitted(doc)
-                try:
-                    custom_field_parents = frappe.get_all(
-                        "Custom Field",
-                        filters={"options": name, "fieldtype": ("in", frappe.model.table_fields)},
-                        pluck="dt",
-                    )
-                    frappe.db.delete("Custom Field", {"options": name, "fieldtype": ("in", frappe.model.table_fields)})
-                except LookupError:
-                    custom_field_parents = []
-                try:
-                    frappe.db.delete("__global_search", {"doctype": name})
-                except LookupError:
-                    pass
+                custom_field_parents = frappe.get_all(
+                    "Custom Field",
+                    filters={"options": name, "fieldtype": ("in", frappe.model.table_fields)},
+                    pluck="dt",
+                )
+                frappe.db.delete(
+                    "Custom Field", {"options": name, "fieldtype": ("in", frappe.model.table_fields)}
+                )
+                frappe.db.delete("__global_search", {"doctype": name})
+
             delete_from_table(doctype, name, ignore_doctypes, None)
+
+            if (
+                frappe.conf.developer_mode
+                and not doc.custom
+                and not (
+                    for_reload
+                    or frappe.flags.in_migrate
+                    or frappe.flags.in_install
+                    or frappe.flags.in_uninstall
+                )
+            ):
+                try:
+                    delete_controllers(name, doc.module)
+                except (OSError, KeyError):
+                    pass
+
             frappe.clear_cache(doctype=name)
             for parent_doctype in custom_field_parents:
                 frappe.clear_cache(doctype=parent_doctype)
+
         else:
             try:
                 frappe.db.get_value(doctype, name, for_update=True, wait=False)
@@ -145,8 +214,7 @@ def delete_doc(
 
         delete_all_passwords_for(doctype, name)
 
-        if doc:
-            doc.clear_cache()
+        doc.clear_cache()
         delete_for_document(doc)
         delete_tags_for_document(doc)
 
@@ -166,61 +234,54 @@ def delete_doc(
 
 
 def add_to_deleted_document(doc):
-    if not doc or doc.doctype == "Deleted Document" or frappe.flags.in_install == "frappe":
-        return
-    try:
-        resolve_model("Deleted Document")
-    except LookupError:
-        return
-    frappe.get_doc(
-        doctype="Deleted Document",
-        deleted_doctype=doc.doctype,
-        deleted_name=doc.name,
-        data=doc.as_json(),
-        owner=frappe.session.user,
-    ).db_insert()
+    """Add this document to Deleted Document table. Called after delete"""
+    if doc.doctype != "Deleted Document" and frappe.flags.in_install != "frappe":
+        frappe.get_doc(
+            doctype="Deleted Document",
+            deleted_doctype=doc.doctype,
+            deleted_name=doc.name,
+            data=doc.as_json(),
+            owner=frappe.session.user,
+        ).db_insert()
 
 
 def update_naming_series(doc):
-    if not doc or not doc.meta.autoname:
-        return
-    if doc.meta.autoname.startswith("naming_series:") and getattr(doc, "naming_series", None):
-        revert_series_if_last(doc.naming_series, doc.name, doc)
-    elif doc.meta.autoname.split(":", 1)[0] not in ("Prompt", "field", "hash", "autoincrement"):
-        revert_series_if_last(doc.meta.autoname, doc.name, doc)
+    if doc.meta.autoname:
+        if doc.meta.autoname.startswith("naming_series:") and getattr(doc, "naming_series", None):
+            revert_series_if_last(doc.naming_series, doc.name, doc)
+
+        elif doc.meta.autoname.split(":", 1)[0] not in ("Prompt", "field", "hash", "autoincrement"):
+            revert_series_if_last(doc.meta.autoname, doc.name, doc)
 
 
 def delete_from_table(doctype: str, name: str, ignore_doctypes: list[str], doc):
+    if doctype == "DocType":
+        from apps.frappe.core.doctype.doctype.doctype import dynamic_doctype_names
+        from apps.frappe.model import dynamic_doctype
+
+        if name in dynamic_doctype_names():
+            dynamic_doctype.remove(name)
+            return
     if doctype != "DocType" and doctype == name:
         frappe.db.delete("Singles", {"doctype": name})
     else:
         frappe.db.delete(doctype, {"name": name})
-
-    child_doctypes = []
     if doc:
-        for child_field in doc.meta.get_table_fields():
-            try:
-                child_meta = frappe.get_meta(child_field.options)
-            except frappe.DoesNotExistError:
-                continue
-            if not child_meta.is_virtual:
-                child_doctypes.append(child_field.options)
+        child_doctypes = [
+            d.options for d in doc.meta.get_table_fields() if frappe.get_meta(d.options).is_virtual == 0
+        ]
+
     else:
-        try:
-            child_doctypes = frappe.get_all(
-                "DocField",
-                filters={"fieldtype": ["in", list(frappe.model.table_fields)], "parent": doctype},
-                pluck="options",
-            )
-        except LookupError:
-            child_doctypes = []
+        child_doctypes = frappe.get_all(
+            "DocField",
+            fields="options",
+            filters={"fieldtype": ["in", frappe.model.table_fields], "parent": doctype},
+            pluck="options",
+        )
 
     child_doctypes_to_delete = set(child_doctypes) - set(ignore_doctypes)
     for child_doctype in child_doctypes_to_delete:
-        try:
-            frappe.db.delete(child_doctype, {"parenttype": doctype, "parent": name})
-        except LookupError:
-            continue
+        frappe.db.delete(child_doctype, {"parenttype": doctype, "parent": name})
 
 
 def update_flags(doc, flags=None, ignore_permissions=False):
@@ -235,7 +296,7 @@ def update_flags(doc, flags=None, ignore_permissions=False):
 
 def check_permission_and_not_submitted(doc):
     if not doc.flags.ignore_permissions and frappe.session.user != "Administrator":
-        if doc.doctype == "DocType" and not getattr(doc, "custom", None):
+        if doc.doctype == "DocType" and not doc.custom:
             frappe.throw(_("Only the Administrator can delete a standard DocType."))
         else:
             doc.check_permission("delete")
@@ -253,17 +314,21 @@ def check_permission_and_not_submitted(doc):
 
 
 class LinkedDocumentsOverflow(Exception):
-    pass
+    """A bounded link lookup reached its limit, so the linked set may be larger than it shows."""
 
 
 def get_linked_docs(doc, method="Delete", limit: int | None = None) -> list[dict]:
+    """Return the documents statically linked to the given document; with `limit`,
+    raise LinkedDocumentsOverflow once a lookup reaches it."""
+    from frappe.model.rename_doc import get_link_fields
+
     link_fields = get_link_fields(doc.doctype)
     ignored_doctypes = set()
 
     if method == "Cancel" and (doc_ignore_flags := doc.get("ignore_linked_doctypes")):
         ignored_doctypes.update(doc_ignore_flags)
     if method == "Delete":
-        ignored_doctypes.update(frappe.get_hooks("ignore_links_on_delete") or [])
+        ignored_doctypes.update(frappe.get_hooks("ignore_links_on_delete"))
 
     linked_docs = []
 
@@ -280,27 +345,27 @@ def get_linked_docs(doc, method="Delete", limit: int | None = None) -> list[dict
 
         if issingle:
             if frappe.db.get_single_value(link_dt, link_field) == doc.name:
-                linked_docs.append({"doc": doc.name, "reference_doctype": link_dt, "reference_docname": link_dt})
+                linked_docs.append(
+                    {"doc": doc.name, "reference_doctype": link_dt, "reference_docname": link_dt}
+                )
             continue
 
         fields = ["name", "docstatus"]
+
         if meta.istable:
             fields.extend(["parent", "parenttype"])
 
         if limit and len(linked_docs) >= limit:
             raise LinkedDocumentsOverflow
 
-        try:
-            rows = frappe.db.get_values(
-                link_dt,
-                {link_field: doc.name},
-                fields,
-                as_dict=True,
-                order_by=None,
-                limit=limit,
-            )
-        except LookupError:
-            continue
+        rows = frappe.db.get_values(
+            link_dt,
+            {link_field: doc.name},
+            fields,
+            as_dict=True,
+            order_by=None,
+            limit=limit,
+        )
         if limit and len(rows) >= limit:
             raise LinkedDocumentsOverflow
 
@@ -329,6 +394,9 @@ def get_linked_docs(doc, method="Delete", limit: int | None = None) -> list[dict
 
 
 def check_if_doc_is_linked(doc, method="Delete"):
+    """
+    Raises exception if the given document is linked in another record.
+    """
     links = get_linked_docs(doc, method)
     if links:
         link = links[0]
@@ -336,6 +404,8 @@ def check_if_doc_is_linked(doc, method="Delete"):
 
 
 def get_dynamic_linked_docs(doc, method="Delete", limit: int | None = None) -> list[dict]:
+    """Return the documents dynamically linked to the given document; with `limit`,
+    raise LinkedDocumentsOverflow once a lookup reaches it."""
     linked_docs = []
 
     for df in get_dynamic_link_map().get(doc.doctype, []):
@@ -343,25 +413,20 @@ def get_dynamic_linked_docs(doc, method="Delete", limit: int | None = None) -> l
             raise LinkedDocumentsOverflow
         ignore_linked_doctypes = doc.get("ignore_linked_doctypes") or []
 
-        if df.parent in (frappe.get_hooks("ignore_links_on_delete") or []) or (
+        if df.parent in frappe.get_hooks("ignore_links_on_delete") or (
             df.parent in ignore_linked_doctypes and method == "Cancel"
         ):
             continue
 
-        try:
-            meta = frappe.get_meta(df.parent)
-        except frappe.DoesNotExistError:
-            frappe.clear_last_message()
-            continue
-
+        meta = frappe.get_meta(df.parent)
         if meta.issingle:
             refdoc = frappe.db.get_singles_dict(df.parent)
             if (
                 refdoc.get(df.options) == doc.doctype
                 and refdoc.get(df.fieldname) == doc.name
                 and (
-                    (method == "Delete" and not DocStatus(refdoc.docstatus or 0).is_cancelled())
-                    or (method == "Cancel" and DocStatus(refdoc.docstatus or 0).is_submitted())
+                    (method == "Delete" and not DocStatus(refdoc.docstatus).is_cancelled())
+                    or (method == "Cancel" and DocStatus(refdoc.docstatus).is_submitted())
                 )
             ):
                 linked_docs.append(
@@ -373,23 +438,25 @@ def get_dynamic_linked_docs(doc, method="Delete", limit: int | None = None) -> l
                     }
                 )
         else:
-            try:
-                model = resolve_model(df.parent)
-            except LookupError:
-                continue
-            query = model.objects.filter(**{df.options: doc.doctype, df.fieldname: doc.name})
-            if method == "Delete":
-                query = query.exclude(docstatus=DocStatus.cancelled())
-                if df.parent == "Submission Queue" and _model_has_field(model, "status"):
-                    query = query.filter(status="Queued")
-            elif method == "Cancel":
-                query = query.filter(docstatus=DocStatus.submitted())
-            if limit:
-                query = query[:limit]
-            field_names = ["name", "docstatus"]
+            RefDoc = DocType(df.parent)
+            fields = [RefDoc.name, RefDoc.docstatus]
             if meta.istable:
-                field_names.extend(["parent", "parenttype", "idx"])
-            rows = [frappe._dict(row) for row in query.values(*field_names)]
+                fields.extend([RefDoc.parent, RefDoc.parenttype, RefDoc.idx])
+            query = (
+                frappe.qb.from_(RefDoc)
+                .select(*fields)
+                .where(RefDoc[df.options] == doc.doctype)
+                .where(RefDoc[df.fieldname] == doc.name)
+            )
+            if method == "Delete":
+                query = query.where(RefDoc.docstatus != DocStatus.cancelled())
+                if df.parent == "Submission Queue":
+                    query = query.where(RefDoc.status == "Queued")
+            elif method == "Cancel":
+                query = query.where(RefDoc.docstatus == DocStatus.submitted())
+            if limit:
+                query = query.limit(limit)
+            rows = query.run(as_dict=True)
             if limit and len(rows) >= limit:
                 raise LinkedDocumentsOverflow
             for refdoc in rows:
@@ -399,12 +466,13 @@ def get_dynamic_linked_docs(doc, method="Delete", limit: int | None = None) -> l
                     reference_doctype = refdoc.parenttype if meta.istable else df.parent
                     reference_docname = refdoc.parent if meta.istable else refdoc.name
 
-                    if reference_doctype in (frappe.get_hooks("ignore_links_on_delete") or []) or (
+                    if reference_doctype in frappe.get_hooks("ignore_links_on_delete") or (
                         reference_doctype in ignore_linked_doctypes and method == "Cancel"
                     ):
                         continue
 
                     at_position = f"at Row: {refdoc.idx}" if meta.istable else ""
+
                     linked_docs.append(
                         {
                             "doc": doc.name,
@@ -418,10 +486,13 @@ def get_dynamic_linked_docs(doc, method="Delete", limit: int | None = None) -> l
 
 
 def check_if_doc_is_dynamically_linked(doc, method="Delete"):
+    """Raise `frappe.LinkExistsError` if the document is dynamically linked"""
     links = get_dynamic_linked_docs(doc, method)
     if links:
         link = links[0]
-        raise_link_exists_exception(doc, link["reference_doctype"], link["reference_docname"], link["at_position"])
+        raise_link_exists_exception(
+            doc, link["reference_doctype"], link["reference_docname"], link["at_position"]
+        )
 
 
 def raise_link_exists_exception(doc, reference_doctype, reference_docname, row=""):
@@ -449,8 +520,10 @@ def delete_dynamic_links(doctype, name):
     delete_references("View Log", doctype, name)
     delete_references("Document Follow", doctype, name, "ref_doctype", "ref_docname")
     delete_references("Notification Log", doctype, name, "document_type", "document_name")
+
     clear_timeline_references(doctype, name)
     clear_references("Communication", doctype, name)
+
     clear_references("Activity Log", doctype, name)
     clear_references("Activity Log", doctype, name, "timeline_doctype", "timeline_name")
 
@@ -462,10 +535,9 @@ def delete_references(
     reference_doctype_field="reference_doctype",
     reference_name_field="reference_name",
 ):
-    try:
-        frappe.db.delete(doctype, {reference_doctype_field: reference_doctype, reference_name_field: reference_name})
-    except LookupError:
-        return
+    frappe.db.delete(
+        doctype, {reference_doctype_field: reference_doctype, reference_name_field: reference_name}
+    )
 
 
 def clear_references(
@@ -475,38 +547,30 @@ def clear_references(
     reference_doctype_field="reference_doctype",
     reference_name_field="reference_name",
 ):
-    try:
-        model = resolve_model(doctype)
-    except LookupError:
-        return
-    model.objects.filter(
-        **{reference_doctype_field: reference_doctype, reference_name_field: reference_name}
-    ).update(**{reference_doctype_field: None, reference_name_field: None})
+    frappe.db.sql(
+        f"""update
+            `tab{doctype}`
+        set
+            {reference_doctype_field}=NULL, {reference_name_field}=NULL
+        where
+            {reference_doctype_field}=%s and {reference_name_field}=%s""",
+        (reference_doctype, reference_name),
+    )
 
 
 def clear_timeline_references(link_doctype, link_name):
-    try:
-        frappe.db.delete("Communication Link", {"link_doctype": link_doctype, "link_name": link_name})
-    except LookupError:
-        return
+    frappe.db.delete("Communication Link", {"link_doctype": link_doctype, "link_name": link_name})
 
 
 def insert_feed(doc):
     if (
-        not doc
-        or frappe.flags.in_install
+        frappe.flags.in_install
         or frappe.flags.in_uninstall
         or frappe.flags.in_import
         or getattr(doc, "no_feed_on_delete", False)
     ):
         return
-    try:
-        resolve_model("Comment")
-        comment_meta = frappe.get_meta("Comment")
-    except (LookupError, frappe.DoesNotExistError):
-        return
-    if not comment_meta.has_field("comment_type"):
-        return
+
     from frappe.utils import get_fullname
 
     frappe.get_doc(
@@ -520,57 +584,11 @@ def insert_feed(doc):
     ).insert(ignore_permissions=True)
 
 
-def remove_all(doctype, name, from_delete=False, delete_permanently=False):
-    try:
-        model = resolve_model("File")
-    except LookupError:
-        return
-    filters = {}
-    if _model_has_field(model, "attached_to_doctype"):
-        filters["attached_to_doctype"] = doctype
-        filters["attached_to_name"] = name
-    if filters:
-        model.objects.filter(**filters).delete()
+def delete_controllers(doctype, module):
+    """
+    Delete controller code in the doctype folder
+    """
+    module_path = get_module_path(module)
+    dir_path = os.path.join(module_path, "doctype", frappe.scrub(doctype))
 
-
-def delete_for_document(doc):
-    if not doc:
-        return
-    try:
-        frappe.db.delete("__global_search", {"doctype": doc.doctype, "name": doc.name})
-    except LookupError:
-        return
-
-
-def delete_tags_for_document(doc):
-    if not doc:
-        return
-    try:
-        frappe.db.delete("Tag Link", {"document_type": doc.doctype, "document_name": doc.name})
-    except LookupError:
-        return
-
-
-def delete_all_passwords_for(doctype, name):
-    try:
-        frappe.db.delete("__Auth", {"doctype": doctype, "name": name})
-    except LookupError:
-        return
-
-
-def _is_virtual_doctype(doctype):
-    if not doctype:
-        return False
-    try:
-        meta = frappe.get_meta(doctype)
-    except frappe.DoesNotExistError:
-        return False
-    return bool(meta.get("is_virtual"))
-
-
-def _model_has_field(model, fieldname):
-    return any(field.name == fieldname for field in model._meta.fields)
-
-
-def _(message, *args, **kwargs):
-    return frappe._(message, *args, **kwargs)
+    shutil.rmtree(dir_path)

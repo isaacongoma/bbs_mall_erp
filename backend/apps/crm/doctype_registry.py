@@ -3,13 +3,6 @@
 # fields, the enrichment mapper, ToDo/DocShare reference_type, kanban
 # column-field resolution) and needs to resolve it back to a real model at runtime.
 def _registry() -> dict:
-    from apps.core.doctype.assignment_rule.assignment_rule import AssignmentRule
-    from apps.core.doctype.automation_flow.automation_flow import AutomationFlow
-    from apps.core.doctype.background_task.background_task import BackgroundTask
-    from apps.core.doctype.contact.contact import Contact
-    from apps.core.doctype.data_import.data_import import DataImport
-    from apps.core.doctype.gender.gender import Gender
-    from apps.core.doctype.salutation.salutation import Salutation
     from apps.core.doctype.system_settings.system_settings import SystemSettings
     from apps.core.models import User
     from apps.crm.doctype.call_log.call_log import CRMCallLog
@@ -17,52 +10,48 @@ def _registry() -> dict:
     from apps.erpnext.registry import get_model
     from apps.crm.doctype.deal.deal import CRMDeal
     from apps.crm.doctype.deal_status.deal_status import CRMDealStatus
-    from apps.crm.doctype.industry.industry import CRMIndustry
     from apps.crm.doctype.lead.lead import CRMLead
-    from apps.crm.doctype.lead_source.lead_source import CRMLeadSource
     from apps.crm.doctype.lead_status.lead_status import CRMLeadStatus
     from apps.crm.doctype.holiday_list.holiday_list import CRMHolidayList
     from apps.crm.doctype.invitation.invitation import CRMInvitation
-    from apps.crm.doctype.lost_reason.lost_reason import CRMLostReason
     from apps.crm.doctype.note.note import FCRMNote
     from apps.crm.doctype.organization.organization import CRMOrganization
     from apps.crm.doctype.service_level_agreement.service_level_agreement import CRMServiceLevelAgreement
     from apps.crm.doctype.task.task import CRMTask
-    from apps.crm.doctype.territory.territory import CRMTerritory
 
     # BBS-ERP Models
     from apps.property.models import Mall, Building, Floor, Unit
     from apps.leasing.models import Tenant, Lease, LeaseDocument
     from apps.iot.models import IoTGateway, IoTDevice, RegisteredVehicle, ParkingSession, SecurityEvent
 
-    return {
+    registry = {
         "CRM Lead": CRMLead,
         "CRM Deal": CRMDeal,
         "CRM Organization": CRMOrganization,
-        "CRM Industry": CRMIndustry,
+        "CRM Industry": get_model("Industry Type"),
         "CRM Task": CRMTask,
         "FCRM Note": FCRMNote,
         "CRM Call Log": CRMCallLog,
-        "Contact": Contact,
+        "Contact": get_model("Contact"),
         "CRM Lead Status": CRMLeadStatus,
         "CRM Deal Status": CRMDealStatus,
-        "CRM Lead Source": CRMLeadSource,
-        "CRM Lost Reason": CRMLostReason,
+        "CRM Lead Source": get_model("UTM Source"),
+        "CRM Lost Reason": _canonical("Opportunity Lost Reason"),
         "CRM Invitation": CRMInvitation,
         "CRM Communication Status": CRMCommunicationStatus,
-        "CRM Territory": CRMTerritory,
-        "Salutation": Salutation,
-        "Gender": Gender,
+        "CRM Territory": get_model("Territory"),
+        "Salutation": _canonical("Salutation"),
+        "Gender": _canonical("Gender"),
         "Address": get_model("Address"),
         "User": User,
         "Currency": get_model("Currency"),
         "System Settings": SystemSettings,
-        "Assignment Rule": AssignmentRule,
+        "Assignment Rule": get_model("Assignment Rule"),
         "CRM Service Level Agreement": CRMServiceLevelAgreement,
         "CRM Holiday List": CRMHolidayList,
-        "Automation Flow": AutomationFlow,
-        "Background Task": BackgroundTask,
-        "Data Import": DataImport,
+        "Automation Flow": get_model("Automation Flow"),
+        "Background Task": get_model("Background Task"),
+        "Data Import": get_model("Data Import"),
         "Email Account": get_model("Email Account"),
         "Email Template": get_model("Email Template"),
         
@@ -80,6 +69,16 @@ def _registry() -> dict:
         "Parking Session": ParkingSession,
         "Security Event": SecurityEvent,
     }
+    return {label: model for label, model in registry.items() if model is not None}
+
+
+def _canonical(doctype):
+    from apps.erpnext.registry import get_model
+
+    try:
+        return get_model(doctype)
+    except LookupError:
+        return None
 
 
 def get_doctype_model(label: str):

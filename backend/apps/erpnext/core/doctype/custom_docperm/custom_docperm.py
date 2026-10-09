@@ -1,5 +1,5 @@
-from apps.frappe.model.document import Document
+from apps.frappe.core.doctype.custom_docperm.custom_docperm import *
+from apps.frappe.core.doctype.custom_docperm.custom_docperm import CustomDocPerm as CustomDocperm
+from apps.frappe.core.doctype.custom_docperm.custom_docperm import CustomDocPerm
 
-
-class CustomDocperm(Document):
-    doctype = 'Custom DocPerm'
+__all__ = ["CustomDocperm", "CustomDocPerm"]

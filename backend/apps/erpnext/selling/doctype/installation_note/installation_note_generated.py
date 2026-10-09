@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class InstallationNoteGenerated(FrappeModel):
@@ -17,7 +17,7 @@ class InstallationNoteGenerated(FrappeModel):
     territory = models.CharField(max_length=140, blank=True, null=True, default='')
     customer_group = models.CharField(max_length=140, blank=True, null=True, default='')
     inst_date = models.DateField(null=True, blank=True)
-    inst_time = models.TimeField(null=True, blank=True)
+    inst_time = FrappeTimeField(null=True, blank=True)
     status = models.CharField(max_length=140, blank=True, null=True, default='Draft')
     company = models.CharField(max_length=140, blank=True, null=True, default='')
     amended_from = models.CharField(max_length=140, blank=True, null=True, default='')

@@ -1,0 +1,4 @@
+from apps.frappe.automation.doctype.automation_event_subscription.automation_event_subscription import *
+from apps.frappe.automation.doctype.automation_event_subscription.automation_event_subscription import AutomationEventSubscription
+
+__all__ = ["AutomationEventSubscription"]

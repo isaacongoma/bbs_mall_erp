@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import keyword
 import re
 from pathlib import Path
 
@@ -72,7 +73,7 @@ PILOT_DOCTYPES = [
     "Company",
 ]
 
-HAND_DEFINED = {"Role", "Has Role", "User", "DocPerm", "User Permission", "DocField", "DocType", "DocShare", "Singles"}
+HAND_DEFINED = {"Role", "Has Role", "User", "DocPerm", "User Permission", "DocField", "DocType", "Singles"}
 
 FRAPPE_CORE_DOCTYPES = [
     "Role",
@@ -146,8 +147,8 @@ FIELD_TYPES = {
     "Long Int": "models.BigIntegerField(null=True, blank=True)",
     "Check": "models.SmallIntegerField(default={check_default})",
     "Date": "models.DateField(null=True, blank=True)",
-    "Datetime": "models.DateTimeField(null=True, blank=True)",
-    "Time": "models.TimeField(null=True, blank=True)",
+    "Datetime": "FrappeDateTimeField(null=True, blank=True)",
+    "Time": "FrappeTimeField(null=True, blank=True)",
 }
 
 SKIP_FIELD_TYPES = {
@@ -193,6 +194,7 @@ def vendor_bases():
         "erpnext": root / "vendor" / "erpnext" / "erpnext",
         "frappe": root / "vendor" / "frappe" / "frappe",
         "hrms": root / "vendor" / "hrms" / "hrms",
+        "reference": root / "docs" / "reference_doctypes",
     }
 
 
@@ -260,7 +262,7 @@ def generated_classes(target_root):
     for path in sorted(target_root.glob("*/doctype/*/*.json")):
         with path.open(encoding="utf-8") as handle:
             meta = json.load(handle)
-        if meta.get("issingle"):
+        if not isinstance(meta, dict) or "name" not in meta or meta.get("issingle"):
             continue
         doctype = meta["name"]
         if doctype in HAND_DEFINED:
@@ -350,7 +352,7 @@ class Command(BaseCommand):
                 continue
             fields = []
             base = "FrappeChildModel" if meta.get("istable") else "FrappeTreeModel" if meta.get("is_tree") else "FrappeModel"
-            imports = "from django.db import models\n\nfrom apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel\n\n\n"
+            imports = "from django.db import models\n\nfrom apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel\n\n\n"
             fields.append(imports)
             fields.append(f"class {class_name(doctype)}Generated({base}):\n")
             fields.append(f"    doctype = {doctype!r}\n")
@@ -359,7 +361,13 @@ class Command(BaseCommand):
             for field in meta.get("fields", []):
                 rendered = model_field(field)
                 if rendered:
-                    fields.append(f"    {field_name(field['fieldname'])} = {rendered}\n")
+                    attribute = field_name(field['fieldname'])
+                    if keyword.iskeyword(attribute):
+                        fields.append(f"    locals()[{attribute!r}] = {rendered}\n")
+                    else:
+                        fields.append(f"    {attribute} = {rendered}\n")
+            if meta.get("track_seen"):
+                fields.append("    _seen = models.TextField(null=True, blank=True)\n")
             fields.append("\n    class Meta:\n")
             fields.append("        abstract = True\n")
             generated = out_dir / f"{dt_module}_generated.py"

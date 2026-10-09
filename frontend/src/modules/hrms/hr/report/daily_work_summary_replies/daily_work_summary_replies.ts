@@ -1,0 +1,19 @@
+import { __, frappe } from '@/shared/frappe'
+
+frappe.query_reports['Daily Work Summary Replies'] = {
+  filters: [
+    {
+      fieldname: 'group',
+      label: __('Group'),
+      fieldtype: 'Link',
+      options: 'Daily Work Summary Group',
+      reqd: 1,
+    },
+    {
+      fieldname: 'range',
+      label: __('Date Range'),
+      fieldtype: 'DateRange',
+      reqd: 1,
+    },
+  ],
+}

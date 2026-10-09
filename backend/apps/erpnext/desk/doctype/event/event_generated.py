@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class EventGenerated(FrappeModel):
@@ -10,8 +10,8 @@ class EventGenerated(FrappeModel):
     event_type = models.CharField(max_length=140, blank=True, null=True, default='')
     send_reminder = models.SmallIntegerField(default=1)
     repeat_this_event = models.SmallIntegerField(default=0)
-    starts_on = models.DateTimeField(null=True, blank=True)
-    ends_on = models.DateTimeField(null=True, blank=True)
+    starts_on = FrappeDateTimeField(null=True, blank=True)
+    ends_on = FrappeDateTimeField(null=True, blank=True)
     all_day = models.SmallIntegerField(default=0)
     repeat_on = models.CharField(max_length=140, blank=True, null=True, default='')
     repeat_till = models.DateField(null=True, blank=True)
@@ -37,6 +37,7 @@ class EventGenerated(FrappeModel):
     reference_docname = models.CharField(max_length=140, blank=True, null=True, default='')
     location = models.CharField(max_length=140, blank=True, null=True, default='')
     attending = models.CharField(max_length=140, blank=True, null=True, default='')
+    _seen = models.TextField(null=True, blank=True)
 
     class Meta:
         abstract = True

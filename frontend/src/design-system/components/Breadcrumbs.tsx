@@ -18,15 +18,17 @@ export interface BreadcrumbsProps {
   prefix?: (props: { item: BreadcrumbItem }) => ReactNode
   suffix?: (props: { item: BreadcrumbItem }) => ReactNode
   className?: string
+  regularParents?: boolean
 }
 
-const crumbClasses = (last: boolean) =>
+const crumbClasses = (last: boolean, regularParents = false) =>
   cn(
-    'flex items-center rounded px-0.5 py-1 text-lg-medium',
+    'flex items-center rounded px-0.5 py-1',
+    !regularParents ? 'text-lg-medium' : last ? 'text-lg font-[500]' : 'text-lg font-[420]',
     last ? 'min-w-0 text-ink-gray-9' : 'text-ink-gray-5 hover:text-ink-gray-7',
   )
 
-export function Breadcrumbs({ items: rawItems, prefix, suffix, className }: BreadcrumbsProps) {
+export function Breadcrumbs({ items: rawItems, prefix, suffix, className, regularParents }: BreadcrumbsProps) {
   const navigate = useNavigate()
   const containerRef = useRef<HTMLDivElement | null>(null)
   const [overflowed, setOverflowed] = useState(false)
@@ -91,15 +93,15 @@ export function Breadcrumbs({ items: rawItems, prefix, suffix, className }: Brea
           return (
             <span key={item.label} className="contents">
               {item.route !== undefined ? (
-                <Link to={item.route} onClick={() => item.onClick?.()} className={crumbClasses(last)}>
+                <Link to={item.route} onClick={() => item.onClick?.()} className={crumbClasses(last, regularParents)}>
                   {content}
                 </Link>
               ) : item.href ? (
-                <a href={item.href} onClick={() => item.onClick?.()} className={crumbClasses(last)}>
+                <a href={item.href} onClick={() => item.onClick?.()} className={crumbClasses(last, regularParents)}>
                   {content}
                 </a>
               ) : (
-                <button type="button" onClick={() => item.onClick?.()} className={crumbClasses(last)}>
+                <button type="button" onClick={() => item.onClick?.()} className={crumbClasses(last, regularParents)}>
                   {content}
                 </button>
               )}

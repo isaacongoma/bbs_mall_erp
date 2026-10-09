@@ -181,101 +181,6 @@ def resolve_print_format(print_format_name: "str | None", meta: "Meta") -> tuple
     return print_format, uses_beta_renderer(print_format)
 
 
-def get_rendered_template(
-    doc: "Document",
-    print_format: "PrintFormat" | None = None,
-    meta: "Meta" = None,
-    no_letterhead: bool | None = None,
-    letterhead: str | None = None,
-    trigger_print: bool = False,
-    settings: dict | None = None,
-) -> str:
-    validate_print_permission(doc)
-
-    print_settings = frappe.get_single("Print Settings").as_dict()
-    print_settings.update(get_allowed_print_settings_override(doc, settings))
-
-    if isinstance(no_letterhead, str):
-        no_letterhead = cint(no_letterhead)
-
-    elif no_letterhead is None:
-        no_letterhead = not cint(print_settings.with_letterhead)
-
-    validate_print_for_docstatus(doc, print_settings)
-
-    run_before_print(doc, print_settings)
-
-    if not hasattr(doc, "print_heading"):
-        doc.print_heading = None
-    if not hasattr(doc, "sub_heading"):
-        doc.sub_heading = None
-
-    if not meta:
-        meta = frappe.get_meta(doc.doctype)
-
-    jenv = frappe.get_jenv()
-
-    if not print_format:
-        frappe.throw(
-            _("Pass a print format, or use frappe.get_print() for the default print."),
-            frappe.TemplateNotFoundError,
-        )
-
-    doc.flags.absolute_value = print_format.absolute_value
-
-    template = None
-    if hook_func := frappe.get_hooks("get_print_format_template"):
-        template = frappe.call(hook_func[-1], jenv=jenv, print_format=print_format)
-    if not template:
-        template = jenv.from_string(get_print_format(doc.doctype, print_format))
-
-    letter_head = frappe._dict(get_letter_head(doc, no_letterhead, letterhead) or {})
-
-    if letter_head.content:
-        letter_head.content = frappe.utils.jinja.render_template(letter_head.content, {"doc": doc.as_dict()})
-        if letter_head.custom_css:
-            letter_head.content += f"""
-            <style>
-                {letter_head.custom_css}
-            </style>
-            """
-        if letter_head.header_script:
-            letter_head.content += f"""
-                <script>
-                    {letter_head.header_script}
-                </script>
-            """
-
-    if letter_head.footer:
-        letter_head.footer = frappe.utils.jinja.render_template(letter_head.footer, {"doc": doc.as_dict()})
-        if letter_head.footer_script:
-            letter_head.footer += f"""
-                <script>
-                    {letter_head.footer_script}
-                </script>
-            """
-
-    convert_markdown(doc)
-
-    args = {
-        "doc": doc,
-        "meta": frappe.get_meta(doc.doctype),
-        "layout": make_layout(doc, meta),
-        "no_letterhead": no_letterhead,
-        "trigger_print": cint(trigger_print),
-        "letter_head": letter_head.content,
-        "footer": letter_head.footer,
-        "print_settings": print_settings,
-    }
-    hook_func = frappe.get_hooks("pdf_body_html")
-    html = frappe.get_attr(hook_func[-1])(jenv=jenv, template=template, print_format=print_format, args=args)
-
-    if cint(trigger_print):
-        html += trigger_print_script
-
-    return html
-
-
 def set_link_titles(doc: "Document") -> None:
     if not doc.get("__link_titles"):
         setattr(doc, "__link_titles", {})
@@ -671,32 +576,6 @@ def get_print_style(
     return css
 
 
-def get_font(
-    print_settings: "PrintSettings", print_format: "PrintFormat" | None = None, for_legacy=False
-) -> str:
-    default = """
-    "InterVariable", "Inter", -apple-system", "BlinkMacSystemFont",
-        "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
-        "Helvetica Neue", sans-serif;
-    """
-    if for_legacy:
-        return default
-
-    font = None
-    if print_format:
-        if print_format.font and print_format.font != "Default":
-            font = f"{print_format.font}, sans-serif"
-
-    if not font:
-        if print_settings.font and print_settings.font != "Default":
-            font = f"{print_settings.font}, sans-serif"
-
-        else:
-            font = default
-
-    return font
-
-
 def get_visible_columns(data: list, table_meta: "Meta", df: "DocField") -> list["DocField"]:
     """Return list of visible columns based on print_hide and if all columns have value."""
     columns = []
@@ -768,3 +647,124 @@ setTimeout(function() {
 }, 5000);
 </script>
 """
+
+
+def get_rendered_template(
+    doc: "Document",
+    print_format: "PrintFormat" | None = None,
+    meta: "Meta" = None,
+    no_letterhead: bool | None = None,
+    letterhead: str | None = None,
+    trigger_print: bool = False,
+    settings: dict | None = None,
+) -> str:
+    validate_print_permission(doc)
+
+    print_settings = frappe.get_single("Print Settings").as_dict()
+    print_settings.update(get_allowed_print_settings_override(doc, settings))
+
+    if isinstance(no_letterhead, str):
+        no_letterhead = cint(no_letterhead)
+
+    elif no_letterhead is None:
+        no_letterhead = not cint(print_settings.with_letterhead)
+
+    validate_print_for_docstatus(doc, print_settings)
+
+    run_before_print(doc, print_settings)
+
+    if not hasattr(doc, "print_heading"):
+        doc.print_heading = None
+    if not hasattr(doc, "sub_heading"):
+        doc.sub_heading = None
+
+    if not meta:
+        meta = frappe.get_meta(doc.doctype)
+
+    jenv = frappe.get_jenv()
+
+    if not print_format:
+        frappe.throw(
+            _("Pass a print format, or use frappe.get_print() for the default print."),
+            frappe.TemplateNotFoundError,
+        )
+
+    doc.flags.absolute_value = print_format.absolute_value
+
+    template = None
+    if hook_func := frappe.get_hooks("get_print_format_template"):
+        template = frappe.call(hook_func[-1], jenv=jenv, print_format=print_format)
+    if not template:
+        template = jenv.from_string(get_print_format(doc.doctype, print_format))
+
+    letter_head = frappe._dict(get_letter_head(doc, no_letterhead, letterhead) or {})
+
+    if letter_head.content:
+        letter_head.content = frappe.utils.jinja.render_template(letter_head.content, {"doc": doc.as_dict()})
+        if letter_head.custom_css:
+            letter_head.content += f"""
+            <style>
+                {letter_head.custom_css}
+            </style>
+            """
+        if letter_head.header_script:
+            letter_head.content += f"""
+                <script>
+                    {letter_head.header_script}
+                </script>
+            """
+
+    if letter_head.footer:
+        letter_head.footer = frappe.utils.jinja.render_template(letter_head.footer, {"doc": doc.as_dict()})
+        if letter_head.footer_script:
+            letter_head.footer += f"""
+                <script>
+                    {letter_head.footer_script}
+                </script>
+            """
+
+    convert_markdown(doc)
+
+    args = {
+        "doc": doc,
+        "meta": frappe.get_meta(doc.doctype),
+        "layout": make_layout(doc, meta),
+        "no_letterhead": no_letterhead,
+        "trigger_print": cint(trigger_print),
+        "letter_head": letter_head.content,
+        "footer": letter_head.footer,
+        "print_settings": print_settings,
+    }
+    hook_func = frappe.get_hooks("pdf_body_html")
+    html = frappe.get_attr(hook_func[-1])(jenv=jenv, template=template, print_format=print_format, args=args)
+
+    if cint(trigger_print):
+        html += trigger_print_script
+
+    return html
+
+
+def get_font(
+    print_settings: "PrintSettings", print_format: "PrintFormat" | None = None, for_legacy=False
+) -> str:
+    default = """
+    "InterVariable", "Inter", -apple-system", "BlinkMacSystemFont",
+        "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
+        "Helvetica Neue", sans-serif;
+    """
+    if for_legacy:
+        return default
+
+    font = None
+    if print_format:
+        if print_format.font and print_format.font != "Default":
+            font = f"{print_format.font}, sans-serif"
+
+    if not font:
+        if print_settings.font and print_settings.font != "Default":
+            font = f"{print_settings.font}, sans-serif"
+
+        else:
+            font = default
+
+    return font

@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class ProductionPlanScheduleGenerated(FrappeModel):
@@ -16,8 +16,8 @@ class ProductionPlanScheduleGenerated(FrappeModel):
     operation = models.CharField(max_length=140, blank=True, null=True, default='')
     workstation = models.CharField(max_length=140, blank=True, null=True, default='')
     supplier = models.CharField(max_length=140, blank=True, null=True, default='')
-    from_time = models.DateTimeField(null=True, blank=True)
-    to_time = models.DateTimeField(null=True, blank=True)
+    from_time = FrappeDateTimeField(null=True, blank=True)
+    to_time = FrappeDateTimeField(null=True, blank=True)
     duration_mins = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
 
     class Meta:

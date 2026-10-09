@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class ProductionPlanSubAssemblyItemGenerated(FrappeChildModel):
@@ -21,7 +21,7 @@ class ProductionPlanSubAssemblyItemGenerated(FrappeChildModel):
     fg_warehouse = models.CharField(max_length=140, blank=True, null=True, default='')
     type_of_manufacturing = models.CharField(max_length=140, blank=True, null=True, default='In House')
     supplier = models.CharField(max_length=140, blank=True, null=True, default='')
-    schedule_date = models.DateTimeField(null=True, blank=True)
+    schedule_date = FrappeDateTimeField(null=True, blank=True)
     actual_qty = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     projected_qty = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     wo_produced_qty = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
@@ -30,7 +30,7 @@ class ProductionPlanSubAssemblyItemGenerated(FrappeChildModel):
     ordered_qty = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     sales_order = models.CharField(max_length=140, blank=True, null=True, default='')
     sales_order_item = models.CharField(max_length=140, blank=True, null=True, default='')
-    schedule_end_date = models.DateTimeField(null=True, blank=True)
+    schedule_end_date = FrappeDateTimeField(null=True, blank=True)
 
     class Meta:
         abstract = True

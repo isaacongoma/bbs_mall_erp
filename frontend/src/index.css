@@ -1,3 +1,7 @@
 @import './design-system/styles/fonts.css';
 @import './design-system/styles/theme.css';
 @source './';
+@plugin "@iconify/tailwind4" {
+  prefixes: lucide;
+  icon-selector: ".{prefix}-{name}";
+}

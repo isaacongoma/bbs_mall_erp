@@ -46,13 +46,13 @@ export function cstr(s: unknown): string {
   return `${s}`
 }
 
-export function cint(v: unknown, def?: number): number {
+export function cint(v: unknown, def?: number | null): number {
   if (v === true) return 1
   if (v === false) return 0
   let text = `${v}`
   if (text !== '0') text = lstrip(text, ['0'])
   const parsed = parseInt(text)
-  if (Number.isNaN(parsed)) return def === undefined ? 0 : def
+  if (Number.isNaN(parsed)) return (def === undefined ? 0 : def) as number
   return parsed
 }
 
@@ -60,7 +60,7 @@ function getNumberFormat(format: string | null = null): string {
   return format || getSysDefaults().number_format || '#,###.##'
 }
 
-function getNumberFormatInfo(format: string): NumberFormatInfo {
+export function getNumberFormatInfo(format: string): NumberFormatInfo {
   const base = NUMBER_FORMAT_INFO[format] ?? { decimalStr: '.', groupSep: ',' }
   const precision = format.split(base.decimalStr).slice(1)[0]?.length ?? 0
   return { ...base, precision }

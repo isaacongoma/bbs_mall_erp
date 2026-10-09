@@ -4,7 +4,6 @@ These functions build related documents (Work Order, Stock Entry, Job Card,
 Pick List) from a Work Order. They were extracted from work_order.py to slim
 the controller; work_order.py re-exports them for backward compatibility.
 """
-from __future__ import annotations
 
 import json
 import math

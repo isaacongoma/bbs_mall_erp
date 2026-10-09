@@ -835,6 +835,7 @@ class File(Document):
         if isinstance(self._content, str):
             self._content = self._content.encode()
         self.check_content()
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
         with open(file_path, "wb+") as f:
             f.write(self._content)
             os.fsync(f.fileno())
@@ -1149,23 +1150,6 @@ def get_permission_query_conditions(user: str | None = None) -> str:
     return "(" + " OR ".join(conditions) + ")"
 
 
-def _scoped_attachment_condition(doctype: str, user: str, exists_condition: str) -> str:
-    """Build `(attached_to_doctype = X AND (EXISTS(...) OR individually shared))`."""
-    table = get_table_name(doctype, wrap_in_backticks=True)
-    shared_names = frappe.share.get_shared(doctype, user)
-    shared_condition = ""
-    if shared_names:
-        shared_list = ", ".join(frappe.db.escape(name, percent=False) for name in shared_names)
-        shared_condition = f" OR `tabFile`.`attached_to_name` IN ({shared_list})"
-
-    return f"""(`tabFile`.`attached_to_doctype` = {frappe.db.escape(doctype)}
-        AND (
-            EXISTS (
-                SELECT 1 FROM {table}
-                WHERE {table}.`name` = `tabFile`.`attached_to_name`
-                AND {exists_condition}
-            ){shared_condition}
-        ))"""
 
 
 def _split_doctypes_by_owner_constraint(doctypes, user):
@@ -1249,3 +1233,22 @@ def _get_user_permission_field_conditions(doctype, user_permissions, strict_user
 
 
 from frappe.core.api.file import *
+
+
+def _scoped_attachment_condition(doctype: str, user: str, exists_condition: str) -> str:
+    """Build `(attached_to_doctype = X AND (EXISTS(...) OR individually shared))`."""
+    table = get_table_name(doctype, wrap_in_backticks=True)
+    shared_names = frappe.share.get_shared(doctype, user)
+    shared_condition = ""
+    if shared_names:
+        shared_list = ", ".join(frappe.db.escape(name, percent=False) for name in shared_names)
+        shared_condition = f" OR `tabFile`.`attached_to_name` IN ({shared_list})"
+
+    return f"""(`tabFile`.`attached_to_doctype` = {frappe.db.escape(doctype)}
+        AND (
+            EXISTS (
+                SELECT 1 FROM {table}
+                WHERE {table}.`name` = `tabFile`.`attached_to_name`
+                AND {exists_condition}
+            ){shared_condition}
+        ))"""

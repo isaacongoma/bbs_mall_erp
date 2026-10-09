@@ -1,14 +1,11 @@
-# Ported from crm/api/form.py (frappe/crm, AGPL-3.0). Storage/submission are handled by this
-# port's own WebForm model (a CRM-scoped stand-in for Frappe's generic Web Form doctype -- see
-# web_form.py's module docstring) instead of delegating to the framework's Web Form engine.
 from __future__ import annotations
 
 import json
 
 from django.core.exceptions import ValidationError
-from django.utils import timezone
 
-from apps.core.doctype.web_form.web_form import ALLOWED_DOCTYPES, FORM_MODULE, WebForm, WebFormField
+import frappe
+from apps.core.doctype.web_form.web_form import ALLOWED_DOCTYPES, FORM_MODULE
 
 ALLOWED_DOCTYPE_LABELS = [c[0] for c in ALLOWED_DOCTYPES]
 
@@ -37,9 +34,9 @@ SEED_LAYOUT = {
 
 
 def ensure_form_source() -> str:
-    from apps.crm.doctype.lead_source.lead_source import CRMLeadSource
+    from apps.erpnext.registry import get_model
 
-    obj, _ = CRMLeadSource.objects.get_or_create(pk="Web Form")
+    obj, _ = get_model("UTM Source").objects.get_or_create(pk="Web Form")
     return obj.pk
 
 
@@ -52,9 +49,9 @@ def _seeded_visible_fieldnames(document_type: str) -> set:
 
 
 def guest_can_select(doctype: str) -> bool:
-    from apps.core.doctype.web_form.web_form import GuestLinkAccess
-
-    return GuestLinkAccess.objects.filter(doctype_label=doctype, allowed=True).exists()
+    return bool(
+        frappe.db.exists("Custom DocPerm", {"parent": doctype, "role": "Guest", "permlevel": 0, "select": 1})
+    )
 
 
 def _link_target_doctypes() -> set:
@@ -168,36 +165,43 @@ def link_field_guest_access(doctype: str) -> dict:
 
 
 def grant_guest_link_access(doctype: str) -> dict:
-    from apps.core.doctype.web_form.web_form import GuestLinkAccess
+    from frappe.permissions import add_permission, update_permission_property
 
     if doctype not in _link_target_doctypes():
         raise ValueError(f"{doctype} isn't a linkable field on a CRM form.")
-    GuestLinkAccess.objects.update_or_create(doctype_label=doctype, defaults={"allowed": True})
+    add_permission(doctype, "Guest", 0)
+    update_permission_property(doctype, "Guest", 0, "select", 1)
     return {"doctype": doctype, "guest_can_select": True}
 
 
 def list_forms() -> list[dict]:
-    rows = WebForm.objects.filter(module=FORM_MODULE, doc_type__in=ALLOWED_DOCTYPE_LABELS).order_by("-modified")
+    rows = frappe.get_all(
+        "Web Form",
+        filters={"module": FORM_MODULE, "doc_type": ("in", ALLOWED_DOCTYPE_LABELS)},
+        fields=["name", "title", "route", "doc_type", "crm_published", "modified"],
+        order_by="modified desc",
+        limit_page_length=0,
+    )
     return [
         {
-            "name": w.pk, "title": w.title, "route": w.route, "document_type": w.doc_type,
-            "published": w.crm_published, "modified": w.modified,
+            "name": w.name, "title": w.title, "route": w.route, "document_type": w.doc_type,
+            "published": bool(w.crm_published), "modified": w.modified,
         }
         for w in rows
     ]
 
 
-def _get_crm_form(name: str) -> WebForm:
+def _get_crm_form(name: str):
     try:
-        doc = WebForm.objects.get(pk=name)
-    except WebForm.DoesNotExist as exc:
+        doc = frappe.get_doc("Web Form", name)
+    except frappe.DoesNotExistError as exc:
         raise ValueError("Not a CRM form") from exc
     if doc.module != FORM_MODULE or doc.doc_type not in ALLOWED_DOCTYPE_LABELS:
         raise ValueError("Not a CRM form")
     return doc
 
 
-def _load_hidden_fields(doc: WebForm) -> list[dict]:
+def _load_hidden_fields(doc) -> list[dict]:
     try:
         return json.loads(doc.crm_hidden_defaults or "[]")
     except Exception:
@@ -207,8 +211,8 @@ def _load_hidden_fields(doc: WebForm) -> list[dict]:
 def get_form_config(name: str) -> dict:
     doc = _get_crm_form(name)
     return {
-        "name": doc.pk, "title": doc.title, "route": doc.route, "document_type": doc.doc_type,
-        "published": doc.crm_published, "submit_button_label": doc.button_label or "Submit",
+        "name": doc.name, "title": doc.title, "route": doc.route, "document_type": doc.doc_type,
+        "published": bool(doc.crm_published), "submit_button_label": doc.button_label or "Submit",
         "description": doc.introduction_text or "", "success_message": doc.success_message or "",
         "redirect_url": doc.success_url or "", "allowed_embedding_domains": doc.allowed_embedding_domains or "",
         "fields": [
@@ -218,7 +222,7 @@ def get_form_config(name: str) -> dict:
                 "depends_on": f.depends_on, "mandatory_depends_on": f.mandatory_depends_on,
                 "read_only_depends_on": f.read_only_depends_on,
             }
-            for f in doc.field_rows.all()
+            for f in doc.web_form_fields
         ],
         "hidden_fields": _load_hidden_fields(doc),
     }
@@ -267,7 +271,9 @@ def save_form(name: str | None, form: dict, user) -> dict:
     if form.get("document_type") not in ALLOWED_DOCTYPE_LABELS:
         raise ValueError(f"Forms can only map to: {', '.join(ALLOWED_DOCTYPE_LABELS)}")
 
-    doc = _get_crm_form(name) if name else WebForm(owner=user)
+    doc = _get_crm_form(name) if name else frappe.new_doc("Web Form")
+    if not name:
+        doc.owner = user.email
 
     doc.title = form.get("title") or ""
     doc.route = form.get("route") or ""
@@ -277,29 +283,31 @@ def save_form(name: str | None, form: dict, user) -> dict:
     doc.success_message = form.get("success_message") or ""
     doc.success_url = form.get("redirect_url") or ""
     doc.allowed_embedding_domains = form.get("allowed_embedding_domains") or ""
-    doc.crm_published = bool(form.get("published"))
+    doc.crm_published = 1 if form.get("published") else 0
     doc.published = doc.crm_published
-    doc.login_required = False
-    doc.allow_multiple = True
-    doc.is_standard = False
+    doc.login_required = 0
+    doc.allow_multiple = 1
+    doc.is_standard = 0
     doc.module = FORM_MODULE
 
     fields = form.get("fields")
     if not name and not fields:
         fields = _seed_visible_fields(form["document_type"])
 
-    doc.save()
-
     if fields is not None:
         fields = _validated_visible_fields(form["document_type"], fields)
-        doc.field_rows.all().delete()
-        for i, f in enumerate(fields):
-            WebFormField.objects.create(
-                parent=doc, idx=i + 1, fieldname=f.get("fieldname") or "", label=f.get("label") or "",
-                fieldtype=f.get("fieldtype"), options=f.get("options") or "", reqd=bool(f.get("reqd")),
-                placeholder=f.get("placeholder") or "", description=f.get("field_description") or "",
-                depends_on=f.get("depends_on") or "", mandatory_depends_on=f.get("mandatory_depends_on") or "",
-                read_only_depends_on=f.get("read_only_depends_on") or "",
+        doc.set("web_form_fields", [])
+        for f in fields:
+            doc.append(
+                "web_form_fields",
+                {
+                    "fieldname": f.get("fieldname") or "", "label": f.get("label") or "",
+                    "fieldtype": f.get("fieldtype"), "options": f.get("options") or "",
+                    "reqd": 1 if f.get("reqd") else 0, "placeholder": f.get("placeholder") or "",
+                    "description": f.get("field_description") or "", "depends_on": f.get("depends_on") or "",
+                    "mandatory_depends_on": f.get("mandatory_depends_on") or "",
+                    "read_only_depends_on": f.get("read_only_depends_on") or "",
+                },
             )
 
     hidden = form.get("hidden_fields")
@@ -309,27 +317,36 @@ def save_form(name: str | None, form: dict, user) -> dict:
     if doc.crm_published:
         _assert_hidden_defaults_set(hidden)
     doc.crm_hidden_defaults = json.dumps(hidden) if hidden else ""
-    doc.save()
+    _persist(doc)
 
-    return {"name": doc.pk, "route": doc.route}
+    return {"name": doc.name, "route": doc.route}
+
+
+def _persist(doc):
+    doc.flags.ignore_permissions = True
+    doc.flags.ignore_links = True
+    doc.flags.ignore_validate = True
+    doc.flags.ignore_mandatory = True
+    doc.save()
 
 
 def set_published(name: str, published: bool):
     doc = _get_crm_form(name)
     if published:
         _assert_hidden_defaults_set(_load_hidden_fields(doc))
-    doc.crm_published = bool(published)
+    doc.crm_published = 1 if published else 0
     doc.published = doc.crm_published
-    doc.save()
+    _persist(doc)
 
 
 def delete_form(name: str):
-    _get_crm_form(name).delete()
+    _get_crm_form(name)
+    frappe.delete_doc("Web Form", name, ignore_permissions=True, force=True)
 
 
 def test_submit_form(name: str, values: dict) -> dict:
     doc = _get_crm_form(name)
-    for f in doc.field_rows.all():
+    for f in doc.web_form_fields:
         if f.fieldtype in ("Section Break", "Column Break"):
             continue
         value = values.get(f.fieldname)
@@ -342,10 +359,10 @@ def test_submit_form(name: str, values: dict) -> dict:
 # crm/api/form.py's enrich_form_submission, called from apps/core/doctype/web_form/public_views.py) --
 
 def apply_hidden_defaults(doc, web_form_name: str):
-    form = WebForm.objects.filter(pk=web_form_name).values("doc_type", "crm_hidden_defaults").first()
-    if not form or form["doc_type"] not in ALLOWED_DOCTYPE_LABELS or form["doc_type"] != doc.doctype_label:
+    form = frappe.db.get_value("Web Form", web_form_name, ["doc_type", "crm_hidden_defaults"], as_dict=True)
+    if not form or form.doc_type not in ALLOWED_DOCTYPE_LABELS or form.doc_type != doc.doctype_label:
         return
-    raw = form["crm_hidden_defaults"]
+    raw = form.crm_hidden_defaults
     if not raw:
         return
     try:

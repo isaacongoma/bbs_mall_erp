@@ -87,18 +87,6 @@ def Table(*args, **kwargs):
 	return frappe.qb.Table(*args, **kwargs)
 
 
-def execute_query(query, *args, **kwargs):
-    query, params = prepare_query(query)
-    return frappe.local.db.sql(query, params, *args, **kwargs)
-
-
-def prepare_query(query):
-    param_collector = NamedParameterWrapper()
-    query = query.get_sql(param_wrapper=param_collector)
-    assert isinstance(query, str), "prepared query must be a SQL string"
-    return query, param_collector.parameters
-
-
 def patch_query_execute():
 	"""Patch the Query Builder with helper execute method
 	This excludes the use of `frappe.db.sql` method while
@@ -182,3 +170,169 @@ def patch_all():
 	patch_get_query()
 	patch_like_operators()
 	patch_regex_operator()
+
+
+def execute_query(query, *args, **kwargs):
+    dt = query.__dict__.get("_doctype")
+    parent_dt = query.__dict__.get("_parent_doctype")
+    fields = query.__dict__.get("_fields_list", [])
+    child_queries = query._child_queries
+    name_field_injected = query.__dict__.get("_name_field_injected", False)
+    query, params = prepare_query(query)
+    if frappe.local.db.db_type == "sqlite":
+        kwargs["_skip_sqlite_transpilation"] = True
+    result = frappe.local.db.sql(query, params, *args, **kwargs)
+
+    if child_queries and isinstance(child_queries, list) and result:
+        execute_child_queries(child_queries, result)
+        if dt:
+            mask_child_query_fields(child_queries, result)
+
+    if result and dt and fields:
+        as_dict = bool(kwargs.get("as_dict"))
+        result = mask_fields(
+            dt, fields, result, as_dict=as_dict, pluck=kwargs.get("pluck", False), parent_doctype=parent_dt
+        )
+
+    if name_field_injected and result and not kwargs.get("pluck"):
+        if isinstance(result[0], dict):
+            for row in result:
+                row.pop("name", None)
+        else:
+            if isinstance(result, tuple):
+                result = tuple(row[:-1] for row in result)
+            else:
+                result = [row[:-1] for row in result]
+
+    return result
+
+
+def prepare_query(query):
+    from frappe.utils.safe_exec import SERVER_SCRIPT_FILE_PREFIX, check_safe_sql_query
+
+    param_collector = NamedParameterWrapper()
+    query = query.get_sql(param_wrapper=param_collector)
+    if frappe.local.flags.get("in_safe_exec", False):
+        if not check_safe_sql_query(query, throw=False):
+            callstack = inspect.stack()
+
+
+            if len(callstack) >= 3 and SERVER_SCRIPT_FILE_PREFIX in callstack[2].filename:
+                raise frappe.PermissionError("Only SELECT SQL allowed in scripting")
+
+    if frappe.local.flags.get("in_render_safe_exec", False):
+        check_safe_sql_query(query, throw=True)
+
+    assert isinstance(query, str), "prepared query must be a SQL string"
+    return query, param_collector.parameters
+
+
+def mask_fields(
+    doctype: str,
+    fields: list[Any],
+    result: list[dict] | list[tuple],
+    as_dict: bool = True,
+    pluck: bool = False,
+    parent_doctype: str | None = None,
+) -> list[dict] | list[tuple]:
+    """Mask fields in the result based on the doctype's masked fields.
+
+    Args:
+        doctype: Name of the DocType being queried
+        fields: List of field objects from the query
+        result: Query results as list of dicts or tuples
+        as_dict: Whether results are dictionaries (True) or tuples (False)
+        pluck: Whether results were plucked into a flat list of scalar values
+        parent_doctype: Parent DocType when querying a child table, used to
+            resolve role permissions for the `mask` permission type
+    Returns:
+        Result with masked field values applied based on user permissions
+    """
+    from frappe.database.query import CORE_DOCTYPES
+    from frappe.model.utils.mask import mask_dict_results, mask_list_results, mask_pluck_results
+
+    if doctype in CORE_DOCTYPES:
+        return result
+
+    masked_fields = frappe.get_meta(doctype).get_masked_fields(
+        parenttype=parent_doctype
+    ) + get_masked_joined_fields(doctype, fields)
+
+    if not masked_fields:
+        return result
+
+    if pluck:
+        return mask_pluck_results(result, masked_fields, fields)
+
+    if not as_dict:
+        field_index_map = {}
+        for idx, field in enumerate(fields):
+            if alias := getattr(field, "alias", None):
+                field_index_map[alias] = idx
+            elif name := getattr(field, "name", None) or getattr(field, "fieldname", None):
+                field_index_map[name] = idx
+
+        return mask_list_results(result, masked_fields, field_index_map)
+
+    return mask_dict_results(result, masked_fields)
+
+
+def mask_child_query_fields(child_queries, result):
+    if not isinstance(result[0], dict):
+        return
+
+    from frappe.database.query import CORE_DOCTYPES
+    from frappe.model.utils.mask import mask_dict_results
+
+    for child_query in child_queries:
+        if child_query.doctype in CORE_DOCTYPES:
+            continue
+        masked_fields = frappe.get_meta(child_query.doctype).get_masked_fields(
+            parenttype=child_query.parent_doctype
+        )
+        if not masked_fields:
+            continue
+        for row in result:
+            mask_dict_results(row.get(child_query.fieldname) or [], masked_fields)
+
+
+def execute_child_queries(queries, result):
+    if not isinstance(result[0], dict) or not result[0].name:
+        return
+    parent_names = [d.name for d in result]
+    for child_query in queries:
+        data = child_query.get_query(parent_names).run(as_dict=1)
+        for row in result:
+            row[child_query.fieldname] = []
+            for d in data:
+                if str(d.parent) == str(row.name) and d.parentfield == child_query.fieldname:
+                    if "parent" not in child_query.fields:
+                        del d["parent"]
+                    if "parentfield" not in child_query.fields:
+                        del d["parentfield"]
+                    row[child_query.fieldname].append(d)
+
+
+def get_masked_joined_fields(doctype: str, fields: list[Any]) -> list[Any]:
+    """Get masked fields of the doctypes joined in through dot notation (`items.rate`)."""
+    from frappe.database.query import CORE_DOCTYPES, DynamicTableField
+    from frappe.model.utils.mask import as_aliased_field
+
+    masked_fields = []
+    lookups = {}
+
+    for field in fields:
+        if not isinstance(field, DynamicTableField) or field.doctype in CORE_DOCTYPES:
+            continue
+
+        if field.doctype not in lookups:
+            meta = frappe.get_meta(field.doctype)
+            parenttype = doctype if meta.istable else None
+            lookups[field.doctype] = {
+                df.fieldname: df for df in meta.get_masked_fields(parenttype=parenttype)
+            }
+
+        if df := lookups[field.doctype].get(field.fieldname):
+            masked_fields.append(as_aliased_field(df, field.alias))
+
+    return masked_fields

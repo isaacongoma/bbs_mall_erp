@@ -1,0 +1,715 @@
+import json
+import time
+from contextlib import contextmanager
+from types import SimpleNamespace
+from unittest.mock import patch
+from urllib.parse import parse_qs, urlparse
+
+from werkzeug.http import parse_cookie
+
+import frappe
+import frappe.exceptions
+from frappe.client import set_value
+from frappe.core.doctype.user.user import (
+    User,
+    handle_password_test_fail,
+    reset_password,
+    rewrite_owner_fields,
+    sign_up,
+    test_password_strength,
+    update_password,
+    verify_password,
+)
+from frappe.desk.notifications import extract_mentions
+from frappe.frappeclient import FrappeClient
+from frappe.model.delete_doc import delete_doc
+from frappe.tests import IntegrationTestCase
+from frappe.tests.classes.context_managers import change_settings
+from frappe.tests.test_api import FrappeAPITestCase
+from frappe.tests.utils import toggle_test_mode
+from frappe.tests.utils.test_capabilities import TestService, requires_test_service
+from frappe.utils import add_to_date, get_url, now_datetime
+from frappe.utils.data import orjson_dumps
+from frappe.www.login import sanitize_redirect
+
+user_module = frappe.core.doctype.user.user
+
+
+class TestUser(IntegrationTestCase):
+    def tearDown(self):
+        frappe.db.set_single_value("System Settings", "enable_password_policy", 0)
+        frappe.db.set_single_value("System Settings", "minimum_password_score", "")
+        frappe.db.set_single_value("System Settings", "password_reset_limit", 3)
+        frappe.set_user("Administrator")
+
+    @staticmethod
+    def reset_password(user) -> str:
+        link = user._reset_password()
+        return parse_qs(urlparse(link).query)["key"][0]
+
+    def test_my_space_is_offered_only_when_asked_for(self):
+        """The user menu's way into the Private shell is off until somebody turns it on, so a first
+        time user is not shown a place they have put nothing in. It travels with the other per-user
+        desk toggles, so the desk reads it the way it reads the search bar.
+        """
+        from frappe.boot import get_desk_settings
+
+        user = frappe.get_doc(
+            doctype="User",
+            email=frappe.generate_hash() + "@example.com",
+            first_name="Space",
+            roles=[{"role": "System Manager"}],
+        ).insert()
+        self.addCleanup(frappe.delete_doc, "User", user.name, force=True, ignore_missing=True)
+
+        frappe.set_user(user.name)
+        self.assertEqual(get_desk_settings().show_my_space, 0)
+
+        user.db_set("show_my_space", 1)
+        frappe.clear_cache(user=user.name)
+        self.assertEqual(get_desk_settings().show_my_space, 1)
+
+    def test_dock_pinned_until_floated(self):
+        """The dock starts pinned beside the sidebar. Floating it off the left edge is a per-user
+        desk toggle, so the desk reads it from the boot's desk settings like the others.
+        """
+        from frappe.boot import get_desk_settings
+
+        user = frappe.get_doc(
+            doctype="User",
+            email=frappe.generate_hash() + "@example.com",
+            first_name="Dock",
+            roles=[{"role": "_Test Role 2"}],
+        ).insert()
+        self.addCleanup(frappe.delete_doc, "User", user.name, force=True, ignore_missing=True)
+
+        frappe.set_user(user.name)
+        self.assertEqual(get_desk_settings().dock_mode, "Pinned")
+
+        set_value("User", user.name, "dock_mode", "Floating")
+        frappe.clear_cache(user=user.name)
+        self.assertEqual(get_desk_settings().dock_mode, "Floating")
+
+    def test_user_type(self):
+        user_id = frappe.generate_hash() + "@example.com"
+        new_user = frappe.get_doc(doctype="User", email=user_id, first_name="Tester").insert()
+        self.assertEqual(new_user.user_type, "Website User")
+
+        self.assertTrue(new_user.social_logins[0].userid)
+        self.assertEqual(new_user.social_logins[0].provider, "frappe")
+
+        new_user.add_roles("_Test Role 2")
+        new_user.save()
+        self.assertEqual(new_user.user_type, "System User")
+
+        new_user.roles = []
+        new_user.save()
+        self.assertEqual(new_user.user_type, "Website User")
+
+        new_user.add_roles("_Test Role 4")
+        new_user.save()
+        self.assertEqual(new_user.user_type, "Website User")
+
+        delete_contact(new_user.name)
+        frappe.delete_doc("User", new_user.name)
+
+    def test_delete(self):
+        frappe.get_doc("User", "test@example.com").add_roles("_Test Role 2")
+        self.assertRaises(frappe.LinkExistsError, delete_doc, "Role", "_Test Role 2")
+        frappe.db.delete("Has Role", {"role": "_Test Role 2"})
+        delete_doc("Role", "_Test Role 2")
+
+        if frappe.db.exists("User", "_test@example.com"):
+            delete_contact("_test@example.com")
+            delete_doc("User", "_test@example.com")
+
+        user = frappe.copy_doc(self.globalTestRecords["User"][1])
+        user.email = "_test@example.com"
+        user.insert()
+
+        frappe.get_doc({"doctype": "ToDo", "description": "_Test"}).insert()
+
+        delete_contact("_test@example.com")
+        delete_doc("User", "_test@example.com")
+
+        self.assertTrue(
+            not frappe.db.sql("""select * from `tabToDo` where allocated_to=%s""", ("_test@example.com",))
+        )
+
+        frappe.copy_doc(self.globalTestRecords["Role"][1]).insert()
+
+    def test_get_value(self):
+        self.assertEqual(frappe.db.get_value("User", "test@example.com"), "test@example.com")
+        self.assertEqual(frappe.db.get_value("User", {"email": "test@example.com"}), "test@example.com")
+        self.assertEqual(
+            frappe.db.get_value("User", {"email": "test@example.com"}, "email"), "test@example.com"
+        )
+        self.assertEqual(
+            frappe.db.get_value("User", {"email": "test@example.com"}, ["first_name", "email"]),
+            ("_Test", "test@example.com"),
+        )
+        self.assertEqual(
+            frappe.db.get_value(
+                "User", {"email": "test@example.com", "first_name": "_Test"}, ["first_name", "email"]
+            ),
+            ("_Test", "test@example.com"),
+        )
+
+        test_user = frappe.db.sql("select * from tabUser where name='test@example.com'", as_dict=True)[0]
+        self.assertEqual(
+            frappe.db.get_value("User", {"email": "test@example.com"}, "*", as_dict=True), test_user
+        )
+
+        self.assertEqual(frappe.db.get_value("User", "xxxtest@example.com"), None)
+
+    def test_high_permlevel_validations(self):
+        user = frappe.get_meta("User")
+        self.assertTrue("roles" in [d.fieldname for d in user.get_high_permlevel_fields()])
+
+        me = frappe.get_doc("User", "testperm@example.com")
+        me.remove_roles("System Manager")
+
+        frappe.set_user("testperm@example.com")
+
+        me = frappe.get_doc("User", "testperm@example.com")
+        me.add_roles("System Manager")
+
+        self.assertFalse("System Manager" in [d.role for d in me.roles])
+
+        me.flags.ignore_permlevel_for_fields = ["roles"]
+        me.add_roles("System Manager")
+
+        self.assertTrue("System Manager" in [d.role for d in me.get("roles")])
+
+        me.flags.ignore_permlevel_for_fields = None
+
+        frappe.set_user("Administrator")
+
+        me = frappe.get_doc("User", "testperm@example.com")
+        me.add_roles("System Manager")
+
+        self.assertTrue("System Manager" in [d.role for d in me.get("roles")])
+
+    def test_delete_user(self):
+        new_user = frappe.get_doc(
+            doctype="User", email="test-for-delete@example.com", first_name="Tester Delete User"
+        ).insert(ignore_if_duplicate=True)
+        self.assertEqual(new_user.user_type, "Website User")
+
+        new_user.add_roles("_Test Role 2")
+        new_user.save()
+        self.assertEqual(new_user.user_type, "System User")
+
+        comm = frappe.get_doc(
+            {
+                "doctype": "Communication",
+                "subject": "To check user able to delete even if linked with communication",
+                "content": "To check user able to delete even if linked with communication",
+                "sent_or_received": "Sent",
+                "user": new_user.name,
+            }
+        )
+        comm.insert(ignore_permissions=True)
+
+        delete_contact(new_user.name)
+        frappe.delete_doc("User", new_user.name)
+        self.assertFalse(frappe.db.exists("User", new_user.name))
+
+    def test_password_strength(self):
+        with change_settings("System Settings", enable_password_policy=0):
+            result = test_password_strength("test_password")
+            self.assertFalse(result.get("feedback", None))
+
+        with change_settings("System Settings", enable_password_policy=1, minimum_password_score=1):
+            result = test_password_strength("zxcvbn")
+            self.assertEqual(result["feedback"]["password_policy_validation_passed"], False)
+            self.assertRaises(
+                frappe.exceptions.ValidationError, handle_password_test_fail, result["feedback"]
+            )
+            self.assertRaises(
+                frappe.exceptions.ValidationError, handle_password_test_fail, result
+            )
+
+            result = test_password_strength("bee2ve")
+            self.assertEqual(result["feedback"]["password_policy_validation_passed"], True)
+
+            result = test_password_strength("Eastern_43A1W")
+            self.assertEqual(result["feedback"]["password_policy_validation_passed"], True)
+
+            result = test_password_strength("xK9#mP2$vL8@qR5&wN3*zB7!cF4^hJ6%tD1(gS0)yA9-eU2_iO5+kM8=nQ4~rV7")
+            self.assertEqual(set(result), {"score", "feedback"})
+            orjson_dumps(result)
+
+            user = frappe.get_doc("User", "test@example.com")
+            toggle_test_mode(False)
+            try:
+                user.new_password = "password"
+                self.assertRaises(frappe.exceptions.ValidationError, user.save)
+                user.reload()
+                user.new_password = "Eastern_43A1W"
+                user.save()
+            finally:
+                toggle_test_mode(True)
+
+    def test_comment_mentions(self):
+        comment = """
+            <span class="mention" data-id="test.comment@example.com" data-value="Test" data-denotation-char="@">
+                <span><span class="ql-mention-denotation-char">@</span>Test</span>
+            </span>
+        """
+        self.assertEqual(extract_mentions(comment)[0], "test.comment@example.com")
+
+        comment = """
+            <div>
+                Testing comment,
+                <span class="mention" data-id="test.comment@example.com" data-value="Test" data-denotation-char="@">
+                    <span><span class="ql-mention-denotation-char">@</span>Test</span>
+                </span>
+                please check
+            </div>
+        """
+        self.assertEqual(extract_mentions(comment)[0], "test.comment@example.com")
+        comment = """
+            <div>
+                Testing comment for
+                <span class="mention" data-id="test_user@example.com" data-value="Test" data-denotation-char="@">
+                    <span><span class="ql-mention-denotation-char">@</span>Test</span>
+                </span>
+                and
+                <span class="mention" data-id="test.again@example1.com" data-value="Test" data-denotation-char="@">
+                    <span><span class="ql-mention-denotation-char">@</span>Test</span>
+                </span>
+                please check
+            </div>
+        """
+        self.assertEqual(extract_mentions(comment)[0], "test_user@example.com")
+        self.assertEqual(extract_mentions(comment)[1], "test.again@example1.com")
+
+        frappe.delete_doc("User Group", "Team")
+        doc = frappe.get_doc(
+            {
+                "doctype": "User Group",
+                "name": "Team",
+                "user_group_members": [{"user": "test@example.com"}, {"user": "test1@example.com"}],
+            }
+        )
+
+        doc.insert()
+
+        comment = """
+            <div>
+                Testing comment for
+                <span class="mention" data-id="Team" data-value="Team" data-is-group="true" data-denotation-char="@">
+                    <span><span class="ql-mention-denotation-char">@</span>Team</span>
+                </span> and
+                <span class="mention" data-id="Unknown Team" data-value="Unknown Team" data-is-group="true"
+                data-denotation-char="@">
+                    <span><span class="ql-mention-denotation-char">@</span>Unknown Team</span>
+                </span><!-- this should be ignored-->
+                please check
+            </div>
+        """
+        self.assertListEqual(extract_mentions(comment), ["test@example.com", "test1@example.com"])
+
+    @requires_test_service(TestService.WEB_SERVER)
+    @IntegrationTestCase.change_settings("System Settings", commit=True, password_reset_limit=1)
+    def test_rate_limiting_for_reset_password(self):
+        url = get_url()
+        data = {"cmd": "frappe.core.doctype.user.user.reset_password", "user": "test@test.com"}
+
+        counter_prefix = f"rl:{data['cmd']}:"
+        frappe.cache.delete_keys(counter_prefix)
+        self.addCleanup(frappe.cache.delete_keys, counter_prefix)
+
+        c = FrappeClient(url)
+        res1 = c.session.post(url, data=data, verify=c.verify, headers=c.headers)
+        res2 = c.session.post(url, data=data, verify=c.verify, headers=c.headers)
+        self.assertEqual(res1.status_code, 200)
+        self.assertEqual(res2.status_code, 429)
+
+    def test_user_rename(self):
+        old_name = "test_user_rename@example.com"
+        new_name = "test_user_rename_new@example.com"
+        user = frappe.get_doc(
+            {
+                "doctype": "User",
+                "email": old_name,
+                "enabled": 1,
+                "first_name": "_Test",
+                "new_password": "Eastern_43A1W",
+                "roles": [{"doctype": "Has Role", "parentfield": "roles", "role": "System Manager"}],
+            }
+        ).insert(ignore_permissions=True, ignore_if_duplicate=True)
+
+        frappe.rename_doc("User", user.name, new_name)
+        self.assertTrue(frappe.db.exists("Notification Settings", new_name))
+
+        frappe.delete_doc("User", new_name)
+
+    def test_user_rename_defers_the_owner_sweep(self):
+        old_name = "test_user_rename_owner@example.com"
+        new_name = "test_user_rename_owner_new@example.com"
+        user = frappe.get_doc(
+            {"doctype": "User", "email": old_name, "first_name": "_Test", "send_welcome_email": 0}
+        ).insert(ignore_permissions=True, ignore_if_duplicate=True)
+
+        todo = frappe.get_doc({"doctype": "ToDo", "description": "owned by a renamed user"}).insert()
+        frappe.db.set_value(
+            "ToDo", todo.name, {"owner": old_name, "modified_by": old_name}, update_modified=False
+        )
+
+        with patch("frappe.enqueue") as enqueue:
+            frappe.rename_doc("User", user.name, new_name)
+
+        enqueue.assert_any_call(
+            "frappe.core.doctype.user.user.rewrite_owner_fields",
+            old_name=old_name,
+            new_name=new_name,
+            commit=True,
+            queue="long",
+            timeout=36000,
+            enqueue_after_commit=True,
+        )
+        self.assertEqual(frappe.db.get_value("ToDo", todo.name, "owner"), old_name)
+
+        rewrite_owner_fields(old_name, new_name)
+
+        self.assertEqual(frappe.db.get_value("ToDo", todo.name, "owner"), new_name)
+        self.assertEqual(frappe.db.get_value("ToDo", todo.name, "modified_by"), new_name)
+
+    def test_owner_sweep_leaves_rows_of_a_new_user_at_the_old_name(self):
+        old_name = "test_user_rename_reused@example.com"
+        new_name = "test_user_rename_reused_new@example.com"
+        frappe.get_doc(
+            {"doctype": "User", "email": old_name, "first_name": "_Test", "send_welcome_email": 0}
+        ).insert(ignore_permissions=True, ignore_if_duplicate=True)
+        taken_at = frappe.db.get_value("User", old_name, "creation")
+
+        before = frappe.get_doc({"doctype": "ToDo", "description": "written before the rename"}).insert()
+        after = frappe.get_doc({"doctype": "ToDo", "description": "written by the new holder"}).insert()
+        for todo, written_at in (
+            (before, add_to_date(taken_at, minutes=-1)),
+            (after, add_to_date(taken_at, minutes=1)),
+        ):
+            frappe.db.set_value(
+                "ToDo",
+                todo.name,
+                {"owner": old_name, "modified_by": old_name, "creation": written_at, "modified": written_at},
+                update_modified=False,
+            )
+
+        rewrite_owner_fields(old_name, new_name)
+
+        self.assertEqual(
+            frappe.db.get_value("ToDo", before.name, ["owner", "modified_by"]), (new_name, new_name)
+        )
+        self.assertEqual(
+            frappe.db.get_value("ToDo", after.name, ["owner", "modified_by"]), (old_name, old_name)
+        )
+
+    def test_user_rename_and_delete_blocked_while_owner_sweep_is_pending(self):
+        freed = "test_user_rename_pending_freed@example.com"
+        renamed = "test_user_rename_pending@example.com"
+        other = "test_user_rename_pending_other@example.com"
+        for email in (freed, renamed, other):
+            frappe.get_doc(
+                {"doctype": "User", "email": email, "first_name": "_Test", "send_welcome_email": 0}
+            ).insert(ignore_permissions=True, ignore_if_duplicate=True)
+
+        unrelated = "test_user_rename_pending_unrelated@example.com"
+        frappe.get_doc(
+            {"doctype": "User", "email": unrelated, "first_name": "_Test", "send_welcome_email": 0}
+        ).insert(ignore_permissions=True, ignore_if_duplicate=True)
+
+        def pending_job(method, old_name, new_name):
+            return SimpleNamespace(
+                kwargs={
+                    "site": frappe.local.site,
+                    "method": method,
+                    "kwargs": {"old_name": old_name, "new_name": new_name},
+                }
+            )
+
+        pending_jobs = [
+            pending_job("frappe.core.doctype.user.user.rewrite_owner_fields", freed, renamed),
+            pending_job("frappe.utils.global_search.rebuild_for_doctype", unrelated, unrelated),
+        ]
+        with (
+            patch("frappe.core.doctype.user.user.get_queue", return_value=SimpleNamespace(jobs=pending_jobs)),
+            patch("frappe.core.doctype.user.user.get_running_jobs_in_queue", return_value=[]),
+        ):
+            with self.assertRaisesRegex(frappe.ValidationError, "still being applied"):
+                frappe.rename_doc("User", renamed, "test_user_rename_pending_new@example.com")
+
+            with self.assertRaisesRegex(frappe.ValidationError, "still being applied"):
+                frappe.rename_doc("User", other, renamed, merge=True)
+
+            with self.assertRaisesRegex(frappe.ValidationError, "still being applied"):
+                frappe.rename_doc("User", freed, "test_user_rename_pending_freed_new@example.com")
+
+            with self.assertRaisesRegex(frappe.ValidationError, "still being applied"):
+                frappe.delete_doc("User", freed)
+
+            frappe.rename_doc("User", unrelated, "test_user_rename_pending_unrelated_new@example.com")
+
+    def test_user_rename_updates_private_workspace(self):
+        old_name = "test_user_rename_ws@example.com"
+        new_name = "test_user_rename_ws_new@example.com"
+        actor_name = "test_user_rename_ws_actor@example.com"
+
+        old_workspace = f"Test Rename Workspace-{old_name}"
+        for email in (old_name, new_name, actor_name):
+            frappe.delete_doc("User", email, ignore_permissions=True, force=True)
+        if frappe.db.exists("Workspace", old_workspace):
+            frappe.delete_doc("Workspace", old_workspace, ignore_permissions=True, force=True)
+
+        frappe.get_doc(
+            {
+                "doctype": "User",
+                "email": old_name,
+                "enabled": 1,
+                "first_name": "_Test",
+                "new_password": "Eastern_43A1W",
+                "roles": [{"doctype": "Has Role", "parentfield": "roles", "role": "System Manager"}],
+            }
+        ).insert(ignore_permissions=True, ignore_if_duplicate=True)
+
+        frappe.get_doc(
+            {
+                "doctype": "User",
+                "email": actor_name,
+                "enabled": 1,
+                "first_name": "_Test Actor",
+                "new_password": "Eastern_43A1W",
+                "roles": [{"doctype": "Has Role", "parentfield": "roles", "role": "System Manager"}],
+            }
+        ).insert(ignore_permissions=True, ignore_if_duplicate=True)
+
+        frappe.get_doc(
+            {
+                "doctype": "Workspace",
+                "title": "Test Rename Workspace",
+                "label": old_workspace,
+                "type": "Workspace",
+                "for_user": old_name,
+                "public": 0,
+                "module": "Core",
+                "content": "[]",
+            }
+        ).insert(ignore_permissions=True)
+
+        with self.set_user(actor_name):
+            frappe.rename_doc("User", old_name, new_name)
+
+        new_workspace = f"Test Rename Workspace-{new_name}"
+        self.assertTrue(frappe.db.exists("Workspace", new_workspace))
+        self.assertEqual(frappe.db.get_value("Workspace", new_workspace, "for_user"), new_name)
+
+        frappe.delete_doc("Workspace", new_workspace, ignore_permissions=True, force=True)
+        frappe.delete_doc("User", new_name, ignore_permissions=True, force=True)
+        frappe.delete_doc("User", actor_name, ignore_permissions=True, force=True)
+
+    def test_signup(self):
+        import frappe.website.utils
+
+        random_user = frappe.mock("email")
+        random_user_name = frappe.mock("name")
+        with patch.object(user_module, "is_signup_disabled", return_value=True):
+            self.assertTupleEqual(
+                sign_up(random_user, random_user_name, "/signup"),
+                (0, "We could not create an account with the provided details."),
+            )
+
+        self.assertTupleEqual(
+            sign_up(random_user, random_user_name, "/welcome"),
+            (1, "Please check your email for verification"),
+        )
+        self.assertEqual(
+            frappe.cache.hget("redirect_after_login", random_user), sanitize_redirect("/welcome")
+        )
+
+        self.assertTupleEqual(
+            sign_up(random_user, random_user_name, "/welcome"),
+            (0, "We could not create an account with the provided details."),
+        )
+
+        user = frappe.get_doc("User", random_user)
+        user.enabled = 0
+        user.save()
+
+        self.assertTupleEqual(
+            sign_up(random_user, random_user_name, "/welcome"),
+            (0, "We could not create an account with the provided details."),
+        )
+
+        with patch.object(user_module.frappe.db, "get_creation_count", return_value=301):
+            response = frappe.local.response
+            frappe.local.response = frappe._dict()
+            try:
+                self.assertIsNone(sign_up(frappe.mock("email"), random_user_name, "/signup"))
+                self.assertEqual(frappe.local.response["http_status_code"], 429)
+            finally:
+                frappe.local.response = response
+
+    @IntegrationTestCase.change_settings("System Settings", password_reset_limit=6)
+    def test_reset_password(self):
+        from frappe.auth import CookieManager, LoginManager
+        from frappe.utils import set_request
+
+        old_password = "Eastern_43A1W"
+        new_password = "easy_password"
+
+        set_request(path="/random")
+        frappe.local.cookie_manager = CookieManager()
+        frappe.local.login_manager = LoginManager()
+        frappe.local.request_ip = "127.0.0.69"
+
+        frappe.set_user("testpassword@example.com")
+        test_user = frappe.get_doc("User", "testpassword@example.com")
+        key = self.reset_password(test_user)
+        self.assertEqual(update_password(new_password, key=key), "/desk")
+        self.assertEqual(
+            update_password(new_password, key="wrong_key"),
+            "The reset password link has either been used before or is invalid",
+        )
+
+        self.assertRaises(frappe.exceptions.AuthenticationError, verify_password, old_password)
+        verify_password(new_password)
+
+        update_password(old_password, old_password=new_password)
+        self.assertRaises(TypeError, update_password, "test", 1, ["like", "%"])
+
+        password_strength_response = {
+            "feedback": {"password_policy_validation_passed": False, "suggestions": ["Fix password"]}
+        }
+
+        with patch.object(user_module, "test_password_strength", return_value=password_strength_response):
+            self.assertRaisesRegex(
+                frappe.exceptions.ValidationError,
+                "Fix password",
+                update_password,
+                new_password,
+                0,
+                test_user.reset_password_key,
+            )
+
+        frappe.set_user("test2@example.com")
+        self.assertEqual(update_password(new_password, old_password=old_password), "me")
+        update_password(old_password, old_password=new_password)
+
+        with patch.object(user_module.frappe, "sendmail") as sendmail:
+            from unittest.mock import MagicMock
+
+            mock_q = MagicMock()
+            mock_q.name = "test-email-queue-name"
+            mock_q.message = "Subject: Test\n\nDear User, here is your link"
+            sendmail.return_value = mock_q
+            frappe.clear_messages()
+            test_user = frappe.get_doc("User", "test2@example.com")
+            self.assertEqual(reset_password(user="test2@example.com"), None)
+            test_user.reload()
+            link = sendmail.call_args_list[0].kwargs["args"]["link"]
+            key = parse_qs(urlparse(link).query)["key"][0]
+            self.assertEqual(update_password(new_password, key=key), "me")
+            update_password(old_password, old_password=new_password)
+            self.assertEqual(
+                frappe.message_log[0].get("message"),
+                "If this email is registered with us, we have sent password reset instructions to it. Please check your inbox.",
+            )
+
+        sendmail.assert_called_once()
+        self.assertEqual(sendmail.call_args[1]["recipients"], "test2@example.com")
+
+        _GENERIC_MSG = "If this email is registered with us, we have sent password reset instructions to it. Please check your inbox."
+
+        frappe.clear_messages()
+        self.assertIsNone(reset_password(user="test2@example.com"))
+        self.assertEqual(frappe.message_log[0].get("message"), _GENERIC_MSG)
+
+        frappe.clear_messages()
+        self.assertIsNone(reset_password(user="Administrator"))
+        self.assertEqual(frappe.message_log[0].get("message"), _GENERIC_MSG)
+
+        frappe.clear_messages()
+        self.assertIsNone(reset_password(user="random"))
+        self.assertEqual(frappe.message_log[0].get("message"), _GENERIC_MSG)
+
+    def test_user_onload_modules(self):
+        from frappe.desk.form.load import getdoc
+        from frappe.utils.modules import get_modules_from_all_apps
+
+        frappe.response.docs = []
+        getdoc("User", "Administrator")
+        doc = frappe.response.docs[0]
+        self.assertListEqual(
+            sorted(doc.get("__onload").get("all_modules", [])),
+            sorted(m.get("module_name") for m in get_modules_from_all_apps()),
+        )
+
+    def test_default_app(self):
+        from frappe.apps import get_default_path
+
+        with test_user(roles=["System Manager"]) as user:
+            user.default_app = "next_erp"
+            user.save()
+            self.assertFalse(user.default_app)
+
+            frappe.set_user(user.name)
+            user.db_set("default_app", "next_erp")
+            user.reload()
+            self.assertTrue(user.default_app)
+
+            get_default_path()
+
+    @IntegrationTestCase.change_settings("System Settings", reset_password_link_expiry_duration=1)
+    def test_reset_password_link_expiry(self):
+        new_password = "new_password"
+        frappe.set_user("testpassword@example.com")
+        test_user = frappe.get_doc("User", "testpassword@example.com")
+        key = self.reset_password(test_user)
+        time.sleep(1)
+
+        self.assertEqual(
+            update_password(new_password, key=key),
+            "The reset password link has been expired",
+        )
+
+
+class TestImpersonation(FrappeAPITestCase):
+    def test_impersonation(self):
+        with test_user(roles=["System Manager"], commit=True) as user:
+            response = self.post(
+                self.method("frappe.core.doctype.user.user.impersonate"),
+                {"user": user.name, "reason": "test", "sid": self.sid},
+            )
+            self.assertEqual(response.status_code, 200)
+            resp = self.get(self.method("frappe.auth.get_logged_user"))
+            self.assertEqual(resp.json["message"], user.name)
+
+
+@contextmanager
+def test_user(
+    *, first_name: str | None = None, email: str | None = None, roles: list[str], commit=False, **kwargs
+):
+    try:
+        first_name = first_name or frappe.generate_hash()
+        email = email or (first_name + "@example.com")
+        user: User = frappe.new_doc(
+            "User",
+            send_welcome_email=0,
+            email=email,
+            first_name=first_name,
+            **kwargs,
+        )
+        user.append_roles(*roles)
+        user.insert()
+        yield user
+        commit and frappe.db.commit()
+    finally:
+        user.delete(force=True, ignore_permissions=True)
+        commit and frappe.db.commit()
+
+
+def delete_contact(user):
+    frappe.db.delete("Contact", {"email_id": user})
+    frappe.db.delete("Contact Email", {"email_id": user})

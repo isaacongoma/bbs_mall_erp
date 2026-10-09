@@ -1,0 +1,23 @@
+{
+ "name": "Pay Supplier",
+ "owner": "Administrator",
+ "creation": "2026-10-04 00:49:20.654299",
+ "modified": "2026-10-04 01:42:03.961861",
+ "modified_by": "Administrator",
+ "docstatus": 0,
+ "idx": 0,
+ "title": "Pay your supplier",
+ "is_complete": 0,
+ "is_skipped": 0,
+ "description": "It clears their bill and takes the money out of your bank or cash account. See [Payment Entry](https://docs.frappe.io/erpnext/user/manual/en/payment-entry).",
+ "intro_video_url": "https://www.youtube.com/watch?v=oetlenfOAJ8",
+ "action": "Create Entry",
+ "action_label": "Create Payment Entry",
+ "reference_document": "Payment Entry",
+ "show_full_form": 1,
+ "show_form_tour": 0,
+ "is_single": 0,
+ "validate_action": 1,
+ "route_options": "{\n    \"payment_type\": \"Pay\",\n    \"party_type\": \"Supplier\"\n}",
+ "doctype": "Onboarding Step"
+}

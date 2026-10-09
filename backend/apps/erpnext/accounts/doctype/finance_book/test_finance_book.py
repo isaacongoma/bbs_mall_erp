@@ -1,0 +1,29 @@
+import frappe
+
+from erpnext.accounts.doctype.journal_entry.test_journal_entry import make_journal_entry
+from erpnext.tests.utils import ERPNextTestSuite
+
+
+class TestFinanceBook(ERPNextTestSuite):
+    def test_finance_book(self):
+        finance_book = create_finance_book()
+
+        jv = make_journal_entry("_Test Bank - _TC", "Debtors - _TC", 100, save=False)
+
+        jv.accounts[1].update({"party_type": "Customer", "party": "_Test Customer"})
+
+        jv.finance_book = finance_book.finance_book_name
+        jv.submit()
+
+        gl_entries = frappe.get_all(
+            "GL Entry",
+            fields=["name", "finance_book"],
+            filters={"voucher_type": "Journal Entry", "voucher_no": jv.name},
+        )
+
+        for gl_entry in gl_entries:
+            self.assertEqual(gl_entry.finance_book, finance_book.name)
+
+
+def create_finance_book():
+    return frappe.get_doc("Finance Book", "Test Finance Book 1")

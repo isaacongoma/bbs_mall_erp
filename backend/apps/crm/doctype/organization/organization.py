@@ -15,10 +15,10 @@ class CRMOrganization(models.Model):
     no_of_employees = models.CharField(max_length=10, choices=NO_OF_EMPLOYEES_CHOICES, blank=True)
     annual_revenue = models.DecimalField(max_digits=18, decimal_places=2, default=0)
     industry = models.ForeignKey(
-        "crm.CRMIndustry", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+        "erpnext.IndustryType", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
     territory = models.ForeignKey(
-        "crm.CRMTerritory", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+        "erpnext.Territory", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
     currency = models.ForeignKey("erpnext.Currency", on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
     exchange_rate = models.FloatField(default=1)

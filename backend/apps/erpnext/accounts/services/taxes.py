@@ -1,5 +1,4 @@
 """Tax helpers: TaxService class for doc-mutating operations, free functions for stateless utilities."""
-from __future__ import annotations
 
 import json
 

@@ -45,7 +45,9 @@ def get_meta(doctype, cached=True) -> "FormMeta":
 
 class FormMeta(Meta):
     def __init__(self, doctype, *, cached=True):
-        self.__dict__.update(frappe.get_meta(doctype, cached=cached).__dict__)
+        source = frappe.get_meta(doctype, cached=cached)
+        self.update(source)
+        self.__dict__.update(source.__dict__)
         self.load_assets()
 
     def load_assets(self):
@@ -68,7 +70,7 @@ class FormMeta(Meta):
         __dict = self.__dict__
 
         for k in ASSET_KEYS:
-            d[k] = __dict.get(k)
+            d[k] = self.get(k) if __dict.get(k) is None else __dict.get(k)
 
         d["masked_fields"] = [df.fieldname for df in self.get_masked_fields(parenttype=parenttype)]
 

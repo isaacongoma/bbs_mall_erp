@@ -1,0 +1,8 @@
+import './public/js/utils'
+import './public/js/utils/payroll_utils'
+import './public/js/utils/leave_utils'
+import './public/js/utils/telemetry'
+import './public/js/salary_slip_deductions_report_filters'
+import './public/js/performance/performance_feedback'
+import './public/js/hierarchy_chart/hierarchy_chart_desktop'
+import './public/js/hierarchy_chart/hierarchy_chart_mobile'

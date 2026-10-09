@@ -1,0 +1,4 @@
+from apps.frappe.workflow.doctype.workflow_action_permitted_role.workflow_action_permitted_role import *
+from apps.frappe.workflow.doctype.workflow_action_permitted_role.workflow_action_permitted_role import WorkflowActionPermittedRole
+
+__all__ = ["WorkflowActionPermittedRole"]

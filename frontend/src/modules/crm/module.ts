@@ -5,7 +5,7 @@ import { crmRouteGuard } from './guards'
 import { crmRoutes } from './routes'
 import { crmNavigation } from './navigation'
 import { crmSettings } from './settings'
-import { SavedViewsSidebar } from './components/SavedViewsSidebar'
+import { CrmSidebarSections } from './components/CrmSidebarSections'
 import { CallUI } from './components/Telephony/CallUI'
 import { Notifications } from './components/Notifications'
 import { NotificationsSidebarItem } from './components/NotificationsSidebarItem'
@@ -23,7 +23,7 @@ export const crmModule: ModuleDefinition = {
   settings: crmSettings,
   shell: {
     sidebarTop: NotificationsSidebarItem,
-    sidebarSections: SavedViewsSidebar,
+    sidebarSections: CrmSidebarSections,
     sidebarPanels: Notifications,
     headerActions: CallUI,
   },

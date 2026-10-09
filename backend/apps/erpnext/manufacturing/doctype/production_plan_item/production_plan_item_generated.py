@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class ProductionPlanItemGenerated(FrappeChildModel):
@@ -10,7 +10,7 @@ class ProductionPlanItemGenerated(FrappeChildModel):
     bom_no = models.CharField(max_length=140, blank=True, null=True, default='')
     planned_qty = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     warehouse = models.CharField(max_length=140, blank=True, null=True, default='')
-    planned_start_date = models.DateTimeField(null=True, blank=True)
+    planned_start_date = FrappeDateTimeField(null=True, blank=True)
     pending_qty = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     ordered_qty = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     produced_qty = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
@@ -23,7 +23,7 @@ class ProductionPlanItemGenerated(FrappeChildModel):
     product_bundle_item = models.CharField(max_length=140, blank=True, null=True, default='')
     item_reference = models.CharField(max_length=140, blank=True, null=True, default='')
     temporary_name = models.CharField(max_length=140, blank=True, null=True, default='')
-    planned_end_date = models.DateTimeField(null=True, blank=True)
+    planned_end_date = FrappeDateTimeField(null=True, blank=True)
 
     class Meta:
         abstract = True

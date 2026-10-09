@@ -1,5 +1,1 @@
-from apps.frappe.model.document import Document
-
-
-class User(Document):
-    doctype = "User"
+from apps.frappe.core.doctype.user.user import User

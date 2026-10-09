@@ -137,6 +137,7 @@ DATABASES = {
     "default": env.db("DATABASE_URL", default="postgres://bbs_erp:bbs_erp@localhost:5432/bbs_erp"),
 }
 DATABASES["default"]["TEST"] = {"NAME": env("TEST_DATABASE_NAME", default="test_bbs_erp")}
+TEST_RUNNER = "apps.frappe.test_runner.FrappeTestRunner"
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
@@ -187,6 +188,11 @@ SPECTACULAR_SETTINGS = {
 
 # Externally-reachable base URL, used to build webhook callback URLs (Twilio/Exotel).
 PUBLIC_URL = env("PUBLIC_URL", default="http://localhost:8000")
+GOOGLE_OAUTH_CLIENT_ID = env("GOOGLE_OAUTH_CLIENT_ID", default="")
+WEBAUTHN_RP_ID = env("WEBAUTHN_RP_ID", default="localhost")
+WEBAUTHN_RP_NAME = env("WEBAUTHN_RP_NAME", default="BBS Mall ERP")
+WEBAUTHN_ORIGINS = env.list("WEBAUTHN_ORIGINS", default=["http://localhost:8080", "http://localhost:8000"])
+LOGIN_OTP_ENABLED = env.bool("LOGIN_OTP_ENABLED", default=True)
 
 CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=["http://localhost:8080"])
 
@@ -216,3 +222,5 @@ CHANNEL_LAYERS = {
         "CONFIG": {"hosts": [env("REDIS_URL", default="redis://localhost:6379/1")]},
     }
 }
+
+SILENCED_SYSTEM_CHECKS = ["models.E020"]

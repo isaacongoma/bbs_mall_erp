@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class DeliveryTripGenerated(FrappeModel):
@@ -13,7 +13,7 @@ class DeliveryTripGenerated(FrappeModel):
     total_distance = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     uom = models.CharField(max_length=140, blank=True, null=True, default='')
     vehicle = models.CharField(max_length=140, blank=True, null=True, default='')
-    departure_time = models.DateTimeField(null=True, blank=True)
+    departure_time = FrappeDateTimeField(null=True, blank=True)
     status = models.CharField(max_length=140, blank=True, null=True, default='')
     amended_from = models.CharField(max_length=140, blank=True, null=True, default='')
     driver_address = models.CharField(max_length=140, blank=True, null=True, default='')

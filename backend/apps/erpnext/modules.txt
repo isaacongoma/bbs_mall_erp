@@ -19,3 +19,6 @@ Telephony
 Bulk Transaction
 Subcontracting
 EDI
+CSF KE
+eTims
+Kenya Compliance Via Slade

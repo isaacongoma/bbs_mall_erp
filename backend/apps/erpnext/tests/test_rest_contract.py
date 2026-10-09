@@ -1,5 +1,6 @@
 import json
 
+from apps.erpnext.api import resolve_method
 from django.test import Client, TestCase
 from rest_framework_simplejwt.tokens import AccessToken
 
@@ -25,6 +26,10 @@ class RestContractTests(TestCase):
     def client_for(self, user):
         token = str(AccessToken.for_user(user))
         return Client(SERVER_NAME="localhost", HTTP_AUTHORIZATION=f"Bearer {token}")
+
+    def test_hrms_method_prefix_resolves(self):
+        method = resolve_method("hrms.api.get_current_employee_info")
+        self.assertEqual(method.__name__, "get_current_employee_info")
 
     def post_json(self, client, url, payload):
         return client.post(url, data=json.dumps(payload), content_type="application/json")

@@ -81,6 +81,15 @@ class ToDo(Document):
             )
             assignments.reverse()
 
+            from apps.erpnext.registry import get_model
+
+            try:
+                model = get_model(self.reference_type)
+                if not any(f.name == "_assign" for f in model._meta.fields):
+                    return
+            except Exception:
+                return
+
             if frappe.get_meta(self.reference_type).issingle:
                 frappe.db.set_single_value(
                     self.reference_type,

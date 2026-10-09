@@ -20,5 +20,8 @@
  "timeseries": 0,
  "type": "Donut",
  "use_report_chart": 1,
- "y_axis": []
+ "y_axis": [],
+ "show_values_over_chart": 0,
+ "empty_state_message": "Where your purchase orders stand: to receive, to bill, or done.",
+ "roles": []
 }

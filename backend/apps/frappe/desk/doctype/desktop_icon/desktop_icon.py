@@ -1,9 +1,9 @@
+from __future__ import annotations
 """The icon grid's rows: what a site sees when its desktop page is the grid.
 
 This is being retired. It goes with the icon-grid batch, on one of the two triggers listed in
 `frappe/desk/RETIRING.md`, not on a date and not on its own.
 """
-from __future__ import annotations
 
 import json
 import os

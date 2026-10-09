@@ -1,0 +1,334 @@
+"""
+Sync's doctype and docfields from txt files to database
+perms will get synced only if none exist
+"""
+
+import glob
+import os
+import re
+
+import frappe
+from frappe.desk.doctype.desktop_icon.desktop_icon import import_desktop_icon_fixtures
+from frappe.modules.import_file import import_file_by_path
+from frappe.modules.patch_handler import _patch_mode
+from frappe.utils import update_progress_bar
+
+IMPORTABLE_DOCTYPES = [
+    ("core", "permission_type"),
+    ("core", "doctype"),
+    ("core", "page"),
+    ("core", "report"),
+    ("desk", "dashboard_chart_source"),
+    ("printing", "print_format"),
+    ("website", "web_page"),
+    ("website", "website_theme"),
+    ("website", "web_form"),
+    ("website", "web_template"),
+    ("email", "notification"),
+    ("printing", "print_style"),
+    ("desk", "workspace"),
+    ("desk", "workspace_sidebar"),
+    ("desk", "sidebar"),
+    ("desk", "onboarding_step"),
+    ("desk", "module_onboarding"),
+    ("desk", "form_tour"),
+    ("custom", "client_script"),
+    ("core", "server_script"),
+    ("custom", "custom_field"),
+    ("custom", "property_setter"),
+    ("printing", "letter_head"),
+]
+
+APP_ROOTED_DOCTYPES = [("desk", "dock"), ("desk", "sidebar")]
+
+
+def sync_all(force=0, reset_permissions=False):
+    _patch_mode(True)
+    for app in frappe.get_installed_apps():
+        sync_for(app, force, reset_permissions=reset_permissions)
+
+    _patch_mode(False)
+
+    frappe.clear_cache()
+
+
+def sync_for(app_name, force=0, reset_permissions=False):
+    files = []
+
+    if app_name == "frappe":
+
+        FRAPPE_PATH = frappe.get_app_path("frappe")
+
+        for core_module in [
+            "docfield",
+            "docperm",
+            "doctype_action",
+            "doctype_link",
+            "doctype_state",
+            "role",
+            "has_role",
+            "doctype",
+        ]:
+            files.append(os.path.join(FRAPPE_PATH, "core", "doctype", core_module, f"{core_module}.json"))
+
+        for dt in ["user", "docshare", "custom_docperm", "docperm", "permission_type"]:
+            files.append(os.path.join(FRAPPE_PATH, "core", "doctype", dt, f"{dt}.json"))
+
+        for custom_module in ["custom_field", "property_setter"]:
+            files.append(
+                os.path.join(FRAPPE_PATH, "custom", "doctype", custom_module, f"{custom_module}.json")
+            )
+
+        for website_module in ["web_form", "web_template", "web_form_field", "portal_menu_item"]:
+            files.append(
+                os.path.join(FRAPPE_PATH, "website", "doctype", website_module, f"{website_module}.json")
+            )
+
+        for desk_module in [
+            "number_card",
+            "dashboard_chart",
+            "dashboard",
+            "onboarding_permission",
+            "onboarding_step",
+            "onboarding_step_map",
+            "module_onboarding",
+            "workspace_link",
+            "workspace_chart",
+            "workspace_shortcut",
+            "workspace_quick_list",
+            "workspace_number_card",
+            "workspace_custom_block",
+            "workspace",
+            "workspace_sidebar",
+            "workspace_sidebar_item",
+            "sidebar_item",
+            "sidebar",
+        ]:
+            files.append(os.path.join(FRAPPE_PATH, "desk", "doctype", desk_module, f"{desk_module}.json"))
+
+        for module_name, document_type in IMPORTABLE_DOCTYPES:
+            file = os.path.join(FRAPPE_PATH, module_name, "doctype", document_type, f"{document_type}.json")
+            if file not in files:
+                files.append(file)
+
+    for module_name in frappe.local.app_modules.get(app_name) or []:
+        folder = os.path.dirname(frappe.get_module(app_name + "." + module_name).__file__)
+        files = get_doc_files(files=files, start_path=folder)
+
+    files = get_doc_files(files=files, start_path=frappe.get_app_path(app_name), doctypes=APP_ROOTED_DOCTYPES)
+
+    l = len(files)
+    if l:
+        for i, doc_path in enumerate(files):
+            imported = import_file_by_path(
+                doc_path, force=force, ignore_version=True, reset_permissions=reset_permissions
+            )
+
+            if imported:
+                frappe.db.commit(chain=True)
+
+            update_progress_bar(f"Updating DocTypes for {app_name}", i, l)
+
+        print()
+
+    import_desktop_icon_fixtures(app_name, force=force)
+
+
+def get_doc_files(files, start_path, doctypes=None):
+    """walk and sync all doctypes and pages
+
+    `doctypes` narrows the walk to a named few, and is what the app-root call passes: at the
+    top of an app only `APP_ROOTED_DOCTYPES` is meaningful. Left out, the walk is the whole
+    importable set plus whatever apps added by hook, which is what a module folder gets.
+    """
+
+    files = files or []
+    general_walk = doctypes is None
+    if general_walk:
+        doctypes = IMPORTABLE_DOCTYPES + [
+            (None, frappe.scrub(dt)) for dt in frappe.get_hooks("importable_doctypes")
+        ]
+
+    for _module, doctype in doctypes:
+        doctype_path = os.path.join(start_path, doctype)
+        if os.path.exists(doctype_path):
+            for docname in os.listdir(doctype_path):
+                if os.path.isdir(os.path.join(doctype_path, docname)):
+                    doc_path = os.path.join(doctype_path, docname, docname) + ".json"
+                    if os.path.exists(doc_path):
+                        if doc_path not in files:
+                            files.append(doc_path)
+
+    if not general_walk:
+        return files
+
+    for folder in ("doctype_layout", "list_filter", "kanban_board"):
+        for doc_path in glob.glob(os.path.join(start_path, "doctype", "*", folder, "*.json")):
+            if doc_path not in files:
+                files.append(doc_path)
+
+    for doc_path in glob.glob(os.path.join(start_path, "doctype_settings_map", "*.json")):
+        if doc_path not in files:
+            files.append(doc_path)
+
+    return files
+
+
+def remove_orphan_doctypes():
+    """Find and remove any orphaned doctypes.
+
+    These are doctypes for which code and schema file is
+    deleted but entry is present in DocType table.
+
+    Note: Deleting the entry doesn't delete any data.
+    So this is supposed to be non-destrictive operation.
+    """
+
+    doctype_names = frappe.get_all("DocType", {"custom": 0}, pluck="name")
+
+    known_doctypes = create_entity_file_map(["DocType"])["DocType"]
+    orphan_doctypes = [doctype for doctype in doctype_names if doctype not in known_doctypes]
+
+    if not orphan_doctypes:
+        return
+
+    print(f"Orphaned DocType(s) found: {', '.join(orphan_doctypes)}")
+    for i, name in enumerate(orphan_doctypes):
+        frappe.delete_doc("DocType", name, force=True, ignore_missing=True)
+        update_progress_bar("Deleting orphaned DocTypes", i, len(orphan_doctypes))
+    frappe.db.commit()
+    print()
+
+
+ORPHANABLE_ENTITIES = [
+    "Workspace",
+    "Dashboard",
+    "Page",
+    "Report",
+    "Notification",
+    "Sidebar",
+    "Dock",
+    "List Filter",
+    "Kanban Board",
+]
+APP_LEVEL_ENTITIES = ["Desktop Icon"]
+
+
+def remove_orphan_entities(entity_types=None):
+    entities = list(ORPHANABLE_ENTITIES)
+    entity_filter_map = {
+        "Workspace": {"public": 1, "standard": 1},
+        "Page": {"standard": "Yes"},
+        "Report": {"is_standard": "Yes"},
+        "Dashboard": {"is_standard": True},
+        "Desktop Icon": {"standard": True},
+        "Notification": {"is_standard": True},
+        "Sidebar": {"standard": True},
+        "Dock": {"standard": 1},
+        "List Filter": {"is_standard": 1},
+        "Kanban Board": {"is_standard": "Yes"},
+    }
+    if entity_types:
+        entities = entity_types if isinstance(entity_types, list) else [entity_types]
+
+    entity_file_map = create_entity_file_map(entities)
+
+    for entity in entities:
+        print(f"Removing orphan {entity}s")
+        all_enitities = frappe.get_all(entity, filters=entity_filter_map.get(entity), fields=["name"])
+        for i, w in enumerate(all_enitities):
+            try:
+                entity_file_map[entity][w.name]
+            except KeyError:
+                try:
+                    print(f"Deleting entity {entity} {w.name}")
+                    frappe.delete_doc(entity, w.name, force=True, ignore_missing=True)
+                    update_progress_bar(f"Deleting orphaned {entity}", i, len(all_enitities))
+                    print()
+
+                except Exception as e:
+                    print(f"Error occurred while deleting entity: {entity} {w.name}")
+                    print(e)
+        frappe.db.commit()
+    if entity_types and not set(entity_types).issubset(set(APP_LEVEL_ENTITIES)):
+        return
+    for app_entity in APP_LEVEL_ENTITIES:
+        print(f"Removing orphan {app_entity}s")
+        all_enitities = frappe.get_all(
+            app_entity, filters=entity_filter_map.get(app_entity), fields=["name", "app"]
+        )
+        for i, entity in enumerate(all_enitities):
+            try:
+                if entity.app:
+                    app_path = frappe.get_app_path(entity.app)
+                    if not check_if_record_exists("app", app_path, app_entity, entity.name):
+                        try:
+                            print(f"Deleting entity {app_entity} {entity.name}")
+                            frappe.delete_doc(app_entity, entity.name, force=True, ignore_missing=True)
+                            update_progress_bar(f"Deleting orphaned {app_entity}", i, len(all_enitities))
+                            print()
+                        except Exception as e:
+                            print(f"Error occurred while deleting entity: {app_entity} {entity.name}")
+                            print(e)
+            except ModuleNotFoundError as e:
+                print(e)
+                print(f"Deleting entity {app_entity} {entity.name}")
+                frappe.db.delete(app_entity, {"name": entity.name})
+
+    frappe.db.commit()
+
+
+def create_entity_file_map(entities):
+    from frappe.modules.import_file import read_doc_from_file
+
+    entity_file_map = {}
+    for entity in entities:
+        entity_file_map[entity] = {}
+    for app in frappe.get_installed_apps():
+        app_path = frappe.get_app_path(app)
+        for entity in entities:
+            entity_folder = frappe.scrub(entity)
+            if entity_folder == "dashboard":
+                entity_folder = f"*_{entity_folder}"
+            entity_files = list(glob.glob(f"{app_path}/**/{entity_folder}/**/*.json", recursive=True))
+            for file in entity_files:
+                entity_json = read_doc_from_file(file)
+                if isinstance(entity_json, dict):
+                    entity_file_map[entity][entity_json.get("name")] = file
+                elif isinstance(entity_json, list):
+                    if len(entity_json) > 0:
+                        entity_file_map[entity][entity_json[0].get("name")] = file
+
+    return entity_file_map
+
+
+def check_if_record_exists(type=None, path=None, entity_type=None, name=None, module_name=None):
+    scrubbed_name = frappe.scrub(name.lower())
+    scrubbed_entity_type = frappe.scrub(entity_type.lower())
+    if scrubbed_entity_type == "dashboard" and module_name:
+        scrubbed_entity_type = f"{frappe.scrub(module_name.lower())}_dashboard"
+
+    def build_path(entity_name):
+        if type == "app":
+            return os.path.join(path, scrubbed_entity_type, f"{entity_name}.json")
+        return os.path.join(path, scrubbed_entity_type, entity_name, f"{entity_name}.json")
+
+    entity_path = build_path(scrubbed_name)
+    if os.path.exists(entity_path):
+        return True
+
+    return False
+
+
+def delete_duplicate_icons():
+    for app in frappe.get_installed_apps():
+        icons = frappe.get_all("Desktop Icon", filters=[{"icon_type": "App"}, {"app": app}], pluck="name")
+
+        if len(icons) > 1:
+            for i in icons:
+                app_path = frappe.get_app_path(app)
+                if not check_if_record_exists(type="app", path=app_path, entity_type="Desktop Icon", name=i):
+                    print(f"Deleting icon {i}")
+                    frappe.delete_doc("Desktop Icon", i)
+
+    frappe.db.commit()

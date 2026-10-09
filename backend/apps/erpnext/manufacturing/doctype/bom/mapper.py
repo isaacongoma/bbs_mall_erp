@@ -1,5 +1,4 @@
 """Document-mapping and query helpers for BOM (extracted from bom.py)."""
-from __future__ import annotations
 
 from functools import partial
 

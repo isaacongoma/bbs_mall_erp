@@ -8,6 +8,8 @@ export interface FieldOption {
 }
 
 export const READ_ONLY_EXCLUDED_FIELD_TYPES = [
+  'Table',
+  'Table MultiSelect',
   'Int',
   'Float',
   'Currency',

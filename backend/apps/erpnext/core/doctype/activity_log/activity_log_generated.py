@@ -1,13 +1,13 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class ActivityLogGenerated(FrappeModel):
     doctype = 'Activity Log'
     subject = models.TextField(blank=True, null=True, default='')
     content = models.TextField(blank=True, null=True, default='')
-    communication_date = models.DateTimeField(null=True, blank=True)
+    communication_date = FrappeDateTimeField(null=True, blank=True)
     operation = models.CharField(max_length=140, blank=True, null=True, default='')
     status = models.CharField(max_length=140, blank=True, null=True, default='')
     reference_doctype = models.CharField(max_length=140, blank=True, null=True, default='')
@@ -20,6 +20,7 @@ class ActivityLogGenerated(FrappeModel):
     user = models.CharField(max_length=140, blank=True, null=True, default='')
     full_name = models.CharField(max_length=140, blank=True, null=True, default='')
     ip_address = models.CharField(max_length=140, blank=True, null=True, default='')
+    _seen = models.TextField(null=True, blank=True)
 
     class Meta:
         abstract = True

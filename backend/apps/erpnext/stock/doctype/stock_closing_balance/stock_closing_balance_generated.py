@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class StockClosingBalanceGenerated(FrappeModel):
@@ -8,8 +8,8 @@ class StockClosingBalanceGenerated(FrappeModel):
     item_code = models.CharField(max_length=140, blank=True, null=True, default='')
     warehouse = models.CharField(max_length=140, blank=True, null=True, default='')
     posting_date = models.DateField(null=True, blank=True)
-    posting_time = models.TimeField(null=True, blank=True)
-    posting_datetime = models.DateTimeField(null=True, blank=True)
+    posting_time = FrappeTimeField(null=True, blank=True)
+    posting_datetime = FrappeDateTimeField(null=True, blank=True)
     actual_qty = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     valuation_rate = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     stock_value = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)

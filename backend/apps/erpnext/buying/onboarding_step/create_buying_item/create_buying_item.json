@@ -1,0 +1,23 @@
+{
+ "name": "Create Buying Item",
+ "owner": "Administrator",
+ "creation": "2026-10-04 01:42:03.855747",
+ "modified": "2026-10-04 01:42:03.855747",
+ "modified_by": "Administrator",
+ "docstatus": 0,
+ "idx": 0,
+ "title": "Add an item you buy",
+ "is_complete": 0,
+ "is_skipped": 0,
+ "description": "Goods or services you buy from suppliers. See [Item](https://docs.frappe.io/erpnext/user/manual/en/item).",
+ "intro_video_url": "https://www.youtube.com/watch?v=oSYESI-EVCI",
+ "action": "Create Entry",
+ "action_label": "Add Item",
+ "reference_document": "Item",
+ "show_full_form": 0,
+ "show_form_tour": 0,
+ "is_single": 0,
+ "validate_action": 1,
+ "route_options": "{\n    \"is_purchase_item\": 1\n}",
+ "doctype": "Onboarding Step"
+}

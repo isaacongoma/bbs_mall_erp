@@ -221,6 +221,9 @@ def get_permitted_fields(
     if doctype in CORE_DOCTYPES and doctype != "User":
         return valid_columns
 
+    if (user or frappe.session.user) == "Administrator":
+        return valid_columns
+
     if DEFAULT_FIELDS.issuperset(valid_columns):
         return valid_columns
 

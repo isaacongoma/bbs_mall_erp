@@ -1,7 +1,9 @@
 import django.db.models.deletion
+from apps.core.migration_utils import tolerant_extra_columns
 from django.db import migrations, models
 
 
+@tolerant_extra_columns
 def copy_comments(apps, schema_editor):
     Legacy = apps.get_model("core", "Comment")
     Canonical = apps.get_model("erpnext", "Comment")

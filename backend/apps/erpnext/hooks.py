@@ -27,6 +27,11 @@ code_only_modules = {
 	"Communication": ["ERPNext Integrations"],
 	"EDI": ["Utilities"],
 	"Bulk Transaction": ["Utilities"],
+	"Subcontracting": ["Manufacturing"],
+	"Maintenance": ["Quality"],
+	"Regional": ["Accounts"],
+	"Utilities": ["Setup"],
+	"ERPNext Integrations": ["Setup"],
 }
 
 develop_version = "17.x.x-develop"

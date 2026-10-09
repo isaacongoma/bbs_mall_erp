@@ -21,5 +21,7 @@
  "timeseries": 0,
  "type": "Line",
  "use_report_chart": 1,
- "y_axis": []
+ "y_axis": [],
+ "show_values_over_chart": 0,
+ "empty_state_message": "How much your customers order each month."
 }

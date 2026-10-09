@@ -1,4 +1,3 @@
-from __future__ import annotations
 
 import json
 from datetime import datetime
@@ -24,48 +23,6 @@ from frappe.utils.dateutils import (
 from frappe.utils.modules import get_modules_from_all_apps_for_user
 
 
-def get_permission_query_conditions(user):
-    if not user:
-        user = frappe.session.user
-
-    if user == "Administrator":
-        return
-
-    roles = frappe.get_roles(user)
-    if "System Manager" in roles:
-        return None
-
-    doctype_condition = False
-    report_condition = False
-    module_condition = False
-
-    allowed_doctypes = [frappe.db.escape(doctype) for doctype in get_doctypes_with_read(user)]
-    allowed_reports = [frappe.db.escape(report) for report in DeskViews.get_allowed_report_names(user=user)]
-    allowed_modules = [
-        frappe.db.escape(module.get("module_name")) for module in get_modules_from_all_apps_for_user(user)
-    ]
-
-    if allowed_doctypes:
-        doctype_condition = "`tabDashboard Chart`.`document_type` in ({allowed_doctypes}) OR `tabDashboard Chart`.`parent_document_type` in ({allowed_doctypes})".format(
-            allowed_doctypes=",".join(allowed_doctypes)
-        )
-    if allowed_reports:
-        report_condition = "`tabDashboard Chart`.`report_name` in ({allowed_reports})".format(
-            allowed_reports=",".join(allowed_reports)
-        )
-    if allowed_modules:
-        module_condition = """`tabDashboard Chart`.`module` in ({allowed_modules})
-            or `tabDashboard Chart`.`module` is NULL""".format(allowed_modules=",".join(allowed_modules))
-
-    return f"""
-        ((`tabDashboard Chart`.`chart_type` in ('Count', 'Sum', 'Average', 'Group By')
-        and {doctype_condition})
-        or
-        (`tabDashboard Chart`.`chart_type` = 'Report'
-        and {report_condition}))
-        and
-        ({module_condition})
-    """
 
 
 def has_permission(doc, ptype, user):
@@ -404,3 +361,47 @@ def get_parent_doctypes(child_type: str) -> list[str]:
     )
 
     return standard + custom
+
+
+def get_permission_query_conditions(user):
+    if not user:
+        user = frappe.session.user
+
+    if user == "Administrator":
+        return
+
+    roles = frappe.get_roles(user)
+    if "System Manager" in roles:
+        return None
+
+    doctype_condition = False
+    report_condition = False
+    module_condition = False
+
+    allowed_doctypes = [frappe.db.escape(doctype) for doctype in get_doctypes_with_read(user)]
+    allowed_reports = [frappe.db.escape(report) for report in DeskViews.get_allowed_report_names(user=user)]
+    allowed_modules = [
+        frappe.db.escape(module.get("module_name")) for module in get_modules_from_all_apps_for_user(user)
+    ]
+
+    if allowed_doctypes:
+        doctype_condition = "`tabDashboard Chart`.`document_type` in ({allowed_doctypes}) OR `tabDashboard Chart`.`parent_document_type` in ({allowed_doctypes})".format(
+            allowed_doctypes=",".join(allowed_doctypes)
+        )
+    if allowed_reports:
+        report_condition = "`tabDashboard Chart`.`report_name` in ({allowed_reports})".format(
+            allowed_reports=",".join(allowed_reports)
+        )
+    if allowed_modules:
+        module_condition = """`tabDashboard Chart`.`module` in ({allowed_modules})
+            or `tabDashboard Chart`.`module` is NULL""".format(allowed_modules=",".join(allowed_modules))
+
+    return f"""
+        ((`tabDashboard Chart`.`chart_type` in ('Count', 'Sum', 'Average', 'Group By')
+        and {doctype_condition})
+        or
+        (`tabDashboard Chart`.`chart_type` = 'Report'
+        and {report_condition}))
+        and
+        ({module_condition})
+    """

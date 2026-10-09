@@ -1,75 +1,133 @@
 from collections import defaultdict
 from itertools import chain
 
-from apps.frappe.utils.nestedset import NestedSet, get_root_of
-from apps.frappe import exceptions
-from apps.erpnext.registry import get_model
+import frappe
+from frappe import _
+from frappe.query_builder import Interval
+from frappe.query_builder.functions import Count, CurDate, UnixTimestamp
+from frappe.utils import flt
+from frappe.utils.data import get_url_to_list
+from frappe.utils.nestedset import NestedSet, get_root_of
+
+from erpnext import get_default_currency
 
 
 class SalesPerson(NestedSet):
-    doctype = "Sales Person"
+
+
     nsm_parent_field = "parent_sales_person"
 
     def validate(self):
-        if not int(self.get("enabled") or 0):
+        if not self.enabled:
             self.validate_sales_person()
 
-        if not self.get("parent_sales_person"):
+        if not self.parent_sales_person:
             self.parent_sales_person = get_root_of("Sales Person")
 
-        for d in self.get("targets", []):
-            if not float(getattr(d, "target_qty", 0.0)) and not float(getattr(d, "target_amount", 0.0)):
-                raise exceptions.ValidationError("Either target qty or target amount is mandatory.")
+        for d in self.get("targets") or []:
+            if not flt(d.target_qty) and not flt(d.target_amount):
+                frappe.throw(_("Either target qty or target amount is mandatory."))
         self.validate_employee_id()
 
     def onload(self):
         self.load_dashboard_info()
 
     def load_dashboard_info(self):
-        pass
+        company_default_currency = get_default_currency()
+
+        allocated_amount_against_order = flt(
+            frappe.db.get_value(
+                "Sales Team",
+                {"docstatus": 1, "parenttype": "Sales Order", "sales_person": self.sales_person_name},
+                [{"SUM": "allocated_amount"}],
+            )
+        )
+
+        allocated_amount_against_invoice = flt(
+            frappe.db.get_value(
+                "Sales Team",
+                {"docstatus": 1, "parenttype": "Sales Invoice", "sales_person": self.sales_person_name},
+                [{"SUM": "allocated_amount"}],
+            )
+        )
+
+        info = {}
+        info["allocated_amount_against_order"] = allocated_amount_against_order
+        info["allocated_amount_against_invoice"] = allocated_amount_against_invoice
+        info["currency"] = company_default_currency
+
+        self.set_onload("dashboard_info", info)
 
     def on_update(self):
         super().on_update()
         self.validate_one_root()
 
     def validate_sales_person(self):
-        SalesTeamModel = get_model("Sales Team")
-        if SalesTeamModel.objects.filter(sales_person=self.name, parenttype="Customer").exists():
-            raise exceptions.ValidationError(
-                f"The Sales Person is linked with Customers"
+        sales_team = frappe.qb.DocType("Sales Team")
+
+        query = (
+            frappe.qb.from_(sales_team)
+            .select(sales_team.sales_person)
+            .where((sales_team.sales_person == self.name) & (sales_team.parenttype == "Customer"))
+            .groupby(sales_team.sales_person)
+        ).run(as_dict=True)
+
+        if query:
+            frappe.throw(
+                _("The Sales Person is linked with {0}").format(
+                    frappe.bold(
+                        f"""<a href="{get_url_to_list("Customer")}?sales_person={self.name}">{"Customers"}</a>"""
+                    )
+                )
             )
 
     def get_email_id(self):
-        employee = self.get("employee")
-        if employee:
-            EmployeeModel = get_model("Employee")
-            try:
-                emp = EmployeeModel.objects.get(name=employee)
-                user_id = getattr(emp, "user_id", None)
-                if not user_id:
-                    raise exceptions.ValidationError(f"User ID not set for Employee {employee}")
-                else:
-                    UserModel = get_model("User")
-                    try:
-                        u = UserModel.objects.get(name=user_id)
-                        return getattr(u, "email", user_id) or user_id
-                    except UserModel.DoesNotExist:
-                        return user_id
-            except EmployeeModel.DoesNotExist:
-                pass
-        return None
+        if self.employee:
+            user = frappe.db.get_value("Employee", self.employee, "user_id")
+            if not user:
+                frappe.throw(_("User ID not set for Employee {0}").format(self.employee))
+            else:
+                return frappe.db.get_value("User", user, "email") or user
 
     def validate_employee_id(self):
-        employee = self.get("employee")
-        if employee:
-            SalesPersonModel = get_model("Sales Person")
-            qs = SalesPersonModel.objects.filter(employee=employee).exclude(name=self.name)
-            if qs.exists():
-                sp = qs.first()
-                raise exceptions.ValidationError(
-                    f"Another Sales Person {sp.name} exists with the same Employee id"
+        if self.employee:
+            sales_person = frappe.db.get_value("Sales Person", {"employee": self.employee})
+
+            if sales_person and sales_person != self.name:
+                frappe.throw(
+                    _("Another Sales Person {0} exists with the same Employee id").format(sales_person)
                 )
 
 
-def get_timeline_data(doctype: str, name: str):
-    pass
+def on_doctype_update():
+    frappe.db.add_index("Sales Person", ["lft", "rgt"])
+
+
+def get_timeline_data(doctype: str, name: str) -> dict[int, int]:
+    def _fetch_activity(doctype: str, date_field: str):
+        sales_team = frappe.qb.DocType("Sales Team")
+        transaction = frappe.qb.DocType(doctype)
+
+        return dict(
+            frappe.qb.from_(transaction)
+            .join(sales_team)
+            .on(transaction.name == sales_team.parent)
+            .select(UnixTimestamp(transaction[date_field]), Count("*"))
+            .where(sales_team.sales_person == name)
+            .where(transaction[date_field] > CurDate() - Interval(years=1))
+            .groupby(transaction[date_field])
+            .run()
+        )
+
+    sales_order_activity = _fetch_activity("Sales Order", "transaction_date")
+    sales_invoice_activity = _fetch_activity("Sales Invoice", "posting_date")
+    delivery_note_activity = _fetch_activity("Delivery Note", "posting_date")
+
+    merged_activities = defaultdict(int)
+
+    for ts, count in chain(
+        sales_order_activity.items(), sales_invoice_activity.items(), delivery_note_activity.items()
+    ):
+        merged_activities[ts] += count
+
+    return merged_activities

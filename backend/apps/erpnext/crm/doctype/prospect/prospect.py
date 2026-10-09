@@ -1,4 +1,3 @@
-from __future__ import annotations
 
 import frappe
 from frappe.contacts.address_and_contact import (

@@ -1,12 +1,12 @@
 from django.db import models
 
-from apps.frappe.model.base import FrappeChildModel, FrappeModel, FrappeTreeModel
+from apps.frappe.model.base import FrappeChildModel, FrappeDateTimeField, FrappeModel, FrappeTimeField, FrappeTreeModel
 
 
 class ShiftTypeGenerated(FrappeModel):
     doctype = 'Shift Type'
-    start_time = models.TimeField(null=True, blank=True)
-    end_time = models.TimeField(null=True, blank=True)
+    start_time = FrappeTimeField(null=True, blank=True)
+    end_time = FrappeTimeField(null=True, blank=True)
     holiday_list = models.CharField(max_length=140, blank=True, null=True, default='')
     determine_check_in_and_check_out = models.CharField(max_length=140, blank=True, null=True, default='')
     working_hours_calculation_based_on = models.CharField(max_length=140, blank=True, null=True, default='')
@@ -18,7 +18,7 @@ class ShiftTypeGenerated(FrappeModel):
     allow_check_out_after_shift_end_time = models.IntegerField(null=True, blank=True)
     enable_auto_attendance = models.SmallIntegerField(default=0)
     process_attendance_after = models.DateField(null=True, blank=True)
-    last_sync_of_checkin = models.DateTimeField(null=True, blank=True)
+    last_sync_of_checkin = FrappeDateTimeField(null=True, blank=True)
     mark_auto_attendance_on_holidays = models.SmallIntegerField(default=0)
     absent_buffer_days = models.IntegerField(null=True, blank=True)
     enable_late_entry_marking = models.SmallIntegerField(default=0)

@@ -1,8 +1,8 @@
 {
  "action": "Create Entry",
- "action_label": "Create supplier",
+ "action_label": "Add Supplier",
  "creation": "2026-02-19 10:53:56.936107",
- "description": "",
+ "description": "A business or person you buy from. See [Supplier](https://docs.frappe.io/erpnext/user/manual/en/supplier).",
  "docstatus": 0,
  "doctype": "Onboarding Step",
  "form_tour": "Supplier Form Tour",
@@ -16,7 +16,8 @@
  "owner": "Administrator",
  "reference_document": "Supplier",
  "show_form_tour": 1,
- "show_full_form": 1,
- "title": "Create Supplier",
- "validate_action": 1
+ "show_full_form": 0,
+ "title": "Add a supplier",
+ "validate_action": 1,
+ "intro_video_url": "https://www.youtube.com/watch?v=ctgyKAvyhJs"
 }

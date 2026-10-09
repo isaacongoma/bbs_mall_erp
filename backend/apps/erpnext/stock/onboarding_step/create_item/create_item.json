@@ -1,6 +1,6 @@
 {
  "action": "Create Entry",
- "action_label": "Create Item",
+ "action_label": "Add Item",
  "creation": "2026-02-19 12:38:40.865013",
  "docstatus": 0,
  "doctype": "Onboarding Step",
@@ -15,6 +15,9 @@
  "reference_document": "Item",
  "show_form_tour": 0,
  "show_full_form": 0,
- "title": "Create Item",
- "validate_action": 1
+ "title": "Add an item you stock",
+ "validate_action": 1,
+ "description": "Anything you keep on shelves and count. See [Item](https://docs.frappe.io/erpnext/user/manual/en/item).",
+ "intro_video_url": "https://www.youtube.com/watch?v=oSYESI-EVCI",
+ "route_options": "{\n    \"is_stock_item\": 1\n}"
 }

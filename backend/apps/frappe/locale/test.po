@@ -1,0 +1,19 @@
+# test translations for Frappe Framework.
+# Copyright (C) 2026 Frappe Technologies
+# This file is distributed under the same license as the Frappe Framework project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Frappe Framework VERSION\n"
+"Report-Msgid-Bugs-To: developers@frappe.io\n"
+"POT-Creation-Date: 2026-10-06 02:09+0300\n"
+"PO-Revision-Date: 2026-10-06 02:09+0300\n"
+"Last-Translator: developers@frappe.io\n"
+"Language: test\n"
+"Language-Team: developers@frappe.io\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+

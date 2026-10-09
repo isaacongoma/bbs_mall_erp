@@ -79,7 +79,7 @@ class QueryBuilderTests(TestCase):
     def test_get_query_helper(self):
         query = frappe.qb.get_query("Branch", fields=["name as value"], filters={"name": ["like", "QB%"]}, order_by="name asc")
         self.assertEqual([row.value for row in query.run(as_dict=True)], ["QB One", "QB Two"])
-        counts = frappe.qb.get_query("Branch", fields=["count(name) as total"], filters=[["name", "in", ["QB One", "QB Two"]]]).run(as_dict=True)
+        counts = frappe.qb.get_query("Branch", fields=[{"COUNT": "name", "as": "total"}], filters=[["name", "in", ["QB One", "QB Two"]]]).run(as_dict=True)
         self.assertEqual(counts[0].total, 2)
         limited = frappe.qb.get_query("Branch", fields=["name"], order_by="name desc", limit=1).run(pluck="name")
         self.assertEqual(limited, ["QB Two"])

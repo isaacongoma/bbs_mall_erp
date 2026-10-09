@@ -5,7 +5,6 @@ document (composition) and owns the reservation-related behaviour; the
 module-level helpers are reused by the controller and by Production Plan.
 work_order.py re-exports them to preserve whitelist dotted-paths and imports.
 """
-from __future__ import annotations
 
 from collections import defaultdict
 

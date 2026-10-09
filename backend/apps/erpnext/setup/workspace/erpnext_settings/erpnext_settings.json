@@ -2,8 +2,19 @@
  "app": "erpnext",
  "charts": [
   {
+   "name": "n10mrb8s3t",
+   "owner": "Administrator",
+   "creation": "2022-01-27 13:14:47.349433",
+   "modified": "2026-10-07 14:26:22.403901",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 1,
    "chart_name": "Top Customers",
-   "label": "Top Customers"
+   "label": "Top Customers",
+   "parent": "ERPNext Settings",
+   "parentfield": "charts",
+   "parenttype": "Workspace",
+   "doctype": "Workspace Chart"
   }
  ],
  "content": "[{\"id\": \"1c097e6187\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Top Customers\", \"col\": 12}}, {\"id\": \"719ae0d3bd\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Active Customers\", \"col\": 4}}, {\"id\": \"8058b27fbe\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Active Suppliers\", \"col\": 4}}, {\"id\": \"183d2da232\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Total Warehouses\", \"col\": 4}}]",
@@ -24,16 +35,49 @@
  "name": "ERPNext Settings",
  "number_cards": [
   {
+   "name": "n10gap66dm",
+   "owner": "Administrator",
+   "creation": "2022-01-27 13:14:47.349433",
+   "modified": "2026-10-07 14:26:22.403901",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 1,
+   "number_card_name": "Active Customers",
    "label": "Active Customers",
-   "number_card_name": "Active Customers"
+   "parent": "ERPNext Settings",
+   "parentfield": "number_cards",
+   "parenttype": "Workspace",
+   "doctype": "Workspace Number Card"
   },
   {
+   "name": "n10bnck1cf",
+   "owner": "Administrator",
+   "creation": "2022-01-27 13:14:47.349433",
+   "modified": "2026-10-07 14:26:22.403901",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 2,
+   "number_card_name": "Active Suppliers",
    "label": "Active Suppliers",
-   "number_card_name": "Active Suppliers"
+   "parent": "ERPNext Settings",
+   "parentfield": "number_cards",
+   "parenttype": "Workspace",
+   "doctype": "Workspace Number Card"
   },
   {
+   "name": "n104l6aa5d",
+   "owner": "Administrator",
+   "creation": "2022-01-27 13:14:47.349433",
+   "modified": "2026-10-07 14:26:22.403901",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 3,
+   "number_card_name": "Total Warehouses",
    "label": "Total Warehouses",
-   "number_card_name": "Total Warehouses"
+   "parent": "ERPNext Settings",
+   "parentfield": "number_cards",
+   "parenttype": "Workspace",
+   "doctype": "Workspace Number Card"
   }
  ],
  "owner": "Administrator",
@@ -42,7 +86,7 @@
  "quick_lists": [],
  "restrict_to_domain": "",
  "roles": [],
- "sequence_id": 19.0,
+ "sequence_id": 19,
  "shortcuts": [],
  "sidebar_items": [
   {

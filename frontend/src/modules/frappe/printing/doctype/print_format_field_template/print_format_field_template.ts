@@ -1,0 +1,2 @@
+import { frappe } from '@/shared/frappe'
+frappe.ui.form.on('Print Format Field Template', {})

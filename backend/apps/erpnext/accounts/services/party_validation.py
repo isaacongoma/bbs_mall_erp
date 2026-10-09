@@ -1,5 +1,4 @@
 """Party validation: PartyValidator class for transaction-level party checks."""
-from __future__ import annotations
 
 import frappe
 from frappe import _

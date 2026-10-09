@@ -1,51 +1,52 @@
+
+
+import json
+
 import frappe
-from apps.frappe.utils.nestedset import NestedSet, get_root_of
-from apps.erpnext.registry import get_model
+from frappe.utils.nestedset import NestedSet, get_root_of
+
+from erpnext.utilities.transaction_base import delete_events
 
 
 class Department(NestedSet):
-    doctype = "Department"
+
+
     nsm_parent_field = "parent_department"
 
     def autoname(self):
-        company = self.get("company")
-        department_name = self.get("department_name") or ""
-        
-        if company:
-            self.name = get_abbreviated_name(department_name, company)
+        if self.company:
+            self.name = get_abbreviated_name(self.department_name, self.company)
         else:
-            self.name = department_name
+            self.name = self.department_name
 
     def validate(self):
-        if not self.get("parent_department"):
+        if not self.parent_department:
             root = get_root_of("Department")
             if root:
                 self.parent_department = root
 
     def before_rename(self, old, new, merge=False):
-        company = self.get("company")
-        if company:
-            CompanyModel = get_model("Company")
-            try:
-                company_doc = CompanyModel.objects.get(name=company)
-                abbr = company_doc.abbr or ""
-                if abbr not in new:
-                    new = get_abbreviated_name(new, company)
-            except CompanyModel.DoesNotExist:
-                pass
+        if frappe.get_cached_value("Company", self.company, "abbr") not in new:
+            new = get_abbreviated_name(new, self.company)
+
         return new
+
+    def on_update(self):
+        if not (frappe.local.flags.ignore_update_nsm or frappe.flags.in_setup_wizard):
+            super().on_update()
+
+    def on_trash(self):
+        super().on_trash()
+        delete_events(self.doctype, self.name)
+
+
+def on_doctype_update():
+    frappe.db.add_index("Department", ["lft", "rgt"])
 
 
 def get_abbreviated_name(name, company):
-    CompanyModel = get_model("Company")
-    abbr = ""
-    try:
-        company_doc = CompanyModel.objects.get(name=company)
-        abbr = company_doc.abbr or ""
-    except CompanyModel.DoesNotExist:
-        pass
-    
-    new_name = f"{name} - {abbr}" if abbr else name
+    abbr = frappe.get_cached_value("Company", company, "abbr")
+    new_name = f"{name} - {abbr}"
     return new_name
 
 
@@ -72,12 +73,12 @@ def get_children(
     if frappe.db.has_column("Department", "disabled") and not include_disabled:
         filters["disabled"] = False
 
-    return frappe.get_list("Department", fields=fields, filters=filters, order_by="name", limit=0)
+    return frappe.get_list("Department", fields=fields, filters=filters, order_by="name")
 
 
 @frappe.whitelist(methods=["POST"])
 def add_node():
-    from apps.frappe.desk.treeview import make_tree_args
+    from frappe.desk.treeview import make_tree_args
 
     args = frappe.form_dict
     args = make_tree_args(**args)

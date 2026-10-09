@@ -1,66 +1,60 @@
-from apps.frappe.utils.nestedset import NestedSet, get_root_of, update_nsm
-from apps.frappe import exceptions
-from apps.erpnext.registry import get_model
+import frappe
+from frappe import _
+from frappe.utils.nestedset import NestedSet, get_root_of
 
 
 class SupplierGroup(NestedSet):
-    doctype = "Supplier Group"
+
+
     nsm_parent_field = "parent_supplier_group"
 
     def validate(self):
-        if not self.get("parent_supplier_group"):
+        if not self.parent_supplier_group:
             self.parent_supplier_group = get_root_of("Supplier Group")
         self.validate_currency_for_payable_and_advance_account()
 
     def validate_currency_for_payable_and_advance_account(self):
-        AccountModel = get_model("Account")
-        for x in self.get("accounts", []):
+        for x in self.accounts:
             payable_account_currency = None
             advance_account_currency = None
 
-            if getattr(x, "account", None):
-                try:
-                    acc = AccountModel.objects.get(name=x.account)
-                    payable_account_currency = getattr(acc, "account_currency", None)
-                except AccountModel.DoesNotExist:
-                    pass
+            if x.account:
+                payable_account_currency = frappe.get_cached_value("Account", x.account, "account_currency")
 
-            if getattr(x, "advance_account", None):
-                try:
-                    adv_acc = AccountModel.objects.get(name=x.advance_account)
-                    advance_account_currency = getattr(adv_acc, "account_currency", None)
-                except AccountModel.DoesNotExist:
-                    pass
+            if x.advance_account:
+                advance_account_currency = frappe.get_cached_value(
+                    "Account", x.advance_account, "account_currency"
+                )
 
             if (
                 payable_account_currency
                 and advance_account_currency
                 and payable_account_currency != advance_account_currency
             ):
-                raise exceptions.ValidationError(
-                    f"Both Payable Account: {x.account} and Advance Account: {x.advance_account} must be of same currency for company: {getattr(x, 'company', '')}"
+                frappe.throw(
+                    _(
+                        "Both Payable Account: {0} and Advance Account: {1} must be of same currency for company: {2}"
+                    ).format(
+                        frappe.bold(x.account),
+                        frappe.bold(x.advance_account),
+                        frappe.bold(x.company),
+                    )
                 )
 
     def on_update(self):
-        super().on_update()
+        NestedSet.on_update(self)
         self.validate_one_root()
 
     def on_trash(self):
-        self.validate_if_child_exists()
-        update_nsm(self)
+        NestedSet.validate_if_child_exists(self)
+        frappe.utils.nestedset.update_nsm(self)
 
 
 def get_parent_supplier_groups(supplier_group):
-    SupplierGroupModel = get_model("Supplier Group")
-    try:
-        sg = SupplierGroupModel.objects.get(name=supplier_group)
-        lft = getattr(sg, "lft", 0)
-        rgt = getattr(sg, "rgt", 0)
-        
-        qs = SupplierGroupModel.objects.filter(
-            lft__lte=lft,
-            rgt__gte=rgt
-        ).order_by("lft").values("name")
-        return list(qs)
-    except SupplierGroupModel.DoesNotExist:
-        return []
+    lft, rgt = frappe.db.get_value("Supplier Group", supplier_group, ["lft", "rgt"])
+    return frappe.get_all(
+        "Supplier Group",
+        filters=[["lft", "<=", lft], ["rgt", ">=", rgt]],
+        fields=["name"],
+        order_by="lft asc",
+    )

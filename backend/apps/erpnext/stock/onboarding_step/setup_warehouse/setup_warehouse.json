@@ -1,6 +1,6 @@
 {
  "action": "Go to Page",
- "action_label": "Create Warehouses",
+ "action_label": "Open Warehouse",
  "creation": "2026-02-20 13:51:56.762299",
  "docstatus": 0,
  "doctype": "Onboarding Step",
@@ -14,7 +14,9 @@
  "owner": "Administrator",
  "path": "Tree/Warehouse",
  "show_form_tour": 0,
- "show_full_form": 0,
- "title": "Setup Warehouse",
- "validate_action": 1
+ "show_full_form": 1,
+ "title": "Review your warehouses",
+ "validate_action": 1,
+ "description": "We created a few to start with. Rename them, or add the places you actually keep stock. See [Warehouse](https://docs.frappe.io/erpnext/user/manual/en/warehouse).",
+ "intro_video_url": "https://www.youtube.com/watch?v=GUdASBoDSm0"
 }

@@ -1,4 +1,3 @@
-from __future__ import annotations
 
 import json
 import re
@@ -348,91 +347,6 @@ def _get_communications(doctype, name, start=0, limit=20):
     return communications
 
 
-def get_communication_data(
-    doctype, name, start=0, limit=20, after=None, fields=None, group_by=None, as_dict=True
-):
-    """Return list of communications for a given document."""
-    if not fields:
-        fields = """
-            C.name, C.communication_type, C.communication_medium,
-            C.communication_date, C.content,
-            C.sender, C.sender_full_name, C.cc, C.bcc,
-            C.creation AS creation, C.subject, C.delivery_status,
-            C._liked_by, C.reference_doctype, C.reference_name,
-            C.read_by_recipient, C.recipients
-        """
-
-    conditions = ""
-    if after:
-        conditions += f"""
-            AND C.communication_date > {after}
-        """
-
-    if doctype == "User":
-        conditions += """
-            AND NOT (C.reference_doctype='User' AND C.communication_type='Communication')
-        """
-
-    part1 = f"""
-        SELECT {fields}
-        FROM `tabCommunication` as C
-        WHERE C.communication_type IN ('Communication', 'Automated Message')
-        AND (C.reference_doctype = %(doctype)s AND C.reference_name = %(name)s)
-        {conditions}
-        ORDER BY C.communication_date DESC
-        LIMIT %(cte_limit)s
-    """
-
-    part2 = f"""
-        SELECT {fields}
-        FROM `tabCommunication` as C
-        INNER JOIN `tabCommunication Link` ON C.name=`tabCommunication Link`.parent
-        WHERE C.communication_type IN ('Communication', 'Automated Message')
-        AND `tabCommunication Link`.link_doctype = %(doctype)s AND `tabCommunication Link`.link_name = %(name)s
-        {conditions}
-        ORDER BY `tabCommunication Link`.communication_date DESC
-        LIMIT %(cte_limit)s
-    """
-
-    sqlite_query = f"""
-        SELECT * FROM (
-            SELECT * FROM ({part1})
-            UNION ALL
-            SELECT * FROM ({part2})
-        ) AS combined
-        {group_by or ""}
-        ORDER BY communication_date DESC
-        LIMIT %(limit)s
-        OFFSET %(start)s"""
-
-    query = f"""
-        WITH part1 AS ({part1}), part2 AS ({part2})
-        SELECT *
-        FROM (
-            SELECT * FROM part1
-            UNION
-            SELECT * FROM part2
-        ) AS combined
-        {group_by or ""}
-        ORDER BY communication_date DESC
-        LIMIT %(limit)s
-        OFFSET %(start)s
-        """
-
-    return frappe.db.multisql(
-        {
-            "sqlite": sqlite_query,
-            "*": query,
-        },
-        dict(
-            doctype=doctype,
-            name=str(name),
-            start=frappe.utils.cint(start),
-            limit=limit,
-            cte_limit=limit + start,
-        ),
-        as_dict=as_dict,
-    )
 
 
 def get_assignments(dt, dn):
@@ -586,3 +500,90 @@ def get_user_info_for_viewers(users: str | list):
         frappe.utils.add_user_info(user, user_info)
 
     return user_info
+
+
+def get_communication_data(
+    doctype, name, start=0, limit=20, after=None, fields=None, group_by=None, as_dict=True
+):
+    """Return list of communications for a given document."""
+    if not fields:
+        fields = """
+            C.name, C.communication_type, C.communication_medium,
+            C.communication_date, C.content,
+            C.sender, C.sender_full_name, C.cc, C.bcc,
+            C.creation AS creation, C.subject, C.delivery_status,
+            C._liked_by, C.reference_doctype, C.reference_name,
+            C.read_by_recipient, C.recipients
+        """
+
+    conditions = ""
+    if after:
+        conditions += f"""
+            AND C.communication_date > {after}
+        """
+
+    if doctype == "User":
+        conditions += """
+            AND NOT (C.reference_doctype='User' AND C.communication_type='Communication')
+        """
+
+    part1 = f"""
+        SELECT {fields}
+        FROM `tabCommunication` as C
+        WHERE C.communication_type IN ('Communication', 'Automated Message')
+        AND (C.reference_doctype = %(doctype)s AND C.reference_name = %(name)s)
+        {conditions}
+        ORDER BY C.communication_date DESC
+        LIMIT %(cte_limit)s
+    """
+
+    part2 = f"""
+        SELECT {fields}
+        FROM `tabCommunication` as C
+        INNER JOIN `tabCommunication Link` ON C.name=`tabCommunication Link`.parent
+        WHERE C.communication_type IN ('Communication', 'Automated Message')
+        AND `tabCommunication Link`.link_doctype = %(doctype)s AND `tabCommunication Link`.link_name = %(name)s
+        {conditions}
+        ORDER BY `tabCommunication Link`.communication_date DESC
+        LIMIT %(cte_limit)s
+    """
+
+    sqlite_query = f"""
+        SELECT * FROM (
+            SELECT * FROM ({part1})
+            UNION ALL
+            SELECT * FROM ({part2})
+        ) AS combined
+        {group_by or ""}
+        ORDER BY communication_date DESC
+        LIMIT %(limit)s
+        OFFSET %(start)s"""
+
+    query = f"""
+        WITH part1 AS ({part1}), part2 AS ({part2})
+        SELECT *
+        FROM (
+            SELECT * FROM part1
+            UNION
+            SELECT * FROM part2
+        ) AS combined
+        {group_by or ""}
+        ORDER BY communication_date DESC
+        LIMIT %(limit)s
+        OFFSET %(start)s
+        """
+
+    return frappe.db.multisql(
+        {
+            "sqlite": sqlite_query,
+            "*": query,
+        },
+        dict(
+            doctype=doctype,
+            name=str(name),
+            start=frappe.utils.cint(start),
+            limit=limit,
+            cte_limit=limit + start,
+        ),
+        as_dict=as_dict,
+    )

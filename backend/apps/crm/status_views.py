@@ -9,9 +9,7 @@ from __future__ import annotations
 
 from rest_framework import serializers, viewsets
 
-from apps.core.doctype.gender.gender import Gender
 from apps.erpnext.registry import get_model
-from apps.core.doctype.salutation.salutation import Salutation
 from apps.crm.doctype.communication_status.communication_status import CRMCommunicationStatus
 from apps.crm.doctype.deal_status.deal_status import CRMDealStatus
 from apps.crm.doctype.form_script.form_script import CRMFormScript
@@ -74,26 +72,52 @@ class CRMFormScriptViewSet(viewsets.ModelViewSet):
 # Contact/CRM Lead/CRM Deal/CRM Organization. Listable/creatable ("+ Create
 # New" in the Link dropdown) the same way, via the generic doc engine's
 # frappe.client.insert, which needs a real REST endpoint per doctype.
-class SalutationSerializer(serializers.ModelSerializer):
+class LookupSerializer(serializers.Serializer):
+    name = serializers.CharField()
+
+    def to_representation(self, instance):
+        return {"name": instance.name}
+
+    def create(self, validated_data):
+        from django.utils import timezone
+
+        from apps.core.identity import user_email
+
+        now = timezone.now()
+        email = user_email(getattr(self.context.get("request"), "user", None)) or "Administrator"
+        values = {self.Meta.title_field: validated_data["name"]}
+        return get_model(self.Meta.doctype).objects.create(
+            name=validated_data["name"], owner=email, modified_by=email, creation=now, modified=now, **values
+        )
+
+    def update(self, instance, validated_data):
+        return instance
+
+
+class SalutationSerializer(LookupSerializer):
     class Meta:
-        model = Salutation
-        fields = "__all__"
+        doctype = "Salutation"
+        title_field = "salutation"
 
 
 class SalutationViewSet(viewsets.ModelViewSet):
-    queryset = Salutation.objects.all()
     serializer_class = SalutationSerializer
 
+    def get_queryset(self):
+        return get_model("Salutation").objects.all().order_by("name")
 
-class GenderSerializer(serializers.ModelSerializer):
+
+class GenderSerializer(LookupSerializer):
     class Meta:
-        model = Gender
-        fields = "__all__"
+        doctype = "Gender"
+        title_field = "gender"
 
 
 class GenderViewSet(viewsets.ModelViewSet):
-    queryset = Gender.objects.all()
     serializer_class = GenderSerializer
+
+    def get_queryset(self):
+        return get_model("Gender").objects.all().order_by("name")
 
 
 class AddressSerializer(serializers.Serializer):

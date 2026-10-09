@@ -4,7 +4,6 @@ All functions take a `doc` (AccountsController instance) as first argument so
 they can be called as module-level functions from any doctype, while keeping
 the AccountsController methods as thin shims.
 """
-from __future__ import annotations
 
 import frappe
 from frappe import _

@@ -1,11 +1,8 @@
-import json
-import os
 from unittest.mock import patch
-from django.test import TestCase
 
-from apps.frappe.runtime import get_doc, new_doc, db
-from apps.erpnext.registry import get_model
-from apps.frappe.utils.nestedset import (
+import frappe
+from frappe.query_builder.functions import Max
+from frappe.utils.nestedset import (
     NestedSetChildExistsError,
     NestedSetInvalidMergeError,
     NestedSetMultipleRootsError,
@@ -13,55 +10,31 @@ from apps.frappe.utils.nestedset import (
     get_ancestors_of,
     rebuild_tree,
 )
-from django.db.models import Max
+
+from erpnext.tests.utils import ERPNextTestSuite
 
 TRANSLATED_ROOT = "Todos os Grupos de Itens"
 
-class TestItemGroup(TestCase):
+
+class TestItemGroup(ERPNextTestSuite):
     def setUp(self):
-        with open("D:/Clients/BBS-ERP/vendor/erpnext/erpnext/setup/doctype/item_group/test_records.json", "r", encoding="utf-8") as f:
-            self.records = json.load(f)
-            
-        get_model("Item Group").objects.all().delete()
-
-        root = new_doc("Item Group")
-        root.item_group_name = "All Item Groups"
-        root.is_group = 1
-        root.parent_item_group = ""
-        root.insert()
-        
-        for record in self.records:
-            record.pop("item_group_defaults", None)
-            record.pop("taxes", None)
-            d = get_doc(record)
-            d.insert()
-
-    def _get_no_of_children(self, item_group):
-        def get_no_of_children_recursive(item_groups, no_of_children):
-            children = []
-            for ig in item_groups:
-                children += list(get_model("Item Group").objects.filter(parent_item_group=ig).values_list("name", flat=True))
-            if len(children):
-                return get_no_of_children_recursive(children, no_of_children + len(children))
-            else:
-                return no_of_children
-
-        return get_no_of_children_recursive([item_group], 0)
+        self.load_test_records("Item Group")
 
     def test_basic_tree(self, records=None):
         min_lft = 1
-        max_rgt = get_model("Item Group").objects.aggregate(Max("rgt"))["rgt__max"]
+        ig = frappe.qb.DocType("Item Group")
+        max_rgt = frappe.qb.from_(ig).select(Max(ig.rgt)).run()[0][0]
 
         if not records:
-            records = self.records[2:]
+            records = self.globalTestRecords["Item Group"][2:]
 
-        for record in records:
-            item_group = get_model("Item Group").objects.get(pk=record["item_group_name"])
-            lft, rgt, parent_item_group = item_group.lft, item_group.rgt, item_group.parent_item_group
+        for item_group in records:
+            lft, rgt, parent_item_group = frappe.db.get_value(
+                "Item Group", item_group["item_group_name"], ["lft", "rgt", "parent_item_group"]
+            )
 
             if parent_item_group:
-                parent_node = get_model("Item Group").objects.get(pk=parent_item_group)
-                parent_lft, parent_rgt = parent_node.lft, parent_node.rgt
+                parent_lft, parent_rgt = frappe.db.get_value("Item Group", parent_item_group, ["lft", "rgt"])
             else:
                 parent_lft = min_lft - 1
                 parent_rgt = max_rgt + 1
@@ -75,7 +48,7 @@ class TestItemGroup(TestCase):
             self.assertTrue(lft >= min_lft, "lft < min_lft")
             self.assertTrue(rgt <= max_rgt, "rgs > max_rgt")
 
-            no_of_children = self._get_no_of_children(record["item_group_name"])
+            no_of_children = self._get_no_of_children(item_group["item_group_name"])
             self.assertTrue(rgt == (lft + 1 + (2 * no_of_children)), "rgt is not lft + 1 + (2 * #children)")
 
             no_of_children = self._get_no_of_children(parent_item_group)
@@ -84,7 +57,7 @@ class TestItemGroup(TestCase):
             )
 
     def test_recursion(self):
-        group_b = get_doc("Item Group", "_Test Item Group B")
+        group_b = frappe.get_doc("Item Group", "_Test Item Group B")
         group_b.parent_item_group = "_Test Item Group B - 3"
         self.assertRaises(NestedSetRecursionError, group_b.save)
 
@@ -96,82 +69,185 @@ class TestItemGroup(TestCase):
         self.test_basic_tree()
 
     def test_move_group_into_another(self):
-        old_lft = get_model("Item Group").objects.get(pk="_Test Item Group C").lft
-        old_rgt = get_model("Item Group").objects.get(pk="_Test Item Group C").rgt
+        old_lft, old_rgt = frappe.db.get_value("Item Group", "_Test Item Group C", ["lft", "rgt"])
 
-        group_b = get_doc("Item Group", "_Test Item Group B")
+        group_b = frappe.get_doc("Item Group", "_Test Item Group B")
         lft, rgt = group_b.lft, group_b.rgt
 
         group_b.parent_item_group = "_Test Item Group C"
         group_b.save()
         self.test_basic_tree()
 
-        new_lft = get_model("Item Group").objects.get(pk="_Test Item Group C").lft
-        new_rgt = get_model("Item Group").objects.get(pk="_Test Item Group C").rgt
+        new_lft, new_rgt = frappe.db.get_value("Item Group", "_Test Item Group C", ["lft", "rgt"])
 
         self.assertEqual(old_lft - new_lft, rgt - lft + 1)
+
         self.assertEqual(new_rgt - old_rgt, 0)
 
         self._move_it_back()
 
     def test_move_group_into_root(self):
-        group_b = get_doc("Item Group", "_Test Item Group B")
+        group_b = frappe.get_doc("Item Group", "_Test Item Group B")
         group_b.parent_item_group = ""
-        group_b.flags["in_test"] = True
         self.assertRaises(NestedSetMultipleRootsError, group_b.save)
 
         self.test_basic_tree()
+
         self._move_it_back()
 
     def test_move_leaf_into_another_group(self):
-        old_lft = get_model("Item Group").objects.get(pk="_Test Item Group C").lft
-        old_rgt = get_model("Item Group").objects.get(pk="_Test Item Group C").rgt
+        old_lft, old_rgt = frappe.db.get_value("Item Group", "_Test Item Group C", ["lft", "rgt"])
 
-        group_b_3 = get_doc("Item Group", "_Test Item Group B - 3")
+        group_b_3 = frappe.get_doc("Item Group", "_Test Item Group B - 3")
+
         group_b_3.parent_item_group = "_Test Item Group C"
         group_b_3.save()
         self.test_basic_tree()
 
-        new_lft = get_model("Item Group").objects.get(pk="_Test Item Group C").lft
-        new_rgt = get_model("Item Group").objects.get(pk="_Test Item Group C").rgt
+        new_lft, new_rgt = frappe.db.get_value("Item Group", "_Test Item Group C", ["lft", "rgt"])
 
         self.assertEqual(old_lft - new_lft, 2)
+
         self.assertEqual(new_rgt - old_rgt, 0)
 
-        group_b_3 = get_doc("Item Group", "_Test Item Group B - 3")
+        group_b_3 = frappe.get_doc("Item Group", "_Test Item Group B - 3")
         group_b_3.parent_item_group = "_Test Item Group B"
         group_b_3.save()
         self.test_basic_tree()
 
     def test_delete_leaf(self):
-        parent_item_group = get_model("Item Group").objects.get(pk="_Test Item Group B - 3").parent_item_group
+        parent_item_group = frappe.db.get_value("Item Group", "_Test Item Group B - 3", "parent_item_group")
+        frappe.db.get_value("Item Group", parent_item_group, "rgt")
+
         ancestors = get_ancestors_of("Item Group", "_Test Item Group B - 3")
-        ancestor_rgts = {doc.name: doc.rgt for doc in get_model("Item Group").objects.filter(name__in=ancestors)}
+        ancestors = frappe.get_all("Item Group", filters={"name": ["in", ancestors]}, fields=["name", "rgt"])
 
-        doc = get_doc("Item Group", "_Test Item Group B - 3")
-        doc.delete()
-
-        records_to_test = self.records[2:]
+        frappe.delete_doc("Item Group", "_Test Item Group B - 3")
+        records_to_test = self.globalTestRecords["Item Group"][2:]
         del records_to_test[4]
         self.test_basic_tree(records=records_to_test)
 
-        for name, old_rgt in ancestor_rgts.items():
-            new_rgt = get_model("Item Group").objects.get(pk=name).rgt
-            self.assertEqual(new_rgt, old_rgt - 2)
+        for item_group in ancestors:
+            new_lft, new_rgt = frappe.db.get_value("Item Group", item_group.name, ["lft", "rgt"])
+            self.assertEqual(new_rgt, item_group.rgt - 2)
 
-        record6 = dict(self.records[6])
-        record6.pop("item_group_defaults", None)
-        record6.pop("taxes", None)
-        doc = get_doc(record6)
-        doc.insert()
+        frappe.copy_doc(self.globalTestRecords["Item Group"][6]).insert()
+
         self.test_basic_tree()
 
     def test_delete_group(self):
-        doc = get_doc("Item Group", "_Test Item Group B")
-        self.assertRaises(NestedSetChildExistsError, doc.delete)
+        self.assertRaises(NestedSetChildExistsError, frappe.delete_doc, "Item Group", "_Test Item Group B")
+
+    def test_merge_groups(self):
+        frappe.rename_doc("Item Group", "_Test Item Group B", "_Test Item Group C", merge=True)
+        records_to_test = self.globalTestRecords["Item Group"][2:]
+        del records_to_test[1]
+        self.test_basic_tree(records=records_to_test)
+
+        frappe.copy_doc(self.globalTestRecords["Item Group"][3]).insert()
+        self.test_basic_tree()
+
+        for name in frappe.get_all(
+            "Item Group", filters={"parent_item_group": "_Test Item Group C"}, pluck="name"
+        ):
+            doc = frappe.get_doc("Item Group", name)
+            doc.parent_item_group = "_Test Item Group B"
+            doc.save()
+
+        self.test_basic_tree()
+
+    def test_merge_leaves(self):
+        frappe.rename_doc("Item Group", "_Test Item Group B - 2", "_Test Item Group B - 1", merge=True)
+        records_to_test = self.globalTestRecords["Item Group"][2:]
+        del records_to_test[3]
+        self.test_basic_tree(records=records_to_test)
+
+        frappe.copy_doc(self.globalTestRecords["Item Group"][5]).insert()
+        self.test_basic_tree()
+
+    def test_merge_leaf_into_group(self):
+        self.assertRaises(
+            NestedSetInvalidMergeError,
+            frappe.rename_doc,
+            "Item Group",
+            "_Test Item Group B - 3",
+            "_Test Item Group B",
+            merge=True,
+        )
+
+    def test_merge_group_into_leaf(self):
+        self.assertRaises(
+            NestedSetInvalidMergeError,
+            frappe.rename_doc,
+            "Item Group",
+            "_Test Item Group B",
+            "_Test Item Group B - 3",
+            merge=True,
+        )
+
+    def test_preset_records_use_existing_root(self):
+        from erpnext.setup.setup_wizard.operations import install_fixtures
+
+        with patch.object(install_fixtures, "get_root_of", return_value=TRANSLATED_ROOT):
+            records = [
+                r for r in install_fixtures.get_preset_records("India") if r["doctype"] == "Item Group"
+            ]
+
+        root_record, *child_records = records
+        self.assertEqual(root_record["item_group_name"], TRANSLATED_ROOT)
+        self.assertTrue(root_record["__condition"]())
+        self.assertEqual({r["parent_item_group"] for r in child_records}, {TRANSLATED_ROOT})
+
+        with patch.object(install_fixtures, "get_root_of", return_value="All Item Groups"):
+            root_record = next(
+                r for r in install_fixtures.get_preset_records("India") if r["doctype"] == "Item Group"
+            )
+        self.assertFalse(root_record["__condition"]())
+
+    def test_patch_merges_seeded_root_into_existing_root(self):
+        from erpnext.patches.v16_0.merge_seeded_item_group_root import execute
+
+        self._nest_root_under(TRANSLATED_ROOT)
+        self.assertEqual(
+            frappe.db.get_value("Item Group", "All Item Groups", "parent_item_group"), TRANSLATED_ROOT
+        )
+
+        execute()
+
+        self.assertFalse(frappe.db.exists("Item Group", "All Item Groups"))
+        self.assertEqual(
+            frappe.get_all("Item Group", filters={"parent_item_group": ("is", "not set")}, pluck="name"),
+            [TRANSLATED_ROOT],
+        )
+        self.assertEqual(
+            frappe.db.get_value("Item Group", "_Test Item Group B", "parent_item_group"), TRANSLATED_ROOT
+        )
+        self.test_basic_tree()
+
+    def _nest_root_under(self, new_root):
+        """Recreate the tree left behind by seeding a root under a pre-existing one."""
+        frappe.get_doc({"doctype": "Item Group", "item_group_name": new_root, "is_group": 1}).insert()
+
+        ig = frappe.qb.DocType("Item Group")
+        frappe.qb.update(ig).set(ig.parent_item_group, "").where(ig.name == new_root).run()
+        frappe.qb.update(ig).set(ig.parent_item_group, new_root).where(ig.name == "All Item Groups").run()
+        rebuild_tree("Item Group")
 
     def _move_it_back(self):
-        group_b = get_doc("Item Group", "_Test Item Group B")
+        group_b = frappe.get_doc("Item Group", "_Test Item Group B")
         group_b.parent_item_group = "All Item Groups"
         group_b.save()
         self.test_basic_tree()
+
+    def _get_no_of_children(self, item_group):
+        def get_no_of_children(item_groups, no_of_children):
+            children = []
+            for ig in item_groups:
+                children += frappe.get_all("Item Group", filters={"parent_item_group": ig}, pluck="name")
+
+            if len(children):
+                return get_no_of_children(children, no_of_children + len(children))
+            else:
+                return no_of_children
+
+        return get_no_of_children([item_group], 0)

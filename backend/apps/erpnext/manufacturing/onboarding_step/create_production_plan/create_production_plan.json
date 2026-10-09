@@ -1,0 +1,21 @@
+{
+ "name": "Create Production Plan",
+ "owner": "Administrator",
+ "creation": "2026-10-04 01:49:02.880390",
+ "modified": "2026-10-04 01:49:02.880390",
+ "modified_by": "Administrator",
+ "docstatus": 0,
+ "idx": 0,
+ "title": "Plan production from your orders",
+ "is_complete": 0,
+ "is_skipped": 0,
+ "description": "Pull in open sales orders and work out what to make, and what to buy, to fill them.",
+ "action": "Create Entry",
+ "action_label": "Create Production Plan",
+ "reference_document": "Production Plan",
+ "show_full_form": 1,
+ "show_form_tour": 0,
+ "is_single": 0,
+ "validate_action": 1,
+ "doctype": "Onboarding Step"
+}

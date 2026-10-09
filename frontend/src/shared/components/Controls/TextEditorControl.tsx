@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { cn } from '@/design-system'
+import { cn, useLatest } from '@/design-system'
 import { Editor, EditorBubbleMenu, EditorContent, EditorFixedMenu } from '@/design-system/editor'
-import { buildEditorExtensions, bubbleToolbar, fullToolbar, uploadFile } from '../../utils/editorConfig'
+import { buildEditorExtensions, bubbleToolbar, fullToolbar, uploadFile, type MentionItem } from '../../utils/editorConfig'
 
 export interface TextEditorControlProps {
   value?: string
@@ -12,6 +12,7 @@ export interface TextEditorControlProps {
   size?: 'sm' | 'md' | 'lg'
   fixedMenu?: boolean
   bubbleMenu?: boolean
+  mentions?: MentionItem[]
   onChange?: (value: string) => void
 }
 
@@ -42,9 +43,11 @@ export function TextEditorControl({
   size = 'sm',
   fixedMenu = true,
   bubbleMenu = false,
+  mentions,
   onChange,
 }: TextEditorControlProps) {
-  const [extensions] = useState(() => buildEditorExtensions())
+  const getMentions = useLatest(mentions ?? [])
+  const [extensions] = useState(() => buildEditorExtensions(mentions ? { mentions: getMentions } : {}))
   const [content, setContent] = useState(value ?? '')
   const [dirty, setDirty] = useState(false)
   const [syncedValue, setSyncedValue] = useState(value ?? '')

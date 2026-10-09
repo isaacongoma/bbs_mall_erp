@@ -1,4 +1,3 @@
-from __future__ import annotations
 
 import frappe
 from email_reply_parser import EmailReplyParser
@@ -257,7 +256,7 @@ class Project(Document):
                 )
                 pct_complete = 0
                 for row in weighted_progress:
-                    pct_complete += row["progress"] * frappe.utils.safe_div(row["task_weight"], weight_sum)
+                    pct_complete += flt(row.get("progress")) * frappe.utils.safe_div(flt(row.get("task_weight")), flt(weight_sum))
                 self.percent_complete = flt(flt(pct_complete), 2)
 
         if self.status in ("Cancelled", "On hold"):
@@ -602,6 +601,8 @@ def create_duplicate_project(prev_doc: str | dict, project_name: str):
     import json
 
     prev_doc = frappe.parse_json(prev_doc)
+    if isinstance(prev_doc, dict):
+        prev_doc = frappe.get_doc(prev_doc)
 
     if source_name := prev_doc.get("name"):
         frappe.has_permission("Project", "read", source_name, throw=True)
@@ -766,12 +767,13 @@ def set_project_status(project: str, status: str):
 
 def get_holiday_list(company: str | None = None) -> str:
     if not company:
-        company = get_default_company() or frappe.get_all("Company")[0].name
+        companies = frappe.get_all("Company")
+        company = get_default_company() or (companies[0].name if companies else None)
 
-    holiday_list = frappe.get_cached_value("Company", company, "default_holiday_list")
+    holiday_list = frappe.get_cached_value("Company", company, "default_holiday_list") if company else None
     if not holiday_list:
         frappe.throw(
-            _("Please set a default Holiday List for Company {0}").format(frappe.bold(get_default_company()))
+            _("Please set a default Holiday List for Company {0}").format(frappe.bold(company or get_default_company()))
         )
     return holiday_list
 
