@@ -1,5 +1,5 @@
-145	frappe.query_report.get_filter_value
-43	frappe.query_report.set_filter_value
+152	frappe.query_report.get_filter_value
+46	frappe.query_report.set_filter_value
 33	frappe.boot.sysdefaults
 24	frappe.contacts.doctype
 20	frappe.query_report.toggle_filter_display
@@ -66,11 +66,12 @@
 2	frappe.boot.allowed_reports
 2	frappe.ui.SortSelector
 1	frappe.data_import.ImportPreview
-1	frappe.ui.FilterGroup
 1	frappe.whitelist
 1	frappe.last_response
 1	frappe.open_in_new_tab
 1	frappe.desk.doctype
+1	frappe.query_reports.get_filter_value
+1	frappe.query_reports.set_filter_value
 1	frappe.boot.sitename
 1	frappe.bom_configurator.bom_configurator
 1	frappe.ui.BOMConfigurator

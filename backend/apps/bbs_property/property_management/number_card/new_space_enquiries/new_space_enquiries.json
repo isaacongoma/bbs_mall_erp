@@ -1,0 +1,23 @@
+{
+ "creation": "2026-10-10 09:00:00.000000",
+ "docstatus": 0,
+ "doctype": "Number Card",
+ "document_type": "Space Enquiry",
+ "dynamic_filters_json": "[]",
+ "filters_json": "[[\"Space Enquiry\",\"status\",\"not in\",[\"Won\",\"Lost\"],false]]",
+ "function": "Count",
+ "idx": 0,
+ "is_public": 1,
+ "is_standard": 1,
+ "label": "Open Enquiries",
+ "modified": "2026-10-10 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Property Management",
+ "name": "New Space Enquiries",
+ "owner": "Administrator",
+ "show_percentage_stats": 0,
+ "stats_time_interval": "Monthly",
+ "type": "Document Type",
+ "show_full_number": 0,
+ "color": "#0891b2"
+}

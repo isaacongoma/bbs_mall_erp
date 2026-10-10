@@ -1,0 +1,21 @@
+{
+ "name": "Create Lease Agreement",
+ "owner": "Administrator",
+ "creation": "2026-10-10 09:00:00.000000",
+ "modified": "2026-10-10 09:00:00.000000",
+ "modified_by": "Administrator",
+ "docstatus": 0,
+ "idx": 0,
+ "title": "Lease a unit to a tenant",
+ "is_complete": 0,
+ "is_skipped": 0,
+ "description": "Pick the tenant, units, rent, escalation and deposit. Submitting occupies the units and starts the billing schedule.",
+ "action": "Create Entry",
+ "action_label": "Create Lease",
+ "show_full_form": 1,
+ "show_form_tour": 0,
+ "is_single": 0,
+ "validate_action": 1,
+ "doctype": "Onboarding Step",
+ "reference_document": "Lease Agreement"
+}

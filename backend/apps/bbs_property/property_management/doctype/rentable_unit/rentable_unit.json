@@ -1,0 +1,306 @@
+{
+ "actions": [],
+ "creation": "2026-10-10 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "property",
+  "floor",
+  "unit_code",
+  "unit_name",
+  "column_break_6",
+  "status",
+  "unit_type",
+  "category",
+  "space_section",
+  "area_sqm",
+  "rate_per_sqm",
+  "base_rent",
+  "column_break_7",
+  "service_charge_per_sqm",
+  "service_charge",
+  "occupancy_section",
+  "current_lease",
+  "current_tenant",
+  "column_break_8",
+  "lease_expiry",
+  "vacant_since",
+  "features_section",
+  "features",
+  "frontage_m",
+  "photo",
+  "layout_section",
+  "plan_x",
+  "plan_y",
+  "column_break_9",
+  "plan_width",
+  "plan_height"
+ ],
+ "fields": [
+  {
+   "fieldname": "property",
+   "fieldtype": "Link",
+   "label": "Property",
+   "options": "Property",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "floor",
+   "fieldtype": "Link",
+   "label": "Floor",
+   "options": "Property Floor",
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "unit_code",
+   "fieldtype": "Data",
+   "label": "Unit Code",
+   "reqd": 1,
+   "in_list_view": 1,
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "unit_name",
+   "fieldtype": "Data",
+   "label": "Display Name"
+  },
+  {
+   "fieldname": "column_break_6",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Vacant\nReserved\nOccupied\nUnder Maintenance",
+   "default": "Vacant",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "unit_type",
+   "fieldtype": "Select",
+   "label": "Unit Type",
+   "options": "Retail Shop\nAnchor Store\nKiosk\nFood Court Stall\nRestaurant\nOffice\nStorage\nPromotional Space\nATM / Advertising Space",
+   "default": "Retail Shop",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Select",
+   "label": "Trade Category",
+   "options": "\nFashion\nFood and Beverage\nElectronics\nSupermarket\nServices\nEntertainment\nHealth and Beauty\nHome and Living\nBanking\nOther"
+  },
+  {
+   "fieldname": "space_section",
+   "fieldtype": "Section Break",
+   "label": "Space and Rent"
+  },
+  {
+   "fieldname": "area_sqm",
+   "fieldtype": "Float",
+   "label": "Area (sqm)",
+   "reqd": 1,
+   "precision": "2",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "rate_per_sqm",
+   "fieldtype": "Currency",
+   "label": "Rent Rate per sqm"
+  },
+  {
+   "fieldname": "base_rent",
+   "fieldtype": "Currency",
+   "label": "Monthly Base Rent",
+   "in_list_view": 1,
+   "description": "Defaults to area x rate when a rate is set"
+  },
+  {
+   "fieldname": "column_break_7",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "service_charge_per_sqm",
+   "fieldtype": "Currency",
+   "label": "Service Charge per sqm"
+  },
+  {
+   "fieldname": "service_charge",
+   "fieldtype": "Currency",
+   "label": "Monthly Service Charge"
+  },
+  {
+   "fieldname": "occupancy_section",
+   "fieldtype": "Section Break",
+   "label": "Occupancy"
+  },
+  {
+   "fieldname": "current_lease",
+   "fieldtype": "Link",
+   "label": "Current Lease",
+   "options": "Lease Agreement",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "current_tenant",
+   "fieldtype": "Link",
+   "label": "Current Tenant",
+   "options": "Customer",
+   "read_only": 1,
+   "no_copy": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "column_break_8",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "lease_expiry",
+   "fieldtype": "Date",
+   "label": "Lease Expiry",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "vacant_since",
+   "fieldtype": "Date",
+   "label": "Vacant Since",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "features_section",
+   "fieldtype": "Section Break",
+   "label": "Features",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "features",
+   "fieldtype": "Small Text",
+   "label": "Features"
+  },
+  {
+   "fieldname": "frontage_m",
+   "fieldtype": "Float",
+   "label": "Frontage (m)",
+   "precision": "2"
+  },
+  {
+   "fieldname": "photo",
+   "fieldtype": "Attach Image",
+   "label": "Photo"
+  },
+  {
+   "fieldname": "layout_section",
+   "fieldtype": "Section Break",
+   "label": "Stacking Plan",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "plan_x",
+   "fieldtype": "Float",
+   "label": "Plan X"
+  },
+  {
+   "fieldname": "plan_y",
+   "fieldtype": "Float",
+   "label": "Plan Y"
+  },
+  {
+   "fieldname": "column_break_9",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "plan_width",
+   "fieldtype": "Float",
+   "label": "Plan Width"
+  },
+  {
+   "fieldname": "plan_height",
+   "fieldtype": "Float",
+   "label": "Plan Height"
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-10 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Property Management",
+ "name": "Rentable Unit",
+ "owner": "Administrator",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Property Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Leasing Officer",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Accounts Manager",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  },
+  {
+   "role": "Accounts User",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  },
+  {
+   "role": "Property Accountant",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  }
+ ],
+ "track_changes": 1,
+ "autoname": "Prompt",
+ "naming_rule": "Set by user",
+ "title_field": "unit_name",
+ "image_field": "photo",
+ "search_fields": "unit_code,unit_name,current_tenant,unit_type"
+}

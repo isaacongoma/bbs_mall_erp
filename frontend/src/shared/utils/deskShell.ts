@@ -55,7 +55,10 @@ export function shellForPath(shell: DeskShellData, pathname: string): string | u
   if (parts[1] === 'query-report' && parts[2]) return shell.canonicalShell.Report?.[parts[2]]
   if (parts[1] === 'dashboard-view' && parts[2]) return shell.canonicalShell.Dashboard?.[parts[2]]
   const target = parts[1]!
-  const workspaceShell = Object.values(shell.sidebars).find((sidebar) => sidebar.workspaces?.includes(target))
+  const targetSlug = target.toLowerCase().replace(/\s+/g, '-')
+  const workspaceShell = Object.values(shell.sidebars).find((sidebar) =>
+    sidebar.workspaces?.some((workspace) => workspace.toLowerCase().replace(/\s+/g, '-') === targetSlug),
+  )
   return shell.canonicalShell.DocType?.[target] ?? shell.canonicalShell.Page?.[target] ?? workspaceShell?.name
 }
 

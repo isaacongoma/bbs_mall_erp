@@ -105,9 +105,9 @@ class _LocalProxy:
         if key == "db":
             return db
         if key == "app_modules":
-            return {app: _read_modules(app) for app in ("frappe", "erpnext", "hrms")}
+            return {app: _read_modules(app) for app in ("frappe", "erpnext", "hrms", "bbs_property")}
         if key == "module_app":
-            return {scrub(module): app for app in ("frappe", "erpnext", "hrms") for module in _read_modules(app)}
+            return {scrub(module): app for app in ("frappe", "erpnext", "hrms", "bbs_property") for module in _read_modules(app)}
         if key == "qb":
             from apps.frappe.query_builder import builder as _builder
 
@@ -125,7 +125,7 @@ class _LocalProxy:
             apps_file = os.path.join(sites, "apps.txt")
             if not os.path.exists(apps_file):
                 with open(apps_file, "w") as handle:
-                    handle.write("\n".join(("frappe", "erpnext", "hrms")) + "\n")
+                    handle.write("\n".join(("frappe", "erpnext", "hrms", "bbs_property")) + "\n")
             return path
         state = _state()
         if key not in state:
@@ -650,7 +650,7 @@ def get_module(path):
     return importlib.import_module(path)
 
 
-HOOK_APPS = ("apps.frappe.hooks", "apps.erpnext.hooks", "apps.hrms.hooks", "apps.erpnext.regional.kenya.hooks", "apps.erpnext.erpnext_integrations.hooks")
+HOOK_APPS = ("apps.frappe.hooks", "apps.erpnext.hooks", "apps.hrms.hooks", "apps.bbs_property.hooks", "apps.erpnext.regional.kenya.hooks", "apps.erpnext.erpnext_integrations.hooks")
 DOCTYPE_HOOK_LISTS = {
     "advance_payment_payable_doctypes",
     "invoice_doctypes",
@@ -806,7 +806,7 @@ def resolve_hook_handler(path):
     try:
         return get_attr(path)
     except (ModuleNotFoundError, AttributeError) as exc:
-        if isinstance(exc, ModuleNotFoundError) and exc.name and not exc.name.startswith(("frappe", "erpnext", "hrms", "apps")):
+        if isinstance(exc, ModuleNotFoundError) and exc.name and not exc.name.startswith(("frappe", "erpnext", "hrms", "bbs_property", "apps")):
             raise
         UNRESOLVED_HOOK_HANDLERS.add(path)
         return None
@@ -1248,7 +1248,7 @@ def get_module_path(module, *joins):
     from django.conf import settings
 
     scrubbed = scrub(module)
-    for app in ("erpnext", "hrms", "frappe"):
+    for app in ("erpnext", "hrms", "bbs_property", "frappe"):
         if scrubbed in {scrub(name) for name in _read_modules(app)}:
             return os.path.join(settings.BASE_DIR, "apps", app, scrubbed, *joins)
     return os.path.join(settings.BASE_DIR, "apps", "erpnext", scrubbed, *joins)
@@ -2868,6 +2868,8 @@ class Database:
 
     def rollback(self, *, save_point=None, chain=False):
         if save_point:
+            if not connection.in_atomic_block:
+                return
             with connection.cursor() as cursor:
                 cursor.execute(f'ROLLBACK TO SAVEPOINT "{save_point}"')
             connection.needs_rollback = False
@@ -2888,10 +2890,14 @@ class Database:
         self.after_rollback.run()
 
     def savepoint(self, name):
+        if not connection.in_atomic_block:
+            return
         with connection.cursor() as cursor:
             cursor.execute(f'SAVEPOINT "{name}"')
 
     def release_savepoint(self, name):
+        if not connection.in_atomic_block:
+            return
         with connection.cursor() as cursor:
             cursor.execute(f'RELEASE SAVEPOINT "{name}"')
 

@@ -1,0 +1,75 @@
+{
+ "cards": [
+  {
+   "card": "Occupied Units",
+   "doctype": "Number Card Link"
+  },
+  {
+   "card": "Vacant Units",
+   "doctype": "Number Card Link"
+  },
+  {
+   "card": "Active Leases",
+   "doctype": "Number Card Link"
+  },
+  {
+   "card": "Leases Expiring Soon",
+   "doctype": "Number Card Link"
+  },
+  {
+   "card": "Monthly Rent Roll",
+   "doctype": "Number Card Link"
+  },
+  {
+   "card": "Rent Arrears",
+   "doctype": "Number Card Link"
+  },
+  {
+   "card": "Open Maintenance Requests",
+   "doctype": "Number Card Link"
+  },
+  {
+   "card": "Pending Meter Readings",
+   "doctype": "Number Card Link"
+  }
+ ],
+ "charts": [
+  {
+   "chart": "Units by Status",
+   "width": "Half",
+   "doctype": "Dashboard Chart Link"
+  },
+  {
+   "chart": "Leases by Status",
+   "width": "Half",
+   "doctype": "Dashboard Chart Link"
+  },
+  {
+   "chart": "Rent Billed by Month",
+   "width": "Half",
+   "doctype": "Dashboard Chart Link"
+  },
+  {
+   "chart": "Maintenance by Category",
+   "width": "Half",
+   "doctype": "Dashboard Chart Link"
+  },
+  {
+   "chart": "New Leases by Month",
+   "width": "Half",
+   "doctype": "Dashboard Chart Link"
+  }
+ ],
+ "creation": "2026-10-10 09:00:00.000000",
+ "dashboard_name": "Property Management",
+ "docstatus": 0,
+ "doctype": "Dashboard",
+ "idx": 0,
+ "is_default": 0,
+ "is_standard": 1,
+ "modified": "2026-10-10 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Property Management",
+ "name": "Property Management",
+ "owner": "Administrator"
+}

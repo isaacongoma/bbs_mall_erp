@@ -1,0 +1,694 @@
+{
+ "actions": [],
+ "creation": "2026-10-10 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "customer",
+  "tenant_name",
+  "trading_name",
+  "lease_type",
+  "renewal_of",
+  "column_break_15",
+  "status",
+  "property",
+  "company",
+  "cost_center",
+  "amended_from",
+  "lease_tab",
+  "term_section",
+  "start_date",
+  "end_date",
+  "lease_term_months",
+  "column_break_16",
+  "rent_free_months",
+  "rent_start_date",
+  "notice_period_days",
+  "auto_renew",
+  "units_section",
+  "units",
+  "total_area",
+  "column_break_17",
+  "total_monthly_rent",
+  "total_monthly_service_charge",
+  "billing_section",
+  "billing_frequency",
+  "billing_day",
+  "payment_terms_days",
+  "column_break_18",
+  "auto_invoice",
+  "tax_template",
+  "next_billing_date",
+  "last_billed_to",
+  "escalation_section",
+  "escalation_type",
+  "escalation_rate",
+  "column_break_19",
+  "escalation_amount",
+  "escalation_months",
+  "charges_section",
+  "charges",
+  "turnover_section",
+  "turnover_rent_applicable",
+  "turnover_rent_percent",
+  "schedule_section",
+  "rent_schedule",
+  "finance_tab",
+  "deposit_section",
+  "security_deposit_amount",
+  "deposit_received",
+  "column_break_20",
+  "deposit_balance",
+  "summary_section",
+  "total_billed",
+  "total_paid",
+  "column_break_21",
+  "outstanding_amount",
+  "overdue_amount",
+  "terms_tab",
+  "terms_section",
+  "terms_template",
+  "terms",
+  "signatures_section",
+  "landlord_signatory",
+  "landlord_signature",
+  "landlord_signed_on",
+  "column_break_22",
+  "tenant_signatory_name",
+  "tenant_signature",
+  "tenant_signed_on",
+  "signed_copy",
+  "documents_section",
+  "documents",
+  "termination_tab",
+  "termination_date",
+  "termination_type",
+  "column_break_23",
+  "termination_reason"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "LSE-.YYYY.-.#####",
+   "default": "LSE-.YYYY.-.#####",
+   "reqd": 1,
+   "set_only_once": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Tenant",
+   "options": "Customer",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "tenant_name",
+   "fieldtype": "Data",
+   "label": "Tenant Name",
+   "fetch_from": "customer.customer_name",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "trading_name",
+   "fieldtype": "Data",
+   "label": "Trading As"
+  },
+  {
+   "fieldname": "lease_type",
+   "fieldtype": "Select",
+   "label": "Lease Type",
+   "options": "New\nRenewal\nExtension",
+   "default": "New"
+  },
+  {
+   "fieldname": "renewal_of",
+   "fieldtype": "Link",
+   "label": "Renewal Of",
+   "options": "Lease Agreement",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "column_break_15",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nActive\nExpiring Soon\nExpired\nTerminated\nRenewed\nCancelled",
+   "default": "Draft",
+   "read_only": 1,
+   "allow_on_submit": 1,
+   "no_copy": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "property",
+   "fieldtype": "Link",
+   "label": "Property",
+   "options": "Property",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "fetch_from": "property.company",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cost_center",
+   "fieldtype": "Link",
+   "label": "Cost Center",
+   "options": "Cost Center",
+   "fetch_from": "property.cost_center"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "options": "Lease Agreement",
+   "read_only": 1,
+   "no_copy": 1,
+   "print_hide": 1
+  },
+  {
+   "fieldname": "lease_tab",
+   "fieldtype": "Tab Break",
+   "label": "Lease"
+  },
+  {
+   "fieldname": "term_section",
+   "fieldtype": "Section Break",
+   "label": "Term"
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "Lease Start",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "label": "Lease End",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "lease_term_months",
+   "fieldtype": "Int",
+   "label": "Term (months)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_16",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "rent_free_months",
+   "fieldtype": "Int",
+   "label": "Rent-free Months",
+   "default": "0"
+  },
+  {
+   "fieldname": "rent_start_date",
+   "fieldtype": "Date",
+   "label": "Rent Starts",
+   "read_only": 1
+  },
+  {
+   "fieldname": "notice_period_days",
+   "fieldtype": "Int",
+   "label": "Notice Period (days)",
+   "default": "90"
+  },
+  {
+   "fieldname": "auto_renew",
+   "fieldtype": "Check",
+   "label": "Renew Automatically"
+  },
+  {
+   "fieldname": "units_section",
+   "fieldtype": "Section Break",
+   "label": "Units"
+  },
+  {
+   "fieldname": "units",
+   "fieldtype": "Table",
+   "label": "Leased Units",
+   "options": "Lease Unit",
+   "reqd": 1
+  },
+  {
+   "fieldname": "total_area",
+   "fieldtype": "Float",
+   "label": "Total Area (sqm)",
+   "read_only": 1,
+   "precision": "2"
+  },
+  {
+   "fieldname": "column_break_17",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_monthly_rent",
+   "fieldtype": "Currency",
+   "label": "Total Monthly Rent",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_monthly_service_charge",
+   "fieldtype": "Currency",
+   "label": "Total Monthly Service Charge",
+   "read_only": 1
+  },
+  {
+   "fieldname": "billing_section",
+   "fieldtype": "Section Break",
+   "label": "Billing"
+  },
+  {
+   "fieldname": "billing_frequency",
+   "fieldtype": "Select",
+   "label": "Billing Frequency",
+   "options": "Monthly\nQuarterly\nHalf-Yearly\nAnnually",
+   "default": "Monthly",
+   "reqd": 1
+  },
+  {
+   "fieldname": "billing_day",
+   "fieldtype": "Int",
+   "label": "Invoice Day of Period",
+   "default": "1",
+   "description": "1 = invoice on the first day of each billing period"
+  },
+  {
+   "fieldname": "payment_terms_days",
+   "fieldtype": "Int",
+   "label": "Payment Due After (days)",
+   "default": "7"
+  },
+  {
+   "fieldname": "column_break_18",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "auto_invoice",
+   "fieldtype": "Check",
+   "label": "Invoice Automatically",
+   "default": "1"
+  },
+  {
+   "fieldname": "tax_template",
+   "fieldtype": "Link",
+   "label": "Sales Tax Template",
+   "options": "Sales Taxes and Charges Template"
+  },
+  {
+   "fieldname": "next_billing_date",
+   "fieldtype": "Date",
+   "label": "Next Billing Period Starts",
+   "read_only": 1,
+   "no_copy": 1,
+   "allow_on_submit": 1
+  },
+  {
+   "fieldname": "last_billed_to",
+   "fieldtype": "Date",
+   "label": "Billed Up To",
+   "read_only": 1,
+   "no_copy": 1,
+   "allow_on_submit": 1
+  },
+  {
+   "fieldname": "escalation_section",
+   "fieldtype": "Section Break",
+   "label": "Escalation"
+  },
+  {
+   "fieldname": "escalation_type",
+   "fieldtype": "Select",
+   "label": "Escalation Type",
+   "options": "None\nPercentage\nFixed Amount",
+   "default": "Percentage"
+  },
+  {
+   "fieldname": "escalation_rate",
+   "fieldtype": "Percent",
+   "label": "Escalation Rate",
+   "depends_on": "eval:doc.escalation_type=='Percentage'"
+  },
+  {
+   "fieldname": "column_break_19",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "escalation_amount",
+   "fieldtype": "Currency",
+   "label": "Escalation Amount",
+   "depends_on": "eval:doc.escalation_type=='Fixed Amount'"
+  },
+  {
+   "fieldname": "escalation_months",
+   "fieldtype": "Int",
+   "label": "Escalate Every (months)",
+   "default": "12",
+   "depends_on": "eval:doc.escalation_type!='None'"
+  },
+  {
+   "fieldname": "charges_section",
+   "fieldtype": "Section Break",
+   "label": "Additional Charges"
+  },
+  {
+   "fieldname": "charges",
+   "fieldtype": "Table",
+   "label": "Charges",
+   "options": "Lease Charge"
+  },
+  {
+   "fieldname": "turnover_section",
+   "fieldtype": "Section Break",
+   "label": "Turnover Rent",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "turnover_rent_applicable",
+   "fieldtype": "Check",
+   "label": "Turnover Rent Applies"
+  },
+  {
+   "fieldname": "turnover_rent_percent",
+   "fieldtype": "Percent",
+   "label": "Turnover Rent (% of sales)",
+   "depends_on": "turnover_rent_applicable"
+  },
+  {
+   "fieldname": "schedule_section",
+   "fieldtype": "Section Break",
+   "label": "Rent Schedule",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "rent_schedule",
+   "fieldtype": "Table",
+   "label": "Rent Schedule",
+   "options": "Lease Rent Schedule",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "finance_tab",
+   "fieldtype": "Tab Break",
+   "label": "Deposit and Summary"
+  },
+  {
+   "fieldname": "deposit_section",
+   "fieldtype": "Section Break",
+   "label": "Security Deposit"
+  },
+  {
+   "fieldname": "security_deposit_amount",
+   "fieldtype": "Currency",
+   "label": "Security Deposit Required"
+  },
+  {
+   "fieldname": "deposit_received",
+   "fieldtype": "Currency",
+   "label": "Deposit Received",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "column_break_20",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "deposit_balance",
+   "fieldtype": "Currency",
+   "label": "Deposit Held",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "summary_section",
+   "fieldtype": "Section Break",
+   "label": "Account Summary"
+  },
+  {
+   "fieldname": "total_billed",
+   "fieldtype": "Currency",
+   "label": "Total Billed",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "total_paid",
+   "fieldtype": "Currency",
+   "label": "Total Paid",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "column_break_21",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "outstanding_amount",
+   "fieldtype": "Currency",
+   "label": "Outstanding",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "overdue_amount",
+   "fieldtype": "Currency",
+   "label": "Overdue",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "terms_tab",
+   "fieldtype": "Tab Break",
+   "label": "Terms and Signing"
+  },
+  {
+   "fieldname": "terms_section",
+   "fieldtype": "Section Break",
+   "label": "Terms"
+  },
+  {
+   "fieldname": "terms_template",
+   "fieldtype": "Link",
+   "label": "Terms Template",
+   "options": "Terms and Conditions"
+  },
+  {
+   "fieldname": "terms",
+   "fieldtype": "Text Editor",
+   "label": "Lease Terms"
+  },
+  {
+   "fieldname": "signatures_section",
+   "fieldtype": "Section Break",
+   "label": "Signatures"
+  },
+  {
+   "fieldname": "landlord_signatory",
+   "fieldtype": "Link",
+   "label": "Landlord Signatory",
+   "options": "User"
+  },
+  {
+   "fieldname": "landlord_signature",
+   "fieldtype": "Signature",
+   "label": "Landlord Signature",
+   "allow_on_submit": 1
+  },
+  {
+   "fieldname": "landlord_signed_on",
+   "fieldtype": "Datetime",
+   "label": "Signed On",
+   "read_only": 1,
+   "allow_on_submit": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "column_break_22",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "tenant_signatory_name",
+   "fieldtype": "Data",
+   "label": "Tenant Signatory"
+  },
+  {
+   "fieldname": "tenant_signature",
+   "fieldtype": "Signature",
+   "label": "Tenant Signature",
+   "allow_on_submit": 1
+  },
+  {
+   "fieldname": "tenant_signed_on",
+   "fieldtype": "Datetime",
+   "label": "Signed On",
+   "read_only": 1,
+   "allow_on_submit": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "signed_copy",
+   "fieldtype": "Attach",
+   "label": "Signed Copy",
+   "allow_on_submit": 1
+  },
+  {
+   "fieldname": "documents_section",
+   "fieldtype": "Section Break",
+   "label": "Documents"
+  },
+  {
+   "fieldname": "documents",
+   "fieldtype": "Table",
+   "label": "Documents",
+   "options": "Lease Document",
+   "allow_on_submit": 1
+  },
+  {
+   "fieldname": "termination_tab",
+   "fieldtype": "Tab Break",
+   "label": "Termination"
+  },
+  {
+   "fieldname": "termination_date",
+   "fieldtype": "Date",
+   "label": "Termination Date",
+   "read_only": 1,
+   "allow_on_submit": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "termination_type",
+   "fieldtype": "Select",
+   "label": "Termination Type",
+   "options": "\nExpiry\nMutual Agreement\nTenant Breach\nLandlord Notice\nRelocation",
+   "read_only": 1,
+   "allow_on_submit": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "column_break_23",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "termination_reason",
+   "fieldtype": "Small Text",
+   "label": "Reason",
+   "read_only": 1,
+   "allow_on_submit": 1,
+   "no_copy": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-10 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Property Management",
+ "name": "Lease Agreement",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1
+  },
+  {
+   "role": "Property Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1
+  },
+  {
+   "role": "Leasing Officer",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1
+  },
+  {
+   "role": "Accounts Manager",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  },
+  {
+   "role": "Accounts User",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  },
+  {
+   "role": "Property Accountant",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  }
+ ],
+ "track_changes": 1,
+ "is_submittable": 1,
+ "autoname": "naming_series:",
+ "naming_rule": "By \"Naming Series\" field",
+ "title_field": "tenant_name",
+ "search_fields": "customer,tenant_name,property,status"
+}

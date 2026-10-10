@@ -15,7 +15,7 @@ from apps.frappe.model.document import Document
 for _module in ("apps.frappe.client", "apps.frappe.boot"):
     importlib.import_module(_module)
 
-METHOD_PREFIXES = {"frappe": "apps.frappe", "erpnext": "apps.erpnext", "hrms": "apps.hrms"}
+METHOD_PREFIXES = {"frappe": "apps.frappe", "erpnext": "apps.erpnext", "hrms": "apps.hrms", "bbs_property": "apps.bbs_property"}
 SPA_BOOT_METHODS = {"frappe.sessions.get", "frappe.desk.desktop.get_workspaces"}
 RESOURCE_JSON_ARGS = {"fields", "filters", "or_filters", "group_by", "order_by"}
 

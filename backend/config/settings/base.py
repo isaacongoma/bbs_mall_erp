@@ -29,7 +29,7 @@ class _PackageAliasLoader:
 class _FrappeErpnextAliasFinder(importlib.abc.MetaPathFinder):
     def find_spec(self, fullname, path, target=None):
         alt = None
-        for prefix in ("frappe", "erpnext", "hrms"):
+        for prefix in ("frappe", "erpnext", "hrms", "bbs_property"):
             apps_name = "apps." + prefix
             if fullname == prefix or fullname.startswith(prefix + "."):
                 alt = "apps." + fullname
@@ -90,6 +90,7 @@ BBS_ERP_APPS = [
     "apps.frappe",
     "apps.erpnext",
     "apps.hrms",
+    "apps.bbs_property",
     "apps.crm",
     "apps.property",
     "apps.leasing",

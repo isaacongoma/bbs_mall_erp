@@ -22,6 +22,8 @@ export function AppRoot() {
         <Outlet />
       ) : !isLoggedIn ? (
         <Login />
+      ) : route.meta.bare ? (
+        <Outlet key={route.fullPath} />
       ) : (
         <Layout>
           <Outlet key={route.fullPath} />

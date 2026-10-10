@@ -9,7 +9,6 @@ class OnboardingStepGenerated(FrappeModel):
     title = models.CharField(max_length=140, blank=True, null=True, default='')
     action = models.CharField(max_length=140, blank=True, null=True, default='')
     reference_document = models.CharField(max_length=140, blank=True, null=True, default='')
-    module_onboarding = models.CharField(max_length=140, blank=True, null=True, default='')
     reference_report = models.CharField(max_length=140, blank=True, null=True, default='')
     video_url = models.CharField(max_length=140, blank=True, null=True, default='')
     report_type = models.CharField(max_length=140, blank=True, null=True, default='')

@@ -1,0 +1,21 @@
+{
+ "name": "Create Property",
+ "owner": "Administrator",
+ "creation": "2026-10-10 09:00:00.000000",
+ "modified": "2026-10-10 09:00:00.000000",
+ "modified_by": "Administrator",
+ "docstatus": 0,
+ "idx": 0,
+ "title": "Describe your mall or building",
+ "is_complete": 0,
+ "is_skipped": 0,
+ "description": "The mall or building you lease space in. Set the company, cost center and the accounts rent posts to. See [Property](/desk/property).",
+ "action": "Create Entry",
+ "action_label": "Add Property",
+ "show_full_form": 1,
+ "show_form_tour": 0,
+ "is_single": 0,
+ "validate_action": 1,
+ "doctype": "Onboarding Step",
+ "reference_document": "Property"
+}

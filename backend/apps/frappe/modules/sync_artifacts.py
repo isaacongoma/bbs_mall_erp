@@ -66,6 +66,6 @@ def sync_app_artifacts(app_name, force=False):
 
 def sync_artifacts(force=False):
     summary = {}
-    for app_name in ("frappe", "erpnext", "hrms"):
+    for app_name in ("frappe", "erpnext", "hrms", "bbs_property"):
         summary[app_name] = sync_app_artifacts(app_name, force=force)
     return summary

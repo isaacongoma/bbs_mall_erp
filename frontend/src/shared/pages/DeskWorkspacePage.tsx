@@ -254,8 +254,10 @@ export function WorkspaceChart({ item }: { item: DeskWorkspace }) {
           value: Array.isArray(entry[3]) ? entry[3].join(',') : String(entry[3] ?? ''),
         }))
       : [])
-  const activeValueFilters: AnyRecord =
-    valueFilters ?? (saved?.filters && !Array.isArray(saved.filters) ? (saved.filters as AnyRecord) : {})
+  const activeValueFilters: AnyRecord = useMemo(
+    () => valueFilters ?? (saved?.filters && !Array.isArray(saved.filters) ? (saved.filters as AnyRecord) : {}),
+    [valueFilters, saved],
+  )
   function persist(config: AnyRecord | null, reset = 0) {
     void frappe
       .xcall('frappe.desk.doctype.dashboard_settings.dashboard_settings.save_chart_config', {

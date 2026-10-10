@@ -1,0 +1,446 @@
+{
+ "actions": [],
+ "creation": "2026-10-10 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "default_company",
+  "default_property",
+  "billing_section",
+  "auto_generate_invoices",
+  "billing_lead_days",
+  "submit_invoices_automatically",
+  "send_invoice_by_email",
+  "column_break_10",
+  "rent_item",
+  "service_charge_item",
+  "turnover_rent_item",
+  "late_fee_item",
+  "maintenance_charge_item",
+  "tax_template",
+  "late_fee_section",
+  "enable_late_fees",
+  "grace_period_days",
+  "late_fee_percent",
+  "column_break_11",
+  "late_fee_flat_amount",
+  "maximum_late_fee_percent",
+  "reminders_section",
+  "send_sms_reminders",
+  "send_email_reminders",
+  "reminder_days_before_due",
+  "overdue_reminder_every_days",
+  "column_break_12",
+  "lease_expiry_alert_days",
+  "expiry_alert_recipients",
+  "reminder_sms_template",
+  "overdue_sms_template",
+  "mpesa_section",
+  "mpesa_environment",
+  "mpesa_callback_url",
+  "mpesa_paybill",
+  "mpesa_till",
+  "mpesa_shortcode",
+  "mpesa_consumer_key",
+  "mpesa_consumer_secret",
+  "column_break_13",
+  "mpesa_passkey",
+  "mpesa_callback_token",
+  "mpesa_mode_of_payment",
+  "mpesa_clearing_account",
+  "account_reference_format",
+  "portal_section",
+  "enable_tenant_portal",
+  "allow_tenant_meter_readings",
+  "require_reading_approval",
+  "allow_tenant_sales_declarations",
+  "column_break_14",
+  "maintenance_sla_hours",
+  "portal_welcome_message",
+  "support_phone",
+  "support_email"
+ ],
+ "fields": [
+  {
+   "fieldname": "default_company",
+   "fieldtype": "Link",
+   "label": "Default Company",
+   "options": "Company"
+  },
+  {
+   "fieldname": "default_property",
+   "fieldtype": "Link",
+   "label": "Default Property",
+   "options": "Property"
+  },
+  {
+   "fieldname": "billing_section",
+   "fieldtype": "Section Break",
+   "label": "Billing"
+  },
+  {
+   "fieldname": "auto_generate_invoices",
+   "fieldtype": "Check",
+   "label": "Generate Rent Invoices Automatically",
+   "default": "1"
+  },
+  {
+   "fieldname": "billing_lead_days",
+   "fieldtype": "Int",
+   "label": "Invoice This Many Days Before the Period Starts",
+   "default": "0"
+  },
+  {
+   "fieldname": "submit_invoices_automatically",
+   "fieldtype": "Check",
+   "label": "Submit Generated Invoices",
+   "default": "1"
+  },
+  {
+   "fieldname": "send_invoice_by_email",
+   "fieldtype": "Check",
+   "label": "Email Invoices to Tenants"
+  },
+  {
+   "fieldname": "column_break_10",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "rent_item",
+   "fieldtype": "Link",
+   "label": "Rent Item",
+   "options": "Item"
+  },
+  {
+   "fieldname": "service_charge_item",
+   "fieldtype": "Link",
+   "label": "Service Charge Item",
+   "options": "Item"
+  },
+  {
+   "fieldname": "turnover_rent_item",
+   "fieldtype": "Link",
+   "label": "Turnover Rent Item",
+   "options": "Item"
+  },
+  {
+   "fieldname": "late_fee_item",
+   "fieldtype": "Link",
+   "label": "Late Fee Item",
+   "options": "Item"
+  },
+  {
+   "fieldname": "maintenance_charge_item",
+   "fieldtype": "Link",
+   "label": "Maintenance Recharge Item",
+   "options": "Item"
+  },
+  {
+   "fieldname": "tax_template",
+   "fieldtype": "Link",
+   "label": "Default Sales Tax Template",
+   "options": "Sales Taxes and Charges Template"
+  },
+  {
+   "fieldname": "late_fee_section",
+   "fieldtype": "Section Break",
+   "label": "Late Fees"
+  },
+  {
+   "fieldname": "enable_late_fees",
+   "fieldtype": "Check",
+   "label": "Charge Late Fees"
+  },
+  {
+   "fieldname": "grace_period_days",
+   "fieldtype": "Int",
+   "label": "Grace Period (days)",
+   "default": "5",
+   "depends_on": "enable_late_fees"
+  },
+  {
+   "fieldname": "late_fee_percent",
+   "fieldtype": "Percent",
+   "label": "Late Fee (% of outstanding per month)",
+   "default": "5",
+   "depends_on": "enable_late_fees"
+  },
+  {
+   "fieldname": "column_break_11",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "late_fee_flat_amount",
+   "fieldtype": "Currency",
+   "label": "Flat Late Fee",
+   "depends_on": "enable_late_fees"
+  },
+  {
+   "fieldname": "maximum_late_fee_percent",
+   "fieldtype": "Percent",
+   "label": "Maximum Late Fee (% of invoice)",
+   "default": "25",
+   "depends_on": "enable_late_fees"
+  },
+  {
+   "fieldname": "reminders_section",
+   "fieldtype": "Section Break",
+   "label": "Reminders"
+  },
+  {
+   "fieldname": "send_sms_reminders",
+   "fieldtype": "Check",
+   "label": "Send SMS Reminders",
+   "default": "1"
+  },
+  {
+   "fieldname": "send_email_reminders",
+   "fieldtype": "Check",
+   "label": "Send Email Reminders",
+   "default": "1"
+  },
+  {
+   "fieldname": "reminder_days_before_due",
+   "fieldtype": "Int",
+   "label": "Remind This Many Days Before Due",
+   "default": "3"
+  },
+  {
+   "fieldname": "overdue_reminder_every_days",
+   "fieldtype": "Int",
+   "label": "Repeat Overdue Reminders Every (days)",
+   "default": "7"
+  },
+  {
+   "fieldname": "column_break_12",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "lease_expiry_alert_days",
+   "fieldtype": "Int",
+   "label": "Alert Before Lease Expiry (days)",
+   "default": "90"
+  },
+  {
+   "fieldname": "expiry_alert_recipients",
+   "fieldtype": "Small Text",
+   "label": "Expiry Alert Recipients",
+   "description": "One email address per line. Property managers are included automatically."
+  },
+  {
+   "fieldname": "reminder_sms_template",
+   "fieldtype": "Small Text",
+   "label": "Due Reminder SMS",
+   "default": "Dear {tenant}, rent invoice {invoice} of {amount} is due on {due_date}. Pay via M-Pesa Paybill {paybill}, account {account}."
+  },
+  {
+   "fieldname": "overdue_sms_template",
+   "fieldtype": "Small Text",
+   "label": "Overdue SMS",
+   "default": "Dear {tenant}, invoice {invoice} of {amount} is overdue since {due_date}. Please settle to avoid late fees."
+  },
+  {
+   "fieldname": "mpesa_section",
+   "fieldtype": "Section Break",
+   "label": "M-Pesa"
+  },
+  {
+   "fieldname": "mpesa_environment",
+   "fieldtype": "Select",
+   "label": "Environment",
+   "options": "Sandbox\nProduction",
+   "default": "Sandbox"
+  },
+  {
+   "fieldname": "mpesa_callback_url",
+   "fieldtype": "Data",
+   "label": "Public Site URL",
+   "description": "Safaricom posts payment results here, e.g. https://erp.bbsmall.co.ke"
+  },
+  {
+   "fieldname": "mpesa_paybill",
+   "fieldtype": "Data",
+   "label": "Paybill Number"
+  },
+  {
+   "fieldname": "mpesa_till",
+   "fieldtype": "Data",
+   "label": "Till Number"
+  },
+  {
+   "fieldname": "mpesa_shortcode",
+   "fieldtype": "Data",
+   "label": "STK Shortcode"
+  },
+  {
+   "fieldname": "mpesa_consumer_key",
+   "fieldtype": "Data",
+   "label": "Consumer Key"
+  },
+  {
+   "fieldname": "mpesa_consumer_secret",
+   "fieldtype": "Password",
+   "label": "Consumer Secret"
+  },
+  {
+   "fieldname": "column_break_13",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "mpesa_passkey",
+   "fieldtype": "Password",
+   "label": "Passkey"
+  },
+  {
+   "fieldname": "mpesa_callback_token",
+   "fieldtype": "Password",
+   "label": "Callback Token",
+   "description": "Secret path segment protecting the callback URL"
+  },
+  {
+   "fieldname": "mpesa_mode_of_payment",
+   "fieldtype": "Link",
+   "label": "Mode of Payment",
+   "options": "Mode of Payment"
+  },
+  {
+   "fieldname": "mpesa_clearing_account",
+   "fieldtype": "Link",
+   "label": "Receiving Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "account_reference_format",
+   "fieldtype": "Data",
+   "label": "Account Reference",
+   "default": "{customer}",
+   "description": "Placeholders: {customer}, {unit}, {lease}"
+  },
+  {
+   "fieldname": "portal_section",
+   "fieldtype": "Section Break",
+   "label": "Tenant Portal"
+  },
+  {
+   "fieldname": "enable_tenant_portal",
+   "fieldtype": "Check",
+   "label": "Enable Tenant Portal",
+   "default": "1"
+  },
+  {
+   "fieldname": "allow_tenant_meter_readings",
+   "fieldtype": "Check",
+   "label": "Tenants May Submit Meter Readings",
+   "default": "1"
+  },
+  {
+   "fieldname": "require_reading_approval",
+   "fieldtype": "Check",
+   "label": "Readings Need Approval",
+   "default": "1"
+  },
+  {
+   "fieldname": "allow_tenant_sales_declarations",
+   "fieldtype": "Check",
+   "label": "Tenants May Declare Turnover",
+   "default": "1"
+  },
+  {
+   "fieldname": "column_break_14",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "maintenance_sla_hours",
+   "fieldtype": "Int",
+   "label": "Maintenance Response SLA (hours)",
+   "default": "48"
+  },
+  {
+   "fieldname": "portal_welcome_message",
+   "fieldtype": "Small Text",
+   "label": "Portal Welcome Message"
+  },
+  {
+   "fieldname": "support_phone",
+   "fieldtype": "Data",
+   "label": "Management Office Phone"
+  },
+  {
+   "fieldname": "support_email",
+   "fieldtype": "Data",
+   "label": "Management Office Email"
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-10 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Property Management",
+ "name": "Property Settings",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Property Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Leasing Officer",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Accounts Manager",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  },
+  {
+   "role": "Accounts User",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  },
+  {
+   "role": "Property Accountant",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  }
+ ],
+ "track_changes": 1,
+ "issingle": 1
+}

@@ -1,0 +1,23 @@
+{
+ "creation": "2026-10-10 09:00:00.000000",
+ "docstatus": 0,
+ "doctype": "Number Card",
+ "document_type": "Maintenance Request",
+ "dynamic_filters_json": "[]",
+ "filters_json": "[[\"Maintenance Request\",\"status\",\"in\",[\"Open\",\"Assigned\",\"In Progress\",\"On Hold\"],false]]",
+ "function": "Count",
+ "idx": 0,
+ "is_public": 1,
+ "is_standard": 1,
+ "label": "Open Maintenance Requests",
+ "modified": "2026-10-10 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Property Management",
+ "name": "Open Maintenance Requests",
+ "owner": "Administrator",
+ "show_percentage_stats": 0,
+ "stats_time_interval": "Monthly",
+ "type": "Document Type",
+ "show_full_number": 0,
+ "color": "#f59e0b"
+}

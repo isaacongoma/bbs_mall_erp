@@ -1,0 +1,120 @@
+{% if letter_head and not no_letterhead -%}
+<div class="letter-head">{{ letter_head }}</div>
+<hr>
+{%- endif %}
+<style>
+.lease { font-family: "Segoe UI", Arial, sans-serif; color: #1f2937; font-size: 12px; line-height: 1.55; }
+.lease h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: .02em; }
+.lease .tag { color: #8a6508; text-transform: uppercase; letter-spacing: .18em; font-size: 10px; font-weight: 600; }
+.lease table { width: 100%; border-collapse: collapse; margin: 8px 0 14px; }
+.lease th { text-align: left; background: #faf5e6; border-bottom: 1px solid #e5d9b8; padding: 6px 8px; font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; }
+.lease td { padding: 6px 8px; border-bottom: 1px solid #eee; vertical-align: top; }
+.lease .num { text-align: right; white-space: nowrap; }
+.lease .grid { display: flex; gap: 24px; margin: 10px 0 14px; }
+.lease .grid > div { flex: 1; }
+.lease h2 { font-size: 13px; margin: 18px 0 4px; border-bottom: 2px solid #b8860b; padding-bottom: 3px; }
+.lease .sign { display: flex; gap: 40px; margin-top: 30px; }
+.lease .sign > div { flex: 1; }
+.lease .sign img { max-height: 70px; }
+.lease .line { border-top: 1px solid #555; margin-top: 4px; padding-top: 3px; font-size: 11px; }
+</style>
+<div class="lease">
+  <p class="tag">Lease Agreement</p>
+  <h1>{{ doc.name }}</h1>
+  <p>{{ doc.property }} &middot; {{ frappe.format(doc.start_date, {'fieldtype': 'Date'}) }} to {{ frappe.format(doc.end_date, {'fieldtype': 'Date'}) }} ({{ doc.lease_term_months }} months)</p>
+
+  <div class="grid">
+    <div>
+      <strong>Landlord</strong><br>
+      {{ doc.company }}<br>
+      {{ doc.property }}
+    </div>
+    <div>
+      <strong>Tenant</strong><br>
+      {{ doc.tenant_name }}{% if doc.trading_name %} (trading as {{ doc.trading_name }}){% endif %}<br>
+      {% if doc.customer %}Tenant no. {{ doc.customer }}{% endif %}
+    </div>
+  </div>
+
+  <h2>Premises and rent</h2>
+  <table>
+    <thead><tr><th>Unit</th><th>Type</th><th class="num">Area (sqm)</th><th class="num">Monthly rent</th><th class="num">Service charge</th></tr></thead>
+    <tbody>
+    {% for row in doc.units %}
+      <tr>
+        <td>{{ row.unit }}</td>
+        <td>{{ row.unit_type or "" }}</td>
+        <td class="num">{{ "{:,.2f}".format(row.area_sqm or 0) }}</td>
+        <td class="num">{{ "{:,.2f}".format(row.monthly_rent or 0) }}</td>
+        <td class="num">{{ "{:,.2f}".format(row.monthly_service_charge or 0) }}</td>
+      </tr>
+    {% endfor %}
+      <tr>
+        <th colspan="2">Total</th>
+        <th class="num">{{ "{:,.2f}".format(doc.total_area or 0) }}</th>
+        <th class="num">{{ "{:,.2f}".format(doc.total_monthly_rent or 0) }}</th>
+        <th class="num">{{ "{:,.2f}".format(doc.total_monthly_service_charge or 0) }}</th>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="grid">
+    <div>
+      <strong>Billing</strong><br>
+      {{ doc.billing_frequency }}, due {{ doc.payment_terms_days }} days after invoice.<br>
+      {% if doc.rent_free_months %}Rent-free period: {{ doc.rent_free_months }} month(s).<br>{% endif %}
+      {% if doc.escalation_type == "Percentage" %}Rent increases {{ doc.escalation_rate }}% every {{ doc.escalation_months }} months.{% elif doc.escalation_type == "Fixed Amount" %}Rent increases by {{ "{:,.2f}".format(doc.escalation_amount or 0) }} every {{ doc.escalation_months }} months.{% endif %}
+      {% if doc.turnover_rent_applicable %}<br>Turnover rent: {{ doc.turnover_rent_percent }}% of sales above base rent.{% endif %}
+    </div>
+    <div>
+      <strong>Security deposit</strong><br>
+      {{ "{:,.2f}".format(doc.security_deposit_amount or 0) }} payable before occupation.<br>
+      Notice period: {{ doc.notice_period_days }} days.
+    </div>
+  </div>
+
+  {% if doc.charges %}
+  <h2>Additional charges</h2>
+  <table>
+    <thead><tr><th>Charge</th><th>Frequency</th><th class="num">Amount</th></tr></thead>
+    <tbody>
+    {% for row in doc.charges %}
+      <tr><td>{{ row.description or row.charge_item }}</td><td>{{ row.frequency }}</td><td class="num">{{ "{:,.2f}".format(row.amount or 0) }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  {% if doc.rent_schedule %}
+  <h2>Rent schedule</h2>
+  <table>
+    <thead><tr><th>From</th><th>To</th><th class="num">Monthly rent</th><th class="num">Service charge</th></tr></thead>
+    <tbody>
+    {% for row in doc.rent_schedule %}
+      <tr>
+        <td>{{ frappe.format(row.from_date, {'fieldtype': 'Date'}) }}</td>
+        <td>{{ frappe.format(row.to_date, {'fieldtype': 'Date'}) }}</td>
+        <td class="num">{{ "{:,.2f}".format(row.monthly_rent or 0) }}</td>
+        <td class="num">{{ "{:,.2f}".format(row.monthly_service_charge or 0) }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  {% if doc.terms %}
+  <h2>Terms and conditions</h2>
+  <div>{{ doc.terms }}</div>
+  {% endif %}
+
+  <div class="sign">
+    <div>
+      {% if doc.landlord_signature %}<img src="{{ doc.landlord_signature }}">{% else %}<br><br>{% endif %}
+      <div class="line">For the Landlord{% if doc.landlord_signed_on %} &middot; {{ frappe.format(doc.landlord_signed_on, {'fieldtype': 'Datetime'}) }}{% endif %}</div>
+    </div>
+    <div>
+      {% if doc.tenant_signature %}<img src="{{ doc.tenant_signature }}">{% else %}<br><br>{% endif %}
+      <div class="line">For the Tenant{% if doc.tenant_signatory_name %}: {{ doc.tenant_signatory_name }}{% endif %}{% if doc.tenant_signed_on %} &middot; {{ frappe.format(doc.tenant_signed_on, {'fieldtype': 'Datetime'}) }}{% endif %}</div>
+    </div>
+  </div>
+</div>

@@ -14,7 +14,7 @@ from django.conf import settings
 def _meta_by_doctype():
     result = {}
     _doctype_app.clear()
-    for app in ("erpnext", "hrms"):
+    for app in ("erpnext", "hrms", "bbs_property"):
         base = Path(settings.BASE_DIR) / "apps" / app
         for path in base.glob("*/doctype/*/*.json"):
             with path.open(encoding="utf-8") as handle:
@@ -172,7 +172,7 @@ def list_doctypes() -> list[str]:
 
 
 def get_model_unsynced(doctype: str):
-    for app_label in ("erpnext", "hrms", "core"):
+    for app_label in ("erpnext", "hrms", "bbs_property", "core"):
         try:
             config = apps.get_app_config(app_label)
         except LookupError:
