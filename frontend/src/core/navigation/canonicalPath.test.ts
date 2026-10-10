@@ -25,11 +25,26 @@ describe('canonicalPath', () => {
   })
 
   it('keeps reserved routes and query strings', () => {
-    expect(canonicalPath('/app/query-report/Trial%20Balance?company=X')).toBe('/desk/query-report/Trial%20Balance?company=X')
+    expect(canonicalPath('/app/query-report/Trial%20Balance?company=X')).toBe(
+      '/desk/query-report/Trial%20Balance?company=X',
+    )
   })
 
   it('does not touch other paths', () => {
     expect(canonicalPath('/tenant/invoices')).toBe('/tenant/invoices')
+  })
+})
+
+describe('canonicalPath is stable', () => {
+  it.each([
+    '/app/Property',
+    '/app/CSF%20KE',
+    '/app/CSF%20KE%20SMS%20Center',
+    '/app/Data%20Import',
+    '/app/Sales%20Invoice/SINV-1',
+  ])('settles after one pass: %s', (path) => {
+    const once = canonicalPath(path)
+    expect(canonicalPath(once)).toBe(once)
   })
 })
 

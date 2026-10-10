@@ -63,7 +63,15 @@ export function toInternal(path: string): string {
   const parts = segments(match[1] ?? '')
   const tail = match[2] ?? ''
   const first = parts[0] ? decode(parts[0]) : ''
-  if (parts.length >= 2 && shellSlugs.has(first) && !doctypeBySlug.has(first) && !RESERVED.has(first)) parts.shift()
+  const second = parts[1] ? decode(parts[1]) : ''
+  if (
+    parts.length >= 2 &&
+    shellSlugs.has(first) &&
+    !RESERVED.has(first) &&
+    (!doctypeBySlug.has(first) || doctypeBySlug.has(second))
+  ) {
+    parts.shift()
+  }
   if (!parts.length) return `/app${tail}`
   const head = decode(parts[0]!)
   if (!RESERVED.has(head)) {
@@ -80,15 +88,15 @@ function toExternal(path: string, keptNew?: string): string {
   const tail = match[2] ?? ''
   if (!parts.length) return `/desk${tail}`
   const head = decode(parts[0]!)
-  if (RESERVED.has(head)) return `/desk/${parts.join('/')}${tail}`
   const slug = slugSegment(head)
+  if (RESERVED.has(slug)) return `/desk/${[slug, ...parts.slice(1)].join('/')}${tail}`
   const name = doctypeBySlug.get(slug)
   const shell = name ? shellOfDoctype[name] : undefined
   let rest = parts.slice(1)
   if (rest.length === 1 && decode(rest[0]!) === 'new') {
     rest = [keptNew && keptNew.startsWith(`new-${slug}-`) ? keptNew : `new-${slug}-${randomSuffix()}`]
   }
-  const prefix = shell ? [encodeURIComponent(slugSegment(shell))] : []
+  const prefix = shell && slugSegment(shell) !== slug ? [encodeURIComponent(slugSegment(shell))] : []
   return `/desk/${[...prefix, encodeURIComponent(slug), ...rest].join('/')}${tail}`
 }
 
