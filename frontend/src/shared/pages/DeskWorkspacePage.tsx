@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { frappe } from '@/shared/frappe'
 import { Icon } from '../components/Icon'
 import { ModuleIcon } from '../components/ModuleIcon'
@@ -102,6 +102,33 @@ function WorkspaceLinkGroup({ group }: { group: DeskWorkspace }) {
   )
 }
 
+function parseFilterList(value: unknown): unknown[][] {
+  try {
+    const parsed = JSON.parse(String(value ?? '[]')) as unknown
+    return Array.isArray(parsed) ? (parsed as unknown[][]) : []
+  } catch {
+    return []
+  }
+}
+
+function cardFilters(card: AnyRecord): unknown[][] {
+  const fixed = parseFilterList(card.filters_json)
+  const dynamic = parseFilterList(card.dynamic_filters_json).map((entry) => {
+    const expression = entry[3]
+    if (typeof expression !== 'string' || !expression.startsWith('frappe.')) return entry
+    try {
+      const value = new Function('frappe', `return ${expression}`)(frappe)
+      return [entry[0], entry[1], entry[2], value]
+    } catch {
+      return null
+    }
+  })
+  return [
+    ...fixed,
+    ...dynamic.filter((entry): entry is unknown[] => Boolean(entry && entry[3] !== undefined && entry[3] !== null)),
+  ]
+}
+
 export function WorkspaceNumberCard({ item }: { item: DeskWorkspace }) {
   const card = useResource<AnyRecord>({
     url: 'frappe.client.get',
@@ -119,6 +146,12 @@ export function WorkspaceNumberCard({ item }: { item: DeskWorkspace }) {
     initialData: 0,
     transform: (value) => Number(unwrapDeskResponse(value) ?? 0),
   })
+  const cardDoc = card.data
+  useEffect(() => {
+    if (!cardDoc?.name) return
+    result.update({ params: { doc: cardDoc, filters: JSON.stringify(cardFilters(cardDoc)) }, auto: true })
+    void result.reload().catch(() => undefined)
+  }, [cardDoc, result])
   const scope = window as unknown as Record<string, any>
   const isCount = String(card.data?.function ?? '') === 'Count'
   const display =
@@ -323,24 +356,27 @@ export function WorkspaceChart({ item }: { item: DeskWorkspace }) {
     : isCustom
       ? String(sourceSettings?.method ?? '')
       : 'frappe.desk.doctype.dashboard_chart.dashboard_chart.get'
+  const chartParams: AnyRecord = isReport
+    ? { report_name: definition?.report_name, filters: { ...filters, ...activeValueFilters } }
+    : {
+        chart_name: item.chart_name,
+        refresh: 1,
+        ...(isCustom
+          ? { filters: JSON.stringify(customFilters) }
+          : activeDocumentFilters.length
+            ? {
+                filters: JSON.stringify(
+                  toReportviewFilters(String(definition?.document_type ?? ''), activeDocumentFilters),
+                ),
+              }
+            : {}),
+        ...(timeseries ? { timespan: activeTimespan, time_interval: activeInterval } : {}),
+      }
+  const chartReady = Boolean(definition) && Boolean(chartUrl) && saved !== null
+  const chartParamsKey = JSON.stringify(chartParams)
   const chart = useResource<AnyRecord | null>({
     url: chartUrl,
-    params: isReport
-      ? { report_name: definition?.report_name, filters: { ...filters, ...activeValueFilters } }
-      : {
-          chart_name: item.chart_name,
-          refresh: 1,
-          ...(isCustom
-            ? { filters: JSON.stringify(customFilters) }
-            : activeDocumentFilters.length
-              ? {
-                  filters: JSON.stringify(
-                    toReportviewFilters(String(definition?.document_type ?? ''), activeDocumentFilters),
-                  ),
-                }
-              : {}),
-          ...(timeseries ? { timespan: activeTimespan, time_interval: activeInterval } : {}),
-        },
+    params: chartParams,
     cache: [
       'desk-chart',
       item.chart_name,
@@ -350,7 +386,7 @@ export function WorkspaceChart({ item }: { item: DeskWorkspace }) {
       JSON.stringify(activeDocumentFilters),
       JSON.stringify(activeValueFilters),
     ],
-    auto: Boolean(definition) && Boolean(chartUrl) && saved !== null,
+    auto: chartReady,
     initialData: null,
     transform: (value) => {
       const payload = unwrapDeskResponse(value)
@@ -358,6 +394,13 @@ export function WorkspaceChart({ item }: { item: DeskWorkspace }) {
       return isReport ? ((payload as AnyRecord).chart ?? null) : (payload as AnyRecord)
     },
   })
+  const refreshChart = useEffectEvent(() => {
+    chart.update({ url: chartUrl, params: chartParams, auto: true })
+    void chart.reload().catch(() => undefined)
+  })
+  useEffect(() => {
+    if (chartReady) refreshChart()
+  }, [chartReady, chartUrl, chartParamsKey])
   const data = chart.data
   const wasLoading = useRef(false)
   useEffect(() => {

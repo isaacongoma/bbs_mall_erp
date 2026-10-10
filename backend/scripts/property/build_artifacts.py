@@ -445,6 +445,10 @@ def main():
     build_cards_and_charts()
     import layout
 
+    for module_name in layout.module_names():
+        (ROOT / scrub(module_name)).mkdir(parents=True, exist_ok=True)
+        (ROOT / scrub(module_name) / "__init__.py").touch()
+    (ROOT / "modules.txt").write_text(chr(10).join(layout.module_names()) + chr(10), encoding="utf-8")
     layout.build_workspaces()
     layout.build_sidebars()
     build_onboarding()

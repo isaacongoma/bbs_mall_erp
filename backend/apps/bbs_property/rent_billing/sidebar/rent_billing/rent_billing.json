@@ -3,14 +3,14 @@
  "creation": "2026-10-10 09:00:00.000000",
  "docstatus": 0,
  "doctype": "Sidebar",
- "header_icon": "lease-duotone",
+ "header_icon": "billing-duotone",
  "idx": 0,
  "items": [
   {
    "added": 0,
    "hidden": 0,
    "label": "Home",
-   "link_to": "Leasing",
+   "link_to": "Rent Billing",
    "link_type": "Workspace",
    "type": "Link",
    "child": 0,
@@ -25,8 +25,8 @@
   {
    "added": 0,
    "hidden": 0,
-   "label": "Space Enquiries",
-   "link_to": "Space Enquiry",
+   "label": "Lease Billing Runs",
+   "link_to": "Lease Billing Run",
    "link_type": "DocType",
    "type": "Link",
    "child": 0,
@@ -36,13 +36,13 @@
    "show_arrow": 0,
    "open_in_new_tab": 0,
    "is_default_module": 0,
-   "icon": "user-search"
+   "icon": "receipt-text"
   },
   {
    "added": 0,
    "hidden": 0,
-   "label": "Lease Agreements",
-   "link_to": "Lease Agreement",
+   "label": "Lease Deposits",
+   "link_to": "Lease Deposit",
    "link_type": "DocType",
    "type": "Link",
    "child": 0,
@@ -52,13 +52,13 @@
    "show_arrow": 0,
    "open_in_new_tab": 0,
    "is_default_module": 0,
-   "icon": "file-signature"
+   "icon": "piggy-bank"
   },
   {
    "added": 0,
    "hidden": 0,
-   "label": "Turnover Declarations",
-   "link_to": "Tenant Sales Declaration",
+   "label": "M-Pesa Payments",
+   "link_to": "Mpesa Payment",
    "link_type": "DocType",
    "type": "Link",
    "child": 0,
@@ -68,23 +68,7 @@
    "show_arrow": 0,
    "open_in_new_tab": 0,
    "is_default_module": 0,
-   "icon": "chart-no-axes-combined"
-  },
-  {
-   "added": 0,
-   "hidden": 0,
-   "label": "Tenant Notices",
-   "link_to": "Tenant Notice",
-   "link_type": "DocType",
-   "type": "Link",
-   "child": 0,
-   "collapsible": 1,
-   "indent": 0,
-   "keep_closed": 0,
-   "show_arrow": 0,
-   "open_in_new_tab": 0,
-   "is_default_module": 0,
-   "icon": "megaphone"
+   "icon": "smartphone"
   },
   {
    "added": 0,
@@ -104,8 +88,8 @@
   {
    "added": 0,
    "hidden": 0,
-   "label": "Lease Expiry",
-   "link_to": "Lease Expiry",
+   "label": "Tenant Arrears Aging",
+   "link_to": "Tenant Arrears Aging",
    "link_type": "Report",
    "type": "Link",
    "child": 1,
@@ -119,8 +103,38 @@
   {
    "added": 0,
    "hidden": 0,
-   "label": "Turnover vs Base Rent",
-   "link_to": "Turnover vs Base Rent",
+   "label": "Collection Efficiency",
+   "link_to": "Collection Efficiency",
+   "link_type": "Report",
+   "type": "Link",
+   "child": 1,
+   "collapsible": 1,
+   "indent": 0,
+   "keep_closed": 0,
+   "show_arrow": 0,
+   "open_in_new_tab": 0,
+   "is_default_module": 0
+  },
+  {
+   "added": 0,
+   "hidden": 0,
+   "label": "Tenant Statement",
+   "link_to": "Tenant Statement",
+   "link_type": "Report",
+   "type": "Link",
+   "child": 1,
+   "collapsible": 1,
+   "indent": 0,
+   "keep_closed": 0,
+   "show_arrow": 0,
+   "open_in_new_tab": 0,
+   "is_default_module": 0
+  },
+  {
+   "added": 0,
+   "hidden": 0,
+   "label": "Deposit Ledger",
+   "link_to": "Deposit Ledger",
    "link_type": "Report",
    "type": "Link",
    "child": 1,
@@ -134,9 +148,9 @@
  ],
  "modified": "2026-10-10 09:00:00.000000",
  "modified_by": "Administrator",
- "module": "Property Management",
- "name": "Leasing",
+ "module": "Rent Billing",
+ "name": "Rent Billing",
  "owner": "Administrator",
  "standard": 1,
- "title": "Leasing"
+ "title": "Rent Billing"
 }

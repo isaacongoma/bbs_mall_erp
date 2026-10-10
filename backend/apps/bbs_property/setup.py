@@ -1,4 +1,5 @@
 import json
+import os
 import secrets
 
 import frappe
@@ -46,6 +47,15 @@ def custom_fields():
             {"fieldname": "tenant_portal_users", "fieldtype": "Table", "label": "Tenant Portal Users", "options": "Tenant Portal User", "insert_after": "is_tenant", "depends_on": "is_tenant"},
         ],
     }
+
+
+def ensure_module_defs():
+    path = os.path.join(os.path.dirname(__file__), "modules.txt")
+    with open(path, encoding="utf-8") as handle:
+        names = [line.strip() for line in handle if line.strip()]
+    for name in names:
+        if not frappe.db.exists("Module Def", name):
+            frappe.get_doc({"doctype": "Module Def", "module_name": name, "app_name": "bbs_property", "name": name}).insert(ignore_permissions=True)
 
 
 def ensure_roles():
@@ -110,6 +120,7 @@ def register_app():
 
 
 def after_install():
+    ensure_module_defs()
     ensure_roles()
     create_custom_fields(custom_fields(), ignore_validate=True)
     ensure_settings()
@@ -117,5 +128,6 @@ def after_install():
 
 
 def after_migrate():
+    ensure_module_defs()
     ensure_roles()
     create_custom_fields(custom_fields(), ignore_validate=True)

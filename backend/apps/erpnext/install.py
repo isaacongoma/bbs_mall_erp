@@ -228,8 +228,6 @@ def install_base_fixtures(country="Kenya"):
             if not Series.objects.filter(name="__bbs_property_installed__").exists():
                 from apps.bbs_property import setup as install_property
 
-                if not frappe.db.exists("Module Def", "Property Management"):
-                    make_records([{"doctype": "Module Def", "module_name": "Property Management", "app_name": "bbs_property", "name": "Property Management"}])
                 install_property.after_install()
                 Series.objects.get_or_create(name="__bbs_property_installed__", defaults={"current": 1})
             if not Series.objects.filter(name="__frappe_after_install__").exists():

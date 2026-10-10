@@ -140,12 +140,16 @@ def rows(entries, parent, parentfield, doctype, extra):
     ]
 
 
+def module_names():
+    return [module["workspace"] for module in MODULES]
+
+
 def build_workspaces():
     quick = {name: (doc, flt) for doc, name, flt in ba.QUICK_LISTS}
     for module in MODULES:
         name = module["workspace"]
         ba.write(
-            ba.BASE / "workspace" / scrub(name) / f"{scrub(name)}.json",
+            ba.ROOT / scrub(module["workspace"]) / "workspace" / scrub(name) / f"{scrub(name)}.json",
             {
                 "app": "bbs_property",
                 "charts": rows(module["charts"], name, "charts", "Workspace Chart", lambda n: {"chart_name": n, "label": n}),
@@ -163,7 +167,7 @@ def build_workspaces():
                 "links": [],
                 "modified": STAMP,
                 "modified_by": "Administrator",
-                "module": MODULE,
+                "module": module["workspace"],
                 "name": name,
                 "number_cards": rows(module["cards"], name, "number_cards", "Workspace Number Card", lambda n: {"number_card_name": n, "label": n}),
                 "owner": "Administrator",
@@ -189,7 +193,7 @@ def build_sidebars():
         if module.get("settings"):
             items.append(ba.item("Settings", "Property Settings", "DocType", "settings"))
         ba.write(
-            ba.BASE / "sidebar" / scrub(module["sidebar"]) / f"{scrub(module['sidebar'])}.json",
+            ba.ROOT / scrub(module["workspace"]) / "sidebar" / scrub(module["sidebar"]) / f"{scrub(module['sidebar'])}.json",
             {
                 "app": "bbs_property",
                 "creation": STAMP,
@@ -200,7 +204,7 @@ def build_sidebars():
                 "items": items,
                 "modified": STAMP,
                 "modified_by": "Administrator",
-                "module": MODULE,
+                "module": module["workspace"],
                 "name": module["sidebar"],
                 "owner": "Administrator",
                 "standard": 1,
