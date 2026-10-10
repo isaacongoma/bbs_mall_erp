@@ -1,0 +1,35 @@
+<svg id="property-module-symbols" aria-hidden="true" style="display: none;" class="icon" xmlns="http://www.w3.org/2000/svg">
+	<symbol viewBox="0 0 24 24" id="icon-building-duotone" stroke="none">
+		<path d="M6.5 3H13.5A1.5 1.5 0 0 1 15 4.5V21H5V4.5A1.5 1.5 0 0 1 6.5 3Z" style="fill: var(--duotone-light, var(--ink-gray-3))" />
+		<path d="M15 9H18.5A1.5 1.5 0 0 1 20 10.5V21H15Z" style="fill: var(--duotone-dark, light-dark(var(--ink-gray-5), var(--ink-gray-6)))" />
+		<rect x="7.5" y="6" width="2" height="2" rx="0.4" style="fill: var(--duotone-dark, light-dark(var(--ink-gray-5), var(--ink-gray-6)))" />
+		<rect x="10.5" y="6" width="2" height="2" rx="0.4" style="fill: var(--duotone-dark, light-dark(var(--ink-gray-5), var(--ink-gray-6)))" />
+		<rect x="7.5" y="10" width="2" height="2" rx="0.4" style="fill: var(--duotone-dark, light-dark(var(--ink-gray-5), var(--ink-gray-6)))" />
+		<rect x="10.5" y="10" width="2" height="2" rx="0.4" style="fill: var(--duotone-dark, light-dark(var(--ink-gray-5), var(--ink-gray-6)))" />
+		<rect x="8.8" y="16" width="2.4" height="5" rx="0.4" style="fill: var(--duotone-dark, light-dark(var(--ink-gray-5), var(--ink-gray-6)))" />
+		<rect x="16.4" y="12" width="2.2" height="2" rx="0.4" style="fill: var(--duotone-light, var(--ink-gray-3))" />
+		<rect x="16.4" y="16" width="2.2" height="2" rx="0.4" style="fill: var(--duotone-light, var(--ink-gray-3))" />
+	</symbol>
+	<symbol viewBox="0 0 24 24" id="icon-lease-duotone" stroke="none">
+		<path d="M7 2.5H14.5L19 7V20.5A1.5 1.5 0 0 1 17.5 22H7A1.5 1.5 0 0 1 5.5 20.5V4A1.5 1.5 0 0 1 7 2.5Z" style="fill: var(--duotone-light, var(--ink-gray-3))" />
+		<path d="M14.5 2.5V5.8A1.2 1.2 0 0 0 15.7 7H19Z" style="fill: var(--duotone-dark, light-dark(var(--ink-gray-5), var(--ink-gray-6)))" />
+		<rect x="8" y="10.5" width="8" height="1.6" rx="0.8" style="fill: var(--duotone-dark, light-dark(var(--ink-gray-5), var(--ink-gray-6)))" />
+		<rect x="8" y="14" width="8" height="1.6" rx="0.8" style="fill: var(--duotone-dark, light-dark(var(--ink-gray-5), var(--ink-gray-6)))" />
+		<rect x="8" y="17.5" width="5" height="1.6" rx="0.8" style="fill: var(--duotone-dark, light-dark(var(--ink-gray-5), var(--ink-gray-6)))" />
+	</symbol>
+	<symbol viewBox="0 0 24 24" id="icon-billing-duotone" stroke="none">
+		<path d="M6.5 2.5H17.5A1 1 0 0 1 18.5 3.5V21L16.5 19.6 14.5 21 12.5 19.6 10.5 21 8.5 19.6 5.5 21V3.5A1 1 0 0 1 6.5 2.5Z" style="fill: var(--duotone-light, var(--ink-gray-3))" />
+		<rect x="8.5" y="6.5" width="7" height="1.6" rx="0.8" style="fill: var(--duotone-dark, light-dark(var(--ink-gray-5), var(--ink-gray-6)))" />
+		<rect x="8.5" y="10" width="7" height="1.6" rx="0.8" style="fill: var(--duotone-dark, light-dark(var(--ink-gray-5), var(--ink-gray-6)))" />
+		<rect x="8.5" y="13.5" width="4" height="1.6" rx="0.8" style="fill: var(--duotone-dark, light-dark(var(--ink-gray-5), var(--ink-gray-6)))" />
+	</symbol>
+	<symbol viewBox="0 0 24 24" id="icon-utilities-duotone" stroke="none">
+		<path d="M13.5 2L5 13.5H11L10 22L19 10H13Z" style="fill: var(--duotone-light, var(--ink-gray-3))" />
+		<path d="M13.2 10H19L10 22L11.2 14.2H13.2Z" style="fill: var(--duotone-dark, light-dark(var(--ink-gray-5), var(--ink-gray-6)))" />
+	</symbol>
+	<symbol viewBox="0 0 24 24" id="icon-maintenance-duotone" stroke="none">
+		<path d="M14.8 3.2A5.2 5.2 0 0 0 9.3 10.5L3.7 16.1A2.3 2.3 0 0 0 7 19.3L12.6 13.7A5.2 5.2 0 0 0 19.9 8.2L16.8 11.3 13.7 10.3 12.7 7.2 15.8 4.1Z" style="fill: var(--duotone-light, var(--ink-gray-3))" />
+		<circle cx="5.4" cy="17.6" r="1.1" style="fill: var(--duotone-dark, light-dark(var(--ink-gray-5), var(--ink-gray-6)))" />
+		<path d="M14.8 3.2A5.2 5.2 0 0 1 19.9 8.2L16.8 11.3 13.7 10.3 12.7 7.2 15.8 4.1Z" style="fill: var(--duotone-dark, light-dark(var(--ink-gray-5), var(--ink-gray-6)))" />
+	</symbol>
+</svg>

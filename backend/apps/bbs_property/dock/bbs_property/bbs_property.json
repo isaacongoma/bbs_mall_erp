@@ -9,9 +9,41 @@
    "added": 0,
    "hidden": 0,
    "icon": "building-duotone",
-   "link_to": "Property Management",
+   "link_to": "Property",
    "link_type": "Sidebar",
-   "title": "Property Management"
+   "title": "Property"
+  },
+  {
+   "added": 0,
+   "hidden": 0,
+   "icon": "lease-duotone",
+   "link_to": "Leasing",
+   "link_type": "Sidebar",
+   "title": "Leasing"
+  },
+  {
+   "added": 0,
+   "hidden": 0,
+   "icon": "billing-duotone",
+   "link_to": "Rent Billing",
+   "link_type": "Sidebar",
+   "title": "Rent Billing"
+  },
+  {
+   "added": 0,
+   "hidden": 0,
+   "icon": "utilities-duotone",
+   "link_to": "Property Utilities",
+   "link_type": "Sidebar",
+   "title": "Property Utilities"
+  },
+  {
+   "added": 0,
+   "hidden": 0,
+   "icon": "maintenance-duotone",
+   "link_to": "Property Maintenance",
+   "link_type": "Sidebar",
+   "title": "Property Maintenance"
   }
  ],
  "modified": "2026-10-10 09:00:00.000000",

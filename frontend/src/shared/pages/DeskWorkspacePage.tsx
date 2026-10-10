@@ -21,6 +21,7 @@ import { shellLanding } from '../utils/deskShell'
 import { sanitizeHTML } from '../utils/text'
 import {
   parseWorkspaceBlocks,
+  unwrapDeskDocument,
   unwrapDeskResponse,
   workspaceItems,
   workspaceName,
@@ -108,10 +109,7 @@ export function WorkspaceNumberCard({ item }: { item: DeskWorkspace }) {
     cache: ['desk-number-card', item.number_card_name],
     auto: Boolean(item.number_card_name),
     initialData: null,
-    transform: (value) => {
-      const payload = unwrapDeskResponse(value)
-      return payload && typeof payload === 'object' ? (payload as AnyRecord) : null
-    },
+    transform: (value) => unwrapDeskDocument(value) as AnyRecord | null,
   })
   const result = useResource<number>({
     url: 'frappe.desk.doctype.number_card.number_card.get_result',
@@ -216,10 +214,7 @@ export function WorkspaceChart({ item }: { item: DeskWorkspace }) {
     cache: ['desk-chart-doc', item.chart_name],
     auto: Boolean(item.chart_name),
     initialData: null,
-    transform: (value) => {
-      const payload = unwrapDeskResponse(value)
-      return payload && typeof payload === 'object' ? (payload as AnyRecord) : null
-    },
+    transform: (value) => unwrapDeskDocument(value) as AnyRecord | null,
   })
   const definition = doc.data
   const isReport = definition?.chart_type === 'Report'
@@ -557,10 +552,7 @@ function WorkspaceCustomBlock({ item }: { item: DeskWorkspace }) {
     cache: ['desk-custom-block', item.custom_block_name],
     auto: Boolean(item.custom_block_name),
     initialData: null,
-    transform: (value) => {
-      const payload = unwrapDeskResponse(value)
-      return payload && typeof payload === 'object' ? (payload as AnyRecord) : null
-    },
+    transform: (value) => unwrapDeskDocument(value) as AnyRecord | null,
   })
   return (
     <section className="rounded-xl border border-outline-gray-2 bg-surface-base p-4">

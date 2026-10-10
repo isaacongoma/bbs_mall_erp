@@ -28,7 +28,9 @@ export function DockRail({ logo, logoIcon, appTitle, entries, activeShell, onSel
           {logo ? (
             <img src={logo} alt="" className="size-8" />
           ) : (
-            <Icon icon={logoIcon ?? 'lucide-box'} className="size-5 text-ink-gray-7" />
+            <span className="flex size-8 items-center justify-center rounded-lg bg-[#067EFB]">
+              <Icon icon={logoIcon ?? 'lucide-box'} className="size-[18px] text-white" />
+            </span>
           )}
         </button>
       </Tooltip>

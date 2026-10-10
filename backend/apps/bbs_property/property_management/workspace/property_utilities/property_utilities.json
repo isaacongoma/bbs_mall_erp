@@ -1,0 +1,43 @@
+{
+ "app": "bbs_property",
+ "charts": [],
+ "content": "[{\"id\": \"8226cab533\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Pending Meter Readings\", \"col\": 4}}]",
+ "creation": "2026-10-10 09:00:00.000000",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "zap",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "Property Utilities",
+ "links": [],
+ "modified": "2026-10-10 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Property Management",
+ "name": "Property Utilities",
+ "number_cards": [
+  {
+   "name": "property_utilities-number_cards0",
+   "owner": "Administrator",
+   "creation": "2026-10-10 09:00:00.000000",
+   "modified": "2026-10-10 09:00:00.000000",
+   "modified_by": "Administrator",
+   "docstatus": 0,
+   "idx": 1,
+   "parent": "Property Utilities",
+   "parentfield": "number_cards",
+   "parenttype": "Workspace",
+   "doctype": "Workspace Number Card",
+   "number_card_name": "Pending Meter Readings",
+   "label": "Pending Meter Readings"
+  }
+ ],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "shortcuts": []
+}

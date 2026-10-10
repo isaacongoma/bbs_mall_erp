@@ -395,7 +395,7 @@ def add_home_page(bootinfo, docs):
     """load home page"""
     if frappe.session.user == "Guest":
         return
-    home_page = frappe.db.get_default("desktop:home_page")
+    home_page = frappe.db.get_default("desktop:home_page") or "desktop"
 
     if not frappe.is_setup_complete():
         bootinfo.setup_wizard_requires = frappe.get_hooks("setup_wizard_requires")

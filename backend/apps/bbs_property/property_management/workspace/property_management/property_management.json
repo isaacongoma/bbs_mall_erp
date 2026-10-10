@@ -2,7 +2,7 @@
  "app": "bbs_property",
  "charts": [
   {
-   "name": "charts0",
+   "name": "property_management-charts0",
    "owner": "Administrator",
    "creation": "2026-10-10 09:00:00.000000",
    "modified": "2026-10-10 09:00:00.000000",
@@ -17,7 +17,7 @@
    "label": "Units by Status"
   },
   {
-   "name": "charts1",
+   "name": "property_management-charts1",
    "owner": "Administrator",
    "creation": "2026-10-10 09:00:00.000000",
    "modified": "2026-10-10 09:00:00.000000",
@@ -32,7 +32,7 @@
    "label": "Rent Billed by Month"
   }
  ],
- "content": "[{\"id\": \"b32fa29fd1\", \"type\": \"onboarding\", \"data\": {\"onboarding_name\": \"Property Management Onboarding\", \"col\": 12}}, {\"id\": \"447d9f28f8\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Occupied Units\", \"col\": 3}}, {\"id\": \"d26be1889e\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Vacant Units\", \"col\": 3}}, {\"id\": \"054ec553ea\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Monthly Rent Roll\", \"col\": 3}}, {\"id\": \"408e231cc0\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Rent Arrears\", \"col\": 3}}, {\"id\": \"bd5069aec3\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Units by Status\", \"col\": 4}}, {\"id\": \"05c383f021\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Rent Billed by Month\", \"col\": 8}}, {\"id\": \"79a81d08be\", \"type\": \"quick_list\", \"data\": {\"quick_list_name\": \"Expiring Leases\", \"col\": 4}}, {\"id\": \"fbcd8530ae\", \"type\": \"quick_list\", \"data\": {\"quick_list_name\": \"Open Maintenance\", \"col\": 4}}, {\"id\": \"6c0f792244\", \"type\": \"quick_list\", \"data\": {\"quick_list_name\": \"Fresh Enquiries\", \"col\": 4}}]",
+ "content": "[{\"id\": \"b32fa29fd1\", \"type\": \"onboarding\", \"data\": {\"onboarding_name\": \"Property Management Onboarding\", \"col\": 12}}, {\"id\": \"447d9f28f8\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Occupied Units\", \"col\": 3}}, {\"id\": \"d26be1889e\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Vacant Units\", \"col\": 3}}, {\"id\": \"054ec553ea\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Monthly Rent Roll\", \"col\": 3}}, {\"id\": \"408e231cc0\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Rent Arrears\", \"col\": 3}}, {\"id\": \"bd5069aec3\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Units by Status\", \"col\": 4}}, {\"id\": \"05c383f021\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Rent Billed by Month\", \"col\": 8}}]",
  "creation": "2026-10-10 09:00:00.000000",
  "custom_blocks": [],
  "docstatus": 0,
@@ -50,7 +50,7 @@
  "name": "Property Management",
  "number_cards": [
   {
-   "name": "number_cards0",
+   "name": "property_management-number_cards0",
    "owner": "Administrator",
    "creation": "2026-10-10 09:00:00.000000",
    "modified": "2026-10-10 09:00:00.000000",
@@ -65,7 +65,7 @@
    "label": "Occupied Units"
   },
   {
-   "name": "number_cards1",
+   "name": "property_management-number_cards1",
    "owner": "Administrator",
    "creation": "2026-10-10 09:00:00.000000",
    "modified": "2026-10-10 09:00:00.000000",
@@ -80,7 +80,7 @@
    "label": "Vacant Units"
   },
   {
-   "name": "number_cards2",
+   "name": "property_management-number_cards2",
    "owner": "Administrator",
    "creation": "2026-10-10 09:00:00.000000",
    "modified": "2026-10-10 09:00:00.000000",
@@ -95,7 +95,7 @@
    "label": "Monthly Rent Roll"
   },
   {
-   "name": "number_cards3",
+   "name": "property_management-number_cards3",
    "owner": "Administrator",
    "creation": "2026-10-10 09:00:00.000000",
    "modified": "2026-10-10 09:00:00.000000",
@@ -113,56 +113,7 @@
  "owner": "Administrator",
  "parent_page": "",
  "public": 1,
- "quick_lists": [
-  {
-   "name": "quick_lists0",
-   "owner": "Administrator",
-   "creation": "2026-10-10 09:00:00.000000",
-   "modified": "2026-10-10 09:00:00.000000",
-   "modified_by": "Administrator",
-   "docstatus": 0,
-   "idx": 1,
-   "parent": "Property Management",
-   "parentfield": "quick_lists",
-   "parenttype": "Workspace",
-   "doctype": "Workspace Quick List",
-   "document_type": "Lease Agreement",
-   "label": "Expiring Leases",
-   "quick_list_filter": "[[\"Lease Agreement\",\"status\",\"=\",\"Expiring Soon\",false],[\"Lease Agreement\",\"docstatus\",\"=\",1,false]]"
-  },
-  {
-   "name": "quick_lists1",
-   "owner": "Administrator",
-   "creation": "2026-10-10 09:00:00.000000",
-   "modified": "2026-10-10 09:00:00.000000",
-   "modified_by": "Administrator",
-   "docstatus": 0,
-   "idx": 2,
-   "parent": "Property Management",
-   "parentfield": "quick_lists",
-   "parenttype": "Workspace",
-   "doctype": "Workspace Quick List",
-   "document_type": "Maintenance Request",
-   "label": "Open Maintenance",
-   "quick_list_filter": "[[\"Maintenance Request\",\"status\",\"in\",[\"Open\",\"Assigned\",\"In Progress\"],false]]"
-  },
-  {
-   "name": "quick_lists2",
-   "owner": "Administrator",
-   "creation": "2026-10-10 09:00:00.000000",
-   "modified": "2026-10-10 09:00:00.000000",
-   "modified_by": "Administrator",
-   "docstatus": 0,
-   "idx": 3,
-   "parent": "Property Management",
-   "parentfield": "quick_lists",
-   "parenttype": "Workspace",
-   "doctype": "Workspace Quick List",
-   "document_type": "Space Enquiry",
-   "label": "Fresh Enquiries",
-   "quick_list_filter": "[[\"Space Enquiry\",\"status\",\"in\",[\"New\",\"Contacted\"],false]]"
-  }
- ],
+ "quick_lists": [],
  "roles": [],
  "shortcuts": []
 }

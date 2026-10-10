@@ -4,6 +4,7 @@ import { Icon } from './Icon'
 import erpnextSprite from '../assets/desk/erpnext-module-icons.svg?raw'
 import frappeSprite from '../assets/desk/frappe-module-icons.svg?raw'
 import hrmsSprite from '../assets/desk/hrms-module-icons.svg?raw'
+import propertySprite from '../assets/desk/property-module-icons.svg?raw'
 
 const SPRITE_HOST_ID = 'desk-module-icon-sprites'
 
@@ -16,7 +17,7 @@ function ensureSprites(): void {
   const host = document.createElement('div')
   host.id = SPRITE_HOST_ID
   host.style.display = 'none'
-  host.innerHTML = [erpnextSprite, frappeSprite, hrmsSprite].join('')
+  host.innerHTML = [erpnextSprite, frappeSprite, hrmsSprite, propertySprite].join('')
   document.body.appendChild(host)
 }
 

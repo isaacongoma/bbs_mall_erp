@@ -443,8 +443,10 @@ def build_onboarding():
 def main():
     build_reports()
     build_cards_and_charts()
-    build_workspace()
-    build_sidebar()
+    import layout
+
+    layout.build_workspaces()
+    layout.build_sidebars()
     build_onboarding()
     print("artifacts written")
 
