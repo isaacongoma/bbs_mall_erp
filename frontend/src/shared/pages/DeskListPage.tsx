@@ -5,7 +5,8 @@ import { useRoute } from '@/core/navigation'
 import { useDoctypeSegment } from '@/shared/frappe/docUrl'
 import { useListResource, useResource } from '@/core/resources'
 import { __ } from '@/core/i18n'
-import { Badge, Button, Dropdown, ErrorMessage, FormControl, ListView, Spinner, usePageMeta } from '@/design-system'
+import { TableShimmer } from '../components/Shimmer'
+import { Badge, Button, Dropdown, ErrorMessage, FormControl, ListView, usePageMeta } from '@/design-system'
 import { indicatorTheme } from '../utils/indicatorTheme'
 import { sanitizeHTML } from '../utils/text'
 import { LayoutHeader } from '../components/LayoutHeader'
@@ -32,15 +33,24 @@ function listFields(fields: DocField[]): DocField[] {
 }
 
 function fieldOptions(field: DocField): Array<{ label: string; value: string }> {
-  if (Array.isArray(field.options)) return field.options.map((option) => ({ label: String(option.label ?? option), value: String(option.value ?? option) }))
+  if (Array.isArray(field.options))
+    return field.options.map((option) => ({
+      label: String(option.label ?? option),
+      value: String(option.value ?? option),
+    }))
   if (typeof field.options === 'string') {
-    return field.options.split('\n').filter(Boolean).map((option) => ({ label: __(option), value: option }))
+    return field.options
+      .split('\n')
+      .filter(Boolean)
+      .map((option) => ({ label: __(option), value: option }))
   }
   return []
 }
 
 function filterFields(fields: DocField[]): DocField[] {
-  return fields.filter((field) => field.in_standard_filter && ['Data', 'Select', 'Link'].includes(field.fieldtype)).slice(0, 4)
+  return fields
+    .filter((field) => field.in_standard_filter && ['Data', 'Select', 'Link'].includes(field.fieldtype))
+    .slice(0, 4)
 }
 
 function settingFields(value: unknown): string[] {
@@ -56,8 +66,10 @@ function settingFields(value: unknown): string[] {
 
 function statusTone(value: string): 'blue' | 'green' | 'red' | 'orange' | 'gray' {
   const normalized = value.toLowerCase()
-  if (['completed', 'approved', 'active', 'open', 'submitted', 'paid'].some((entry) => normalized.includes(entry))) return 'green'
-  if (['cancelled', 'rejected', 'closed', 'inactive', 'overdue'].some((entry) => normalized.includes(entry))) return 'red'
+  if (['completed', 'approved', 'active', 'open', 'submitted', 'paid'].some((entry) => normalized.includes(entry)))
+    return 'green'
+  if (['cancelled', 'rejected', 'closed', 'inactive', 'overdue'].some((entry) => normalized.includes(entry)))
+    return 'red'
   if (['pending', 'draft', 'in progress', 'partly'].some((entry) => normalized.includes(entry))) return 'orange'
   return 'blue'
 }
@@ -78,7 +90,9 @@ function savedFilterKey(doctype: string): string {
 function loadSavedFilters(doctype: string): SavedListFilter[] {
   try {
     const value = JSON.parse(window.localStorage.getItem(savedFilterKey(doctype)) ?? '[]')
-    return Array.isArray(value) ? value.filter((entry): entry is SavedListFilter => Boolean(entry && typeof entry.name === 'string')) : []
+    return Array.isArray(value)
+      ? value.filter((entry): entry is SavedListFilter => Boolean(entry && typeof entry.name === 'string'))
+      : []
   } catch {
     return []
   }
@@ -88,7 +102,11 @@ export default function DeskListPage() {
   const route = useRoute()
   const navigate = useNavigate()
   const doctype = useDoctypeSegment(route.params.doctype)
-  const viewType = ['kanban', 'calendar', 'image', 'tree', 'gantt', 'dashboard', 'inbox'].includes(String(route.params.viewType)) ? String(route.params.viewType) : 'table'
+  const viewType = ['kanban', 'calendar', 'image', 'tree', 'gantt', 'dashboard', 'inbox'].includes(
+    String(route.params.viewType),
+  )
+    ? String(route.params.viewType)
+    : 'table'
   const meta = useMeta(doctype)
   const listSettings = useResource({
     url: 'frappe.desk.listview.get_list_settings',
@@ -98,7 +116,10 @@ export default function DeskListPage() {
     initialData: null,
   })
   const { settings: viewSettings, facade: listFacade } = useListViewSettings(doctype)
-  const extraFields = useMemo(() => ((viewSettings.add_fields ?? []) as string[]).concat(listFacade ? ['docstatus'] : []), [listFacade, viewSettings])
+  const extraFields = useMemo(
+    () => ((viewSettings.add_fields ?? []) as string[]).concat(listFacade ? ['docstatus'] : []),
+    [listFacade, viewSettings],
+  )
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState('modified desc')
   const [filters, setFilters] = useState<Record<string, unknown>>({})
@@ -128,7 +149,9 @@ export default function DeskListPage() {
   )
   const availableFilters = useMemo(() => filterFields(meta.getFields({ restrictNoValueFields: false })), [meta])
   const queryFilters = useMemo(() => {
-    const routeFilters: Record<string, unknown> = Object.fromEntries(Object.entries(route.query).map(([key, value]) => [key, Array.isArray(value) ? value[0] : value]))
+    const routeFilters: Record<string, unknown> = Object.fromEntries(
+      Object.entries(route.query).map(([key, value]) => [key, Array.isArray(value) ? value[0] : value]),
+    )
     const next: Record<string, unknown> = { ...settingsFilters(viewSettings), ...routeFilters, ...filters }
     if (search.trim()) next.name = ['like', `%${search.trim()}%`]
     if (scope === 'mine' && currentSessionUser()) next.owner = currentSessionUser()
@@ -170,19 +193,36 @@ export default function DeskListPage() {
   }, [listFacade, resource, rows, selections])
   const hasIndicator = typeof viewSettings.get_indicator === 'function' || rows.some((row) => 'docstatus' in row)
   const columns = visibleFields.map((field) => ({ key: field.fieldname, label: field.label ?? field.fieldname }))
-  const indicatorFields = new Set(visibleFields.filter((field) => field.fieldname === 'status' || field.fieldname === 'workflow_state' || field.fieldtype === 'Select').map((field) => field.fieldname))
-  if (!columns.some((column) => column.key === 'name') && !viewSettings.hide_name_column) columns.unshift({ key: 'name', label: __('Name') })
+  const indicatorFields = new Set(
+    visibleFields
+      .filter(
+        (field) => field.fieldname === 'status' || field.fieldname === 'workflow_state' || field.fieldtype === 'Select',
+      )
+      .map((field) => field.fieldname),
+  )
+  if (!columns.some((column) => column.key === 'name') && !viewSettings.hide_name_column)
+    columns.unshift({ key: 'name', label: __('Name') })
   if (hasIndicator) columns.push({ key: '__indicator', label: __('Status') })
-  const kanbanField = visibleFields.find((field) => field.fieldtype === 'Select') ?? visibleFields.find((field) => field.fieldname === 'status') ?? { fieldname: 'status', fieldtype: 'Data' }
+  const kanbanField = visibleFields.find((field) => field.fieldtype === 'Select') ??
+    visibleFields.find((field) => field.fieldname === 'status') ?? { fieldname: 'status', fieldtype: 'Data' }
   const kanbanValues = kanbanField
-    ? fieldOptions(kanbanField).map((option) => option.value).filter(Boolean)
+    ? fieldOptions(kanbanField)
+        .map((option) => option.value)
+        .filter(Boolean)
     : [...new Set(rows.map((row) => String(row.status ?? '')))].filter(Boolean)
   const kanbanColumns = kanbanValues.length ? kanbanValues : ['']
   const calendarField = visibleFields.find((field) => ['Date', 'Datetime'].includes(field.fieldtype))
   const imageField = visibleFields.find((field) => ['Attach Image', 'Image'].includes(field.fieldtype))
-  const startDateField = visibleFields.find((field) => ['Date', 'Datetime'].includes(field.fieldtype) && /start|from|date/i.test(field.fieldname)) ?? visibleFields.find((field) => ['Date', 'Datetime'].includes(field.fieldtype))
-  const endDateField = visibleFields.find((field) => ['Date', 'Datetime'].includes(field.fieldtype) && /end|to/i.test(field.fieldname))
-  const parentField = visibleFields.find((field) => field.fieldname === 'parent') ?? visibleFields.find((field) => field.fieldname.startsWith('parent_'))
+  const startDateField =
+    visibleFields.find(
+      (field) => ['Date', 'Datetime'].includes(field.fieldtype) && /start|from|date/i.test(field.fieldname),
+    ) ?? visibleFields.find((field) => ['Date', 'Datetime'].includes(field.fieldtype))
+  const endDateField = visibleFields.find(
+    (field) => ['Date', 'Datetime'].includes(field.fieldtype) && /end|to/i.test(field.fieldname),
+  )
+  const parentField =
+    visibleFields.find((field) => field.fieldname === 'parent') ??
+    visibleFields.find((field) => field.fieldname.startsWith('parent_'))
   const groups = useMemo<DeskListGroup[]>(() => {
     if (!groupBy) return []
     const counts = new Map<string, number>()
@@ -239,7 +279,14 @@ export default function DeskListPage() {
 
   const ganttDates = useMemo(() => {
     if (!startDateField) return null
-    const values = rows.flatMap((row) => [row[startDateField.fieldname], endDateField ? row[endDateField.fieldname] : row[startDateField.fieldname]]).filter(Boolean).map((value) => new Date(String(value)).valueOf()).filter(Number.isFinite)
+    const values = rows
+      .flatMap((row) => [
+        row[startDateField.fieldname],
+        endDateField ? row[endDateField.fieldname] : row[startDateField.fieldname],
+      ])
+      .filter(Boolean)
+      .map((value) => new Date(String(value)).valueOf())
+      .filter(Number.isFinite)
     if (!values.length) return null
     return { min: Math.min(...values), max: Math.max(...values) }
   }, [endDateField, rows, startDateField])
@@ -251,21 +298,37 @@ export default function DeskListPage() {
     const children = treeChildren.get(name) ?? []
     return (
       <li key={name} className="flex flex-col gap-2">
-        <button type="button" className="rounded-lg border border-outline-gray-2 bg-surface-base px-3 py-2 text-left text-sm text-ink-blue-6 hover:border-outline-gray-3" onClick={() => navigate(`/app/${encodeURIComponent(doctype)}/${encodeURIComponent(name)}`)}>{name}</button>
-        {children.length > 0 && <ul className="ml-5 flex flex-col gap-2 border-l border-outline-gray-2 pl-3">{children.map((child) => renderTree(child, nextVisited))}</ul>}
+        <button
+          type="button"
+          className="rounded-lg border border-outline-gray-2 bg-surface-base px-3 py-2 text-left text-sm text-ink-blue-6 hover:border-outline-gray-3"
+          onClick={() => navigate(`/app/${encodeURIComponent(doctype)}/${encodeURIComponent(name)}`)}
+        >
+          {name}
+        </button>
+        {children.length > 0 && (
+          <ul className="ml-5 flex flex-col gap-2 border-l border-outline-gray-2 pl-3">
+            {children.map((child) => renderTree(child, nextVisited))}
+          </ul>
+        )}
       </li>
     )
   }
 
   async function deleteSelected() {
     if (!selections.size || !window.confirm(__('Delete the selected documents?'))) return
-    await Promise.all([...selections].map((name) => rpc({ url: 'frappe.client.delete', method: 'DELETE', params: { doctype, name } })))
+    await Promise.all(
+      [...selections].map((name) => rpc({ url: 'frappe.client.delete', method: 'DELETE', params: { doctype, name } })),
+    )
     setSelections(new Set())
     await resource.reload()
   }
 
   async function runBulkWorkflow(action: 'submit' | 'cancel') {
-    if (!selections.size || !window.confirm(__(`{0} the selected documents?`, [action === 'submit' ? __('Submit') : __('Cancel')]))) return
+    if (
+      !selections.size ||
+      !window.confirm(__(`{0} the selected documents?`, [action === 'submit' ? __('Submit') : __('Cancel')]))
+    )
+      return
     await rpc({
       url: 'frappe.desk.doctype.bulk_update.bulk_update.submit_cancel_or_update_docs',
       params: { doctype, docnames: [...selections].map(String), action },
@@ -293,7 +356,15 @@ export default function DeskListPage() {
     })
     const tag = String(values?.tag ?? '').trim()
     if (!tag) return
-    await Promise.all([...selections].map((name) => rpc({ url: 'frappe.desk.doctype.tag.tag.add_tag', method: 'POST', params: { tag, dt: doctype, dn: String(name) } })))
+    await Promise.all(
+      [...selections].map((name) =>
+        rpc({
+          url: 'frappe.desk.doctype.tag.tag.add_tag',
+          method: 'POST',
+          params: { tag, dt: doctype, dn: String(name) },
+        }),
+      ),
+    )
     setSelections(new Set())
     await resource.reload()
   }
@@ -336,18 +407,35 @@ export default function DeskListPage() {
   function saveCurrentFilter() {
     const name = window.prompt(__('Saved filter name'))?.trim()
     if (!name) return
-    const next = [...savedFilters.filter((entry) => entry.name !== name), { name, search, sort, filters, groupBy, scope }]
+    const next = [
+      ...savedFilters.filter((entry) => entry.name !== name),
+      { name, search, sort, filters, groupBy, scope },
+    ]
     setSavedFilters(next)
     window.localStorage.setItem(savedFilterKey(doctype), JSON.stringify(next))
   }
 
   async function addAdvancedFilter() {
-    const filterable = fields.filter((field) => !['Section Break', 'Column Break', 'Tab Break', 'HTML', 'Button'].includes(field.fieldtype))
+    const filterable = fields.filter(
+      (field) => !['Section Break', 'Column Break', 'Tab Break', 'HTML', 'Button'].includes(field.fieldtype),
+    )
     const values = await renderFieldLayoutDialog({
       title: __('Add Filter'),
       fields: [
-        { fieldname: 'fieldname', fieldtype: 'Select', label: __('Field'), options: filterable.map((field) => `${field.fieldname}\n${field.label ?? field.fieldname}`).join('\n'), reqd: 1 },
-        { fieldname: 'operator', fieldtype: 'Select', label: __('Operator'), options: '=\n!=\nlike\nnot like\nin\nnot in\nis\nis not', default: '=' },
+        {
+          fieldname: 'fieldname',
+          fieldtype: 'Select',
+          label: __('Field'),
+          options: filterable.map((field) => `${field.fieldname}\n${field.label ?? field.fieldname}`).join('\n'),
+          reqd: 1,
+        },
+        {
+          fieldname: 'operator',
+          fieldtype: 'Select',
+          label: __('Operator'),
+          options: '=\n!=\nlike\nnot like\nin\nnot in\nis\nis not',
+          default: '=',
+        },
         { fieldname: 'value', fieldtype: 'Data', label: __('Value') },
       ],
       submitLabel: __('Apply'),
@@ -356,7 +444,19 @@ export default function DeskListPage() {
     const operator = String(values?.operator ?? '=')
     if (!fieldname) return
     const rawValue = String(values?.value ?? '')
-    const value = ['in', 'not in'].includes(operator) ? [operator, rawValue.split(',').map((entry) => entry.trim()).filter(Boolean)] : operator === 'is' || operator === 'is not' ? [operator, rawValue || 'set'] : operator === '=' ? rawValue : [operator, rawValue]
+    const value = ['in', 'not in'].includes(operator)
+      ? [
+          operator,
+          rawValue
+            .split(',')
+            .map((entry) => entry.trim())
+            .filter(Boolean),
+        ]
+      : operator === 'is' || operator === 'is not'
+        ? [operator, rawValue || 'set']
+        : operator === '='
+          ? rawValue
+          : [operator, rawValue]
     setFilters((current) => ({ ...current, [fieldname]: value }))
   }
 
@@ -393,11 +493,29 @@ export default function DeskListPage() {
       { label: __('Dashboard View'), icon: 'lucide-layout-grid', to: `${base}/dashboard` },
       { label: __('Kanban View'), icon: 'lucide-columns-3', to: `${base}/kanban` },
       ...(imageField ? [{ label: __('Image View'), icon: 'lucide-image', to: `${base}/image` }] : []),
-      ...(calendarField ? [{ label: __('Calendar View'), icon: 'lucide-calendar', to: `${base}/calendar` }, { label: __('Gantt View'), icon: 'lucide-gantt-chart', to: `${base}/gantt` }] : []),
+      ...(calendarField
+        ? [
+            { label: __('Calendar View'), icon: 'lucide-calendar', to: `${base}/calendar` },
+            { label: __('Gantt View'), icon: 'lucide-gantt-chart', to: `${base}/gantt` },
+          ]
+        : []),
       ...(parentField ? [{ label: __('Tree View'), icon: 'lucide-network', to: `${base}/tree` }] : []),
     ]
-    const routeFilters = Object.fromEntries(Object.entries(route.query).filter(([key]) => key !== 'view').map(([key, value]) => [key, String(Array.isArray(value) ? value[0] : value)]))
-    return <DeskTableList doctype={doctype} viewSettings={viewSettings} facade={listFacade} routeFilters={routeFilters} viewLinks={viewLinks} savedFields={savedFields} />
+    const routeFilters = Object.fromEntries(
+      Object.entries(route.query)
+        .filter(([key]) => key !== 'view')
+        .map(([key, value]) => [key, String(Array.isArray(value) ? value[0] : value)]),
+    )
+    return (
+      <DeskTableList
+        doctype={doctype}
+        viewSettings={viewSettings}
+        facade={listFacade}
+        routeFilters={routeFilters}
+        viewLinks={viewLinks}
+        savedFields={savedFields}
+      />
+    )
   }
 
   return (
@@ -406,7 +524,13 @@ export default function DeskListPage() {
         left={<h1 className="text-base-medium text-ink-gray-9">{__(doctype)}</h1>}
         right={
           <div className="flex items-center gap-1">
-            <Button variant="ghost" icon="lucide-refresh-ccw" aria-label={__('Refresh')} loading={resource.list.loading} onClick={() => void resource.reload()} />
+            <Button
+              variant="ghost"
+              icon="lucide-refresh-ccw"
+              aria-label={__('Refresh')}
+              loading={resource.list.loading}
+              onClick={() => void resource.reload()}
+            />
             {selections.size > 0 && (
               <Dropdown
                 options={[
@@ -418,7 +542,10 @@ export default function DeskListPage() {
                   { label: __('Cancel'), icon: 'lucide-ban', onClick: () => void runBulkWorkflow('cancel') },
                   { label: __('Delete'), icon: 'lucide-trash-2', onClick: () => void deleteSelected() },
                   { label: __('Export selected'), icon: 'lucide-download', onClick: exportRows },
-                  ...(listFacade?.actionItems ?? []).map((entry) => ({ label: __(entry.label), onClick: () => void entry.action() })),
+                  ...(listFacade?.actionItems ?? []).map((entry) => ({
+                    label: __(entry.label),
+                    onClick: () => void entry.action(),
+                  })),
                 ]}
               >
                 <Button variant="outline" label={__('Selected: {0}', [selections.size])} />
@@ -426,16 +553,35 @@ export default function DeskListPage() {
             )}
             <Dropdown
               options={[
-                { label: __('Import'), icon: 'lucide-upload', onClick: () => navigate(`/app/data-import/doctype/${encodeURIComponent(doctype)}`) },
+                {
+                  label: __('Import'),
+                  icon: 'lucide-upload',
+                  onClick: () => navigate(`/app/data-import/doctype/${encodeURIComponent(doctype)}`),
+                },
                 { label: __('Export CSV'), icon: 'lucide-download', onClick: exportRows },
                 { label: __('List Settings'), icon: 'lucide-settings-2', onClick: () => setShowListSettings(true) },
-                ...(listFacade?.menuItems ?? []).map((entry) => ({ label: __(entry.label), onClick: () => void entry.action() })),
+                ...(listFacade?.menuItems ?? []).map((entry) => ({
+                  label: __(entry.label),
+                  onClick: () => void entry.action(),
+                })),
               ]}
             >
               <Button variant="ghost" icon="lucide-more-horizontal" aria-label={__('More options')} />
             </Dropdown>
-            {(listFacade?.innerButtons ?? []).map((entry) => <Button key={`${entry.group ?? ''}:${entry.label}`} variant="outline" label={__(entry.label)} onClick={() => void entry.action()} />)}
-            <Button variant="solid" iconLeft="lucide-plus" label={__('Create')} onClick={() => navigate(`/app/${encodeURIComponent(doctype)}/new`)} />
+            {(listFacade?.innerButtons ?? []).map((entry) => (
+              <Button
+                key={`${entry.group ?? ''}:${entry.label}`}
+                variant="outline"
+                label={__(entry.label)}
+                onClick={() => void entry.action()}
+              />
+            ))}
+            <Button
+              variant="solid"
+              iconLeft="lucide-plus"
+              label={__('Create')}
+              onClick={() => navigate(`/app/${encodeURIComponent(doctype)}/new`)}
+            />
           </div>
         }
       />
@@ -452,7 +598,7 @@ export default function DeskListPage() {
             className="w-44"
             key={field.fieldname}
             type={field.fieldtype === 'Select' ? 'select' : 'text'}
-              value={typeof filters[field.fieldname] === 'string' ? filters[field.fieldname] as string : ''}
+            value={typeof filters[field.fieldname] === 'string' ? (filters[field.fieldname] as string) : ''}
             options={field.fieldtype === 'Select' ? fieldOptions(field) : undefined}
             placeholder={__(field.label ?? field.fieldname)}
             onChange={(value: unknown) => {
@@ -470,12 +616,38 @@ export default function DeskListPage() {
           className="w-44"
           type="select"
           value={scope}
-          options={[{ label: __('All records'), value: 'all' }, { label: __('My records'), value: 'mine' }, { label: __('Liked records'), value: 'liked' }, { label: __('Assigned records'), value: 'assigned' }]}
+          options={[
+            { label: __('All records'), value: 'all' },
+            { label: __('My records'), value: 'mine' },
+            { label: __('Liked records'), value: 'liked' },
+            { label: __('Assigned records'), value: 'assigned' },
+          ]}
           onChange={(value: unknown) => setScope(String(value ?? 'all'))}
         />
-        {savedFilters.length > 0 && <FormControl className="w-44" type="select" value="" options={[{ label: __('Saved filters'), value: '' }, ...savedFilters.map((entry) => ({ label: entry.name, value: entry.name }))]} onChange={(value: unknown) => applySavedFilter(String(value ?? ''))} />}
-        <Button variant="ghost" icon="lucide-bookmark-plus" aria-label={__('Save filter')} onClick={saveCurrentFilter} />
-        <Button variant="outline" iconLeft="lucide-filter" label={__('Filter')} onClick={() => void addAdvancedFilter()} />
+        {savedFilters.length > 0 && (
+          <FormControl
+            className="w-44"
+            type="select"
+            value=""
+            options={[
+              { label: __('Saved filters'), value: '' },
+              ...savedFilters.map((entry) => ({ label: entry.name, value: entry.name })),
+            ]}
+            onChange={(value: unknown) => applySavedFilter(String(value ?? ''))}
+          />
+        )}
+        <Button
+          variant="ghost"
+          icon="lucide-bookmark-plus"
+          aria-label={__('Save filter')}
+          onClick={saveCurrentFilter}
+        />
+        <Button
+          variant="outline"
+          iconLeft="lucide-filter"
+          label={__('Filter')}
+          onClick={() => void addAdvancedFilter()}
+        />
         <FormControl
           className="w-44"
           type="select"
@@ -488,30 +660,75 @@ export default function DeskListPage() {
           ]}
           onChange={(value: unknown) => setSort(typeof value === 'string' ? value : String(value))}
         />
-        {!effectiveDisableSidebar && <FormControl
-          className="w-44"
-          type="select"
-          value={groupBy}
-          options={[{ label: __('No grouping'), value: '' }, ...fields.map((field) => ({ label: __(field.label ?? field.fieldname), value: field.fieldname }))]}
-          onChange={(value: unknown) => {
-            setGroupBy(typeof value === 'string' ? value : String(value))
-            setSelectedGroup(null)
-          }}
-        />}
+        {!effectiveDisableSidebar && (
+          <FormControl
+            className="w-44"
+            type="select"
+            value={groupBy}
+            options={[
+              { label: __('No grouping'), value: '' },
+              ...fields.map((field) => ({ label: __(field.label ?? field.fieldname), value: field.fieldname })),
+            ]}
+            onChange={(value: unknown) => {
+              setGroupBy(typeof value === 'string' ? value : String(value))
+              setSelectedGroup(null)
+            }}
+          />
+        )}
         <div className="ml-auto flex gap-1">
-          <Button variant={viewType === 'table' ? 'solid' : 'ghost'} icon="lucide-table-2" aria-label={__('Table view')} onClick={() => navigate(`/app/${encodeURIComponent(doctype)}`)} />
-          <Button variant={viewType === 'kanban' ? 'solid' : 'ghost'} icon="lucide-kanban" aria-label={__('Kanban view')} onClick={() => navigate(`/app/${encodeURIComponent(doctype)}/view/kanban`)} />
-          <Button variant={viewType === 'calendar' ? 'solid' : 'ghost'} icon="lucide-calendar-days" aria-label={__('Calendar view')} onClick={() => navigate(`/app/${encodeURIComponent(doctype)}/view/calendar`)} />
-          <Button variant={viewType === 'image' ? 'solid' : 'ghost'} icon="lucide-images" aria-label={__('Image view')} onClick={() => navigate(`/app/${encodeURIComponent(doctype)}/view/image`)} />
-          <Button variant={viewType === 'tree' ? 'solid' : 'ghost'} icon="lucide-git-branch" aria-label={__('Tree view')} onClick={() => navigate(`/app/${encodeURIComponent(doctype)}/view/tree`)} />
-          <Button variant={viewType === 'gantt' ? 'solid' : 'ghost'} icon="lucide-chart-gantt" aria-label={__('Gantt view')} onClick={() => navigate(`/app/${encodeURIComponent(doctype)}/view/gantt`)} />
-          <Button variant={viewType === 'inbox' ? 'solid' : 'ghost'} icon="lucide-inbox" aria-label={__('Inbox view')} onClick={() => navigate(`/app/${encodeURIComponent(doctype)}/view/inbox`)} />
+          <Button
+            variant={viewType === 'table' ? 'solid' : 'ghost'}
+            icon="lucide-table-2"
+            aria-label={__('Table view')}
+            onClick={() => navigate(`/app/${encodeURIComponent(doctype)}`)}
+          />
+          <Button
+            variant={viewType === 'kanban' ? 'solid' : 'ghost'}
+            icon="lucide-kanban"
+            aria-label={__('Kanban view')}
+            onClick={() => navigate(`/app/${encodeURIComponent(doctype)}/view/kanban`)}
+          />
+          <Button
+            variant={viewType === 'calendar' ? 'solid' : 'ghost'}
+            icon="lucide-calendar-days"
+            aria-label={__('Calendar view')}
+            onClick={() => navigate(`/app/${encodeURIComponent(doctype)}/view/calendar`)}
+          />
+          <Button
+            variant={viewType === 'image' ? 'solid' : 'ghost'}
+            icon="lucide-images"
+            aria-label={__('Image view')}
+            onClick={() => navigate(`/app/${encodeURIComponent(doctype)}/view/image`)}
+          />
+          <Button
+            variant={viewType === 'tree' ? 'solid' : 'ghost'}
+            icon="lucide-git-branch"
+            aria-label={__('Tree view')}
+            onClick={() => navigate(`/app/${encodeURIComponent(doctype)}/view/tree`)}
+          />
+          <Button
+            variant={viewType === 'gantt' ? 'solid' : 'ghost'}
+            icon="lucide-chart-gantt"
+            aria-label={__('Gantt view')}
+            onClick={() => navigate(`/app/${encodeURIComponent(doctype)}/view/gantt`)}
+          />
+          <Button
+            variant={viewType === 'inbox' ? 'solid' : 'ghost'}
+            icon="lucide-inbox"
+            aria-label={__('Inbox view')}
+            onClick={() => navigate(`/app/${encodeURIComponent(doctype)}/view/inbox`)}
+          />
         </div>
       </div>
       {Object.keys(filters).length > 0 && (
         <div className="flex flex-wrap items-center gap-2 border-b border-outline-gray-2 px-4 py-2 sm:px-6">
           {Object.entries(filters).map(([fieldname, value]) => (
-            <button key={fieldname} type="button" className="flex items-center gap-1 rounded-full bg-surface-gray-1 px-3 py-1 text-xs text-ink-gray-8 hover:bg-surface-gray-2" onClick={() => removeFilter(fieldname)}>
+            <button
+              key={fieldname}
+              type="button"
+              className="flex items-center gap-1 rounded-full bg-surface-gray-1 px-3 py-1 text-xs text-ink-gray-8 hover:bg-surface-gray-2"
+              onClick={() => removeFilter(fieldname)}
+            >
               <span>{filterLabel(fieldname, value)}</span>
               <span className="lucide-x size-3" aria-hidden="true" />
             </button>
@@ -530,7 +747,9 @@ export default function DeskListPage() {
         )}
         <div className="flex min-w-0 flex-1 flex-col">
           {resource.list.loading && !displayedRows.length ? (
-            <div className="flex flex-1 items-center justify-center py-12"><Spinner size="md" /></div>
+            <div className="p-4">
+              <TableShimmer rows={12} />
+            </div>
           ) : resource.list.error ? (
             <ErrorMessage className="m-6" message={__(String(resource.list.error?.message ?? resource.list.error))} />
           ) : displayedRows.length && viewType === 'inbox' ? (
@@ -554,82 +773,177 @@ export default function DeskListPage() {
                 }
                 const formatter = viewSettings.formatters?.[column.key]
                 if (typeof formatter === 'function') {
-                  return <div className="truncate text-base text-ink-gray-9" dangerouslySetInnerHTML={{ __html: sanitizeHTML(String(formatter(item, { fieldname: column.key }, row) ?? '')) }} />
+                  return (
+                    <div
+                      className="truncate text-base text-ink-gray-9"
+                      dangerouslySetInnerHTML={{
+                        __html: sanitizeHTML(String(formatter(item, { fieldname: column.key }, row) ?? '')),
+                      }}
+                    />
+                  )
                 }
-                return (
-                indicatorFields.has(column.key) ? <Badge label={String(item ?? '')} theme={statusTone(String(item ?? ''))} /> : <div className="truncate text-base text-ink-gray-9" title={String(item ?? '')}>{String(item ?? '')}</div>
+                return indicatorFields.has(column.key) ? (
+                  <Badge label={String(item ?? '')} theme={statusTone(String(item ?? ''))} />
+                ) : (
+                  <div className="truncate text-base text-ink-gray-9" title={String(item ?? '')}>
+                    {String(item ?? '')}
+                  </div>
                 )
               }}
             />
           ) : displayedRows.length && viewType === 'kanban' ? (
-        <div className="flex min-h-0 flex-1 gap-4 overflow-x-auto p-4 sm:p-6">
-          {kanbanColumns.map((value) => (
-            <section key={value || '__empty'} className="flex min-w-64 flex-1 flex-col gap-2 rounded-xl bg-surface-gray-1 p-3">
-              <h2 className="text-sm-medium text-ink-gray-8">{value || __('Unassigned')}</h2>
-              <div className="flex flex-col gap-2">
-                {displayedRows.filter((row) => String(kanbanField ? row[kanbanField.fieldname] ?? '' : '') === value).map((row) => (
-                  <button key={row.name} type="button" className="rounded-lg border border-outline-gray-2 bg-surface-base p-3 text-left shadow-sm hover:border-outline-gray-3" onClick={() => navigate(`/app/${encodeURIComponent(doctype)}/${encodeURIComponent(String(row.name))}`)}>
-                    <div className="text-sm-medium text-ink-gray-9">{String(row.name)}</div>
-                    {kanbanField && row[kanbanField.fieldname] && <div className="mt-1 text-xs text-ink-gray-6">{String(row[kanbanField.fieldname])}</div>}
+            <div className="flex min-h-0 flex-1 gap-4 overflow-x-auto p-4 sm:p-6">
+              {kanbanColumns.map((value) => (
+                <section
+                  key={value || '__empty'}
+                  className="flex min-w-64 flex-1 flex-col gap-2 rounded-xl bg-surface-gray-1 p-3"
+                >
+                  <h2 className="text-sm-medium text-ink-gray-8">{value || __('Unassigned')}</h2>
+                  <div className="flex flex-col gap-2">
+                    {displayedRows
+                      .filter((row) => String(kanbanField ? (row[kanbanField.fieldname] ?? '') : '') === value)
+                      .map((row) => (
+                        <button
+                          key={row.name}
+                          type="button"
+                          className="rounded-lg border border-outline-gray-2 bg-surface-base p-3 text-left shadow-sm hover:border-outline-gray-3"
+                          onClick={() =>
+                            navigate(`/app/${encodeURIComponent(doctype)}/${encodeURIComponent(String(row.name))}`)
+                          }
+                        >
+                          <div className="text-sm-medium text-ink-gray-9">{String(row.name)}</div>
+                          {kanbanField && row[kanbanField.fieldname] && (
+                            <div className="mt-1 text-xs text-ink-gray-6">{String(row[kanbanField.fieldname])}</div>
+                          )}
+                        </button>
+                      ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+          ) : displayedRows.length && viewType === 'calendar' ? (
+            calendarField ? (
+              <div className="grid gap-4 p-4 sm:grid-cols-2 sm:p-6 lg:grid-cols-3">
+                {[...calendarDays.entries()]
+                  .sort(([left], [right]) => left.localeCompare(right))
+                  .map(([day, dayRows]) => (
+                    <section key={day} className="rounded-xl border border-outline-gray-2 bg-surface-base p-3">
+                      <h2 className="mb-3 text-sm-medium text-ink-gray-8">{day}</h2>
+                      <div className="flex flex-col gap-2">
+                        {dayRows.map((row) => (
+                          <button
+                            key={row.name}
+                            type="button"
+                            className="rounded-lg bg-surface-gray-1 p-3 text-left text-sm text-ink-gray-8 hover:bg-surface-gray-2"
+                            onClick={() =>
+                              navigate(`/app/${encodeURIComponent(doctype)}/${encodeURIComponent(String(row.name))}`)
+                            }
+                          >
+                            {String(row.name)}
+                          </button>
+                        ))}
+                      </div>
+                    </section>
+                  ))}
+              </div>
+            ) : (
+              <EmptyState name={__('No date field available for this DocType')} />
+            )
+          ) : displayedRows.length && viewType === 'image' ? (
+            imageField ? (
+              <div className="grid gap-4 p-4 sm:grid-cols-2 sm:p-6 lg:grid-cols-4">
+                {displayedRows.map((row) => (
+                  <button
+                    key={row.name}
+                    type="button"
+                    className="overflow-hidden rounded-xl border border-outline-gray-2 bg-surface-base text-left hover:border-outline-gray-3"
+                    onClick={() =>
+                      navigate(`/app/${encodeURIComponent(doctype)}/${encodeURIComponent(String(row.name))}`)
+                    }
+                  >
+                    {row[imageField.fieldname] ? (
+                      <img
+                        src={String(row[imageField.fieldname])}
+                        alt={String(row.name)}
+                        className="aspect-square w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex aspect-square items-center justify-center bg-surface-gray-1 text-ink-gray-5">
+                        {__('No image')}
+                      </div>
+                    )}
+                    <div className="truncate p-3 text-sm-medium text-ink-gray-9">{String(row.name)}</div>
                   </button>
                 ))}
               </div>
-            </section>
-          ))}
-        </div>
-          ) : displayedRows.length && viewType === 'calendar' ? (
-        calendarField ? (
-          <div className="grid gap-4 p-4 sm:grid-cols-2 sm:p-6 lg:grid-cols-3">
-            {[...calendarDays.entries()].sort(([left], [right]) => left.localeCompare(right)).map(([day, dayRows]) => (
-              <section key={day} className="rounded-xl border border-outline-gray-2 bg-surface-base p-3">
-                <h2 className="mb-3 text-sm-medium text-ink-gray-8">{day}</h2>
-                <div className="flex flex-col gap-2">
-                  {dayRows.map((row) => (
-                    <button key={row.name} type="button" className="rounded-lg bg-surface-gray-1 p-3 text-left text-sm text-ink-gray-8 hover:bg-surface-gray-2" onClick={() => navigate(`/app/${encodeURIComponent(doctype)}/${encodeURIComponent(String(row.name))}`)}>
-                      {String(row.name)}
-                    </button>
-                  ))}
-                </div>
-              </section>
-            ))}
-          </div>
-        ) : <EmptyState name={__('No date field available for this DocType')} />
-          ) : displayedRows.length && viewType === 'image' ? (
-        imageField ? (
-          <div className="grid gap-4 p-4 sm:grid-cols-2 sm:p-6 lg:grid-cols-4">
-            {displayedRows.map((row) => (
-              <button key={row.name} type="button" className="overflow-hidden rounded-xl border border-outline-gray-2 bg-surface-base text-left hover:border-outline-gray-3" onClick={() => navigate(`/app/${encodeURIComponent(doctype)}/${encodeURIComponent(String(row.name))}`)}>
-                {row[imageField.fieldname] ? <img src={String(row[imageField.fieldname])} alt={String(row.name)} className="aspect-square w-full object-cover" /> : <div className="flex aspect-square items-center justify-center bg-surface-gray-1 text-ink-gray-5">{__('No image')}</div>}
-                <div className="truncate p-3 text-sm-medium text-ink-gray-9">{String(row.name)}</div>
-              </button>
-            ))}
-          </div>
-        ) : <EmptyState name={__('No image field available for this DocType')} />
+            ) : (
+              <EmptyState name={__('No image field available for this DocType')} />
+            )
           ) : displayedRows.length && viewType === 'tree' ? (
-        parentField ? (
-          <div className="p-4 sm:p-6">
-            <ul className="flex flex-col gap-2">{displayedRows.filter((row) => !row[parentField.fieldname]).map((row) => renderTree(row))}</ul>
-          </div>
-        ) : <EmptyState name={__('No parent field available for this DocType')} />
+            parentField ? (
+              <div className="p-4 sm:p-6">
+                <ul className="flex flex-col gap-2">
+                  {displayedRows.filter((row) => !row[parentField.fieldname]).map((row) => renderTree(row))}
+                </ul>
+              </div>
+            ) : (
+              <EmptyState name={__('No parent field available for this DocType')} />
+            )
           ) : displayedRows.length && viewType === 'gantt' ? (
-        startDateField && ganttDates ? (
-          <div className="flex flex-col gap-3 overflow-x-auto p-4 sm:p-6">
-            {displayedRows.map((row) => {
-              const start = new Date(String(row[startDateField.fieldname])).valueOf()
-              const end = new Date(String(endDateField ? row[endDateField.fieldname] ?? row[startDateField.fieldname] : row[startDateField.fieldname])).valueOf()
-              const width = Math.max(2, ((end - start) / Math.max(1, ganttDates.max - ganttDates.min)) * 100)
-              const offset = Math.max(0, ((start - ganttDates.min) / Math.max(1, ganttDates.max - ganttDates.min)) * 100)
-              return <button key={row.name} type="button" className="grid min-w-[42rem] grid-cols-[12rem_1fr] items-center gap-3 text-left" onClick={() => navigate(`/app/${encodeURIComponent(doctype)}/${encodeURIComponent(String(row.name))}`)}><span className="truncate text-sm text-ink-gray-8">{String(row.name)}</span><span className="relative h-7 rounded bg-surface-gray-1"><span className="absolute top-1 h-5 rounded bg-surface-blue-5" style={{ left: `${offset}%`, width: `${width}%` }} /></span></button>
-            })}
-          </div>
-        ) : <EmptyState name={__('No date range is available for this DocType')} />
+            startDateField && ganttDates ? (
+              <div className="flex flex-col gap-3 overflow-x-auto p-4 sm:p-6">
+                {displayedRows.map((row) => {
+                  const start = new Date(String(row[startDateField.fieldname])).valueOf()
+                  const end = new Date(
+                    String(
+                      endDateField
+                        ? (row[endDateField.fieldname] ?? row[startDateField.fieldname])
+                        : row[startDateField.fieldname],
+                    ),
+                  ).valueOf()
+                  const width = Math.max(2, ((end - start) / Math.max(1, ganttDates.max - ganttDates.min)) * 100)
+                  const offset = Math.max(
+                    0,
+                    ((start - ganttDates.min) / Math.max(1, ganttDates.max - ganttDates.min)) * 100,
+                  )
+                  return (
+                    <button
+                      key={row.name}
+                      type="button"
+                      className="grid min-w-[42rem] grid-cols-[12rem_1fr] items-center gap-3 text-left"
+                      onClick={() =>
+                        navigate(`/app/${encodeURIComponent(doctype)}/${encodeURIComponent(String(row.name))}`)
+                      }
+                    >
+                      <span className="truncate text-sm text-ink-gray-8">{String(row.name)}</span>
+                      <span className="relative h-7 rounded bg-surface-gray-1">
+                        <span
+                          className="absolute top-1 h-5 rounded bg-surface-blue-5"
+                          style={{ left: `${offset}%`, width: `${width}%` }}
+                        />
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            ) : (
+              <EmptyState name={__('No date range is available for this DocType')} />
+            )
           ) : (
             <EmptyState name={doctype} />
           )}
           <div className="flex justify-end gap-2 border-t border-outline-gray-2 px-4 py-3 sm:px-6">
-            {!effectiveDisableCount && <div className="mr-auto self-center text-sm text-ink-gray-6">{__('Showing {0} record(s)', [displayedRows.length])}</div>}
-            <Button variant="ghost" disabled={!resource.hasPreviousPage} onClick={() => resource.previous()}>{__('Previous')}</Button>
-            <Button variant="ghost" disabled={!resource.hasNextPage} onClick={() => resource.next()}>{__('Next')}</Button>
+            {!effectiveDisableCount && (
+              <div className="mr-auto self-center text-sm text-ink-gray-6">
+                {__('Showing {0} record(s)', [displayedRows.length])}
+              </div>
+            )}
+            <Button variant="ghost" disabled={!resource.hasPreviousPage} onClick={() => resource.previous()}>
+              {__('Previous')}
+            </Button>
+            <Button variant="ghost" disabled={!resource.hasNextPage} onClick={() => resource.next()}>
+              {__('Next')}
+            </Button>
           </div>
         </div>
       </div>

@@ -13,8 +13,9 @@ import { useDeskShell } from '@/shared/hooks/useDeskShell'
 import { useDeskShellStore } from '@/shared/stores/deskShellStore'
 import { useUiStore } from '@/shared/stores/uiStore'
 import { appLogo } from '@/shared/utils/appLogos'
-import { appOfShell, shellForPath, shellLanding, visibleDock, type DockEntry } from '@/shared/utils/deskShell'
+import { appOfShell, shellForPath, shellLanding, sidebarOwnsPath, visibleDock, type DockEntry } from '@/shared/utils/deskShell'
 import { UserMenu } from '../shell'
+import { DeskNotificationsPanel } from './DeskNotificationsPanel'
 import { DockRail } from './DockRail'
 
 export interface AppSidebarProps {
@@ -52,6 +53,7 @@ export function AppSidebar({ mobile = false }: AppSidebarProps) {
   const setUi = useUiStore((state) => state.set)
   const { activeApp, activeShell, setApp, setShell } = useDeskShellStore()
   const isCollapsed = storedCollapsed && !mobile
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
 
   const routeKey = currentRouteKey(route.name, route.query.view)
   const [activeItem, setActiveItem] = useState(routeKey)
@@ -65,7 +67,9 @@ export function AppSidebar({ mobile = false }: AppSidebarProps) {
   const registryModules = getRailModules()
   const registryApp =
     routeModule && registryModules.some((module) => module.id === routeModule.id) ? routeModule.id : undefined
-  const resolvedShell = shellForPath(shell, route.path)
+  const pathShell = shellForPath(shell, route.path)
+  const resolvedShell =
+    activeShell && activeShell !== pathShell && sidebarOwnsPath(shell, activeShell, route.path) ? activeShell : pathShell
   const resolvedApp = resolvedShell ? appOfShell(shell, resolvedShell) : undefined
 
   useEffect(() => {
@@ -142,6 +146,7 @@ export function AppSidebar({ mobile = false }: AppSidebarProps) {
           footer={showDesk ? <UserMenu isCollapsed /> : undefined}
         />
       )}
+      {notificationsOpen && !mobile && <DeskNotificationsPanel onClose={() => setNotificationsOpen(false)} />}
       <Sidebar
         collapsed={storedCollapsed}
         onCollapsedChange={setStoredCollapsed}
@@ -195,7 +200,8 @@ export function AppSidebar({ mobile = false }: AppSidebarProps) {
                     <span className="truncate text-sm text-ink-gray-8">{__('Search')}</span>
                   </SidebarItem>
                   <SidebarItem
-                    to="/app/notifications"
+                    data-notifications-trigger=""
+                    onClick={() => (mobile ? navigate('/app/notifications') : setNotificationsOpen((open) => !open))}
                     prefix={<Icon icon="lucide-bell" className="size-4 text-ink-gray-7" />}
                     suffixSlot={
                       shell.unread > 0 ? (

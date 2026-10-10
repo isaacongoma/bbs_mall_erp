@@ -82,7 +82,13 @@ export function unmarkDocumentAsDeleted(doctype: string, docname: string): void 
 }
 
 function attachExtras<T extends Observable>(target: T): T & DocumentExtras {
-  const state: DocumentExtras = { actions: [], mappedCreates: [], statuses: [], fieldHtmlMap: {}, fieldPropertyOverrides: {} }
+  const state: DocumentExtras = {
+    actions: [],
+    mappedCreates: [],
+    statuses: [],
+    fieldHtmlMap: {},
+    fieldPropertyOverrides: {},
+  }
   for (const key of Object.keys(state) as Array<keyof DocumentExtras>) {
     Object.defineProperty(target, key, {
       enumerable: false,

@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react'
 import { useRoute } from '@/core/navigation'
 import { useDoctypeSegment } from '@/shared/frappe/docUrl'
-import { Spinner } from '@/design-system'
+import { PagePending } from '../components/Shimmer'
 import { loadDeskBoot } from '../frappe/boot'
 import { hasPageScript } from '../frappe/scriptLoader'
 import { findWorkspace, workspacePages, type DeskWorkspace } from '../utils/deskWorkspace'
@@ -36,11 +36,7 @@ export default function DeskEntryPage() {
     }
   }, [])
 
-  const spinner = (
-    <div className="flex flex-1 items-center justify-center">
-      <Spinner size="md" />
-    </div>
-  )
+  const spinner = <PagePending />
   if (!workspaces || !target) return spinner
   const workspace = route.params.viewType ? null : findWorkspace(workspaces, target)
   if (workspace) return <DeskWorkspacePage key={String(workspace.name)} page={workspace} />

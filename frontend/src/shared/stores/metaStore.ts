@@ -102,7 +102,11 @@ interface FrappeFormatApi {
 function frappeFormatApi(): FrappeFormatApi | null {
   const scope = window as unknown as Record<string, any>
   const frappe = scope.frappe
-  if (!frappe?.meta?.get_docfield || typeof scope.format_currency !== 'function' || typeof scope.format_number !== 'function') {
+  if (
+    !frappe?.meta?.get_docfield ||
+    typeof scope.format_currency !== 'function' ||
+    typeof scope.format_number !== 'function'
+  ) {
     return null
   }
   return { frappe, numberFormat: scope.format_number, currencyFormat: scope.format_currency }
@@ -122,7 +126,8 @@ export function createMetaApi(
     return api && df ? { api, df } : null
   }
 
-  const plainText = (html: unknown) => new DOMParser().parseFromString(String(html ?? ''), 'text/html').body.textContent ?? ''
+  const plainText = (html: unknown) =>
+    new DOMParser().parseFromString(String(html ?? ''), 'text/html').body.textContent ?? ''
 
   const getFloatWithPrecision = (fieldname: string, doc: DocRecord) => {
     const found = frappeField(fieldname)

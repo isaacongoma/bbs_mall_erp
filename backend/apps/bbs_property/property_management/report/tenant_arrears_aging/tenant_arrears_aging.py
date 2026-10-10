@@ -56,6 +56,7 @@ def execute(filters=None):
         {"label": _("Total Outstanding"), "value": sum(totals.values()), "indicator": "red", "datatype": "Currency"},
         {"label": _("Overdue"), "value": sum(v for k, v in totals.items() if k != "not_due"), "indicator": "orange", "datatype": "Currency"},
         {"label": _("Tenants in Arrears"), "value": len([row for row in data if row["total"] - row["not_due"] > 0]), "indicator": "blue", "datatype": "Int"},
+        {"label": _("Not Yet Due"), "value": totals.get("not_due", 0), "indicator": "green", "datatype": "Currency"},
     ]
     return get_columns(), data, None, chart, summary
 

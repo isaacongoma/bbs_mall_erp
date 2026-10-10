@@ -20,7 +20,7 @@ const NUMERIC = new Set(['Currency', 'Float', 'Int', 'Percent'])
 
 export function ReportDataTable({ columns, rows, format }: ReportDataTableProps) {
   const host = useRef<HTMLDivElement>(null)
-  const table = useRef<InstanceType<typeof DataTable> | null>(null)
+  const table = useRef<(InstanceType<typeof DataTable> & { layoutName?: string }) | null>(null)
 
   useEffect(() => {
     const element = host.current
@@ -38,6 +38,13 @@ export function ReportDataTable({ columns, rows, format }: ReportDataTableProps)
       },
     }))
     const data = rows.map((row) => columns.map((column) => format(row[column.fieldname], column, row)))
+    const total = cols.reduce((sum, column) => sum + column.width, 0)
+    const layout = total + 2 < element.clientWidth ? 'fluid' : 'fixed'
+    if (table.current && table.current.layoutName !== layout) {
+      table.current.destroy?.()
+      table.current = null
+      element.innerHTML = ''
+    }
     if (table.current) {
       table.current.refresh(data, cols)
       return undefined
@@ -46,13 +53,14 @@ export function ReportDataTable({ columns, rows, format }: ReportDataTableProps)
       columns: cols,
       data,
       inlineFilters: true,
-      layout: 'fixed',
+      layout,
       cellHeight: 33,
       showTotalRow: false,
       noDataMessage: 'No report data',
       checkboxColumn: false,
       serialNoColumn: false,
     } as never)
+    table.current.layoutName = layout
     return undefined
   }, [columns, rows, format])
 

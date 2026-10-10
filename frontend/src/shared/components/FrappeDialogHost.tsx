@@ -51,7 +51,9 @@ function BodyHost({ node }: { node: HTMLElement | undefined }) {
 
 function DialogView({ element }: { element: HTMLElement }) {
   const dialog = $(element).data('frappe-dialog') as AnyRecord | undefined
-  const layout = dialog ? readLayout(dialog.layout?.sections ? dialog : { layout: dialog, doctype: dialog.doctype }) : null
+  const layout = dialog
+    ? readLayout(dialog.layout?.sections ? dialog : { layout: dialog, doctype: dialog.doctype })
+    : null
   const context = dialog && layout ? buildFieldContext(dialog, layout.overrides) : null
 
   useEffect(() => {

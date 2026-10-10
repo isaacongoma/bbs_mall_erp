@@ -152,13 +152,15 @@ export const get_currency_symbol = (currency?: string | null): string | null => 
 export const remainder = (numerator: number, denominator: number, precision?: number): number => {
   const digits = cint(precision)
   const multiplier = Math.pow(10, digits)
-  const value = digits
-    ? ((numerator * multiplier) % (denominator * multiplier)) / multiplier
-    : numerator % denominator
+  const value = digits ? ((numerator * multiplier) % (denominator * multiplier)) / multiplier : numerator % denominator
   return flt(value, digits)
 }
 
-export const round_based_on_smallest_currency_fraction = (value: number, currency: string, precision?: number): number => {
+export const round_based_on_smallest_currency_fraction = (
+  value: number,
+  currency: string,
+  precision?: number,
+): number => {
   const fraction = flt((locals[':Currency']?.[currency] as AnyRecord | undefined)?.smallest_currency_fraction_value)
   if (!fraction) return flt(value, 0)
   const rest = remainder(value, fraction, precision)

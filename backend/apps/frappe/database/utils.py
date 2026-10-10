@@ -245,7 +245,7 @@ def commit_after_response(func):
     """
 
     request = getattr(frappe.local, "request", False)
-    if not request or frappe.in_test:
+    if not request or frappe.in_test or getattr(request, "after_response", None) is None:
         func()
         return
 

@@ -389,7 +389,7 @@ frappe.ui.form.Dashboard = class FormDashboard {
     }
   }
   render_heatmap(this: any) {
-    this.heatmap = new frappe.Chart('#heatmap-' + frappe.model.scrub(this.frm.doctype), {
+    this.heatmap = new frappe.Chart(this.heatmap_area.body.find('.heatmap')[0], {
       type: 'heatmap',
       start: new Date(moment().subtract(1, 'year').toDate()),
       count_label: 'interactions',

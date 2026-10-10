@@ -23,14 +23,28 @@ vi.mock('../hooks/useUsers', () => ({
 type AnyRecord = Record<string, any>
 
 function field(fieldname: string, fieldtype = 'Data', extra: AnyRecord = {}) {
-  return { doctype: 'DocField', name: `${fieldname}-df`, fieldname, fieldtype, label: fieldname, parent: 'View Doc', ...extra }
+  return {
+    doctype: 'DocField',
+    name: `${fieldname}-df`,
+    fieldname,
+    fieldtype,
+    label: fieldname,
+    parent: 'View Doc',
+    ...extra,
+  }
 }
 
 beforeEach(() => {
   resetHandlers()
   resetForms()
   setDeskBoot({
-    user: { name: 'admin@example.com', roles: ['System Manager'], can_read: ['View Doc'], can_write: ['View Doc'], can_create: ['View Doc'] },
+    user: {
+      name: 'admin@example.com',
+      roles: ['System Manager'],
+      can_read: ['View Doc'],
+      can_write: ['View Doc'],
+      can_create: ['View Doc'],
+    },
     sysdefaults: { float_precision: 3, currency_precision: 2, date_format: 'yyyy-mm-dd', number_format: '#,###.##' },
     desk_settings: { dashboard: 1, timeline: 1, form_sidebar: 1 },
   })

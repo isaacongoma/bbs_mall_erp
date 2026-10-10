@@ -58,7 +58,10 @@ export interface MessageView {
 
 function labelOf(button: JQuery): string {
   const label = button.find('.es-button__label').first().text().trim()
-  return label || (button.attr('data-label') ? decodeURIComponent(button.attr('data-label') as string) : button.text().trim())
+  return (
+    label ||
+    (button.attr('data-label') ? decodeURIComponent(button.attr('data-label') as string) : button.text().trim())
+  )
 }
 
 function buttonView(button: JQuery, key: string): ActionButtonView | null {
@@ -165,7 +168,7 @@ export function readMessages(frm: AnyRecord): MessageView[] {
   const messages: MessageView[] = []
   container.children().each((_index: number, element: HTMLElement) => {
     const node = $(element)
-    const color = (/(?:^|\s)(yellow|blue|red|green|orange|gray|grey)(?:\s|$)/.exec(element.className)?.[1] ?? 'blue')
+    const color = /(?:^|\s)(yellow|blue|red|green|orange|gray|grey)(?:\s|$)/.exec(element.className)?.[1] ?? 'blue'
     messages.push({
       html: node.clone().find('.close, .btn-close, button.close').remove().end().html() ?? '',
       color,
@@ -265,11 +268,16 @@ export function readLayout(frm: AnyRecord): LayoutView | null {
   return { tabs, overrides }
 }
 
-
 export interface DashboardView {
   groups: Array<{
     label: string
-    items: Array<{ doctype: string; count?: number | string; openCount?: number; canCreate: boolean; fieldname?: string }>
+    items: Array<{
+      doctype: string
+      count?: number | string
+      openCount?: number
+      canCreate: boolean
+      fieldname?: string
+    }>
   }>
   reports: Array<{ label: string; items: string[] }>
   indicators: Array<{ label: string; color: string }>
@@ -291,13 +299,15 @@ export function readDashboard(frm: AnyRecord): DashboardView | null {
         count: entry?.count,
         openCount: entry?.open_count,
         canCreate: Boolean(frm.can_create?.(doctype)),
-        fieldname: (data.non_standard_fieldnames?.[doctype] as string | undefined) ?? (data.fieldname as string | undefined),
+        fieldname:
+          (data.non_standard_fieldnames?.[doctype] as string | undefined) ?? (data.fieldname as string | undefined),
       }
     }),
   }))
   const indicators: DashboardView['indicators'] = []
   dashboard.stats_area_row?.find?.('.indicator-column .indicator').each((_index: number, element: HTMLElement) => {
-    const color = /(?:^|\s)(green|red|orange|blue|yellow|gray|grey|purple|pink)(?:\s|$)/.exec(element.className)?.[1] ?? 'gray'
+    const color =
+      /(?:^|\s)(green|red|orange|blue|yellow|gray|grey|purple|pink)(?:\s|$)/.exec(element.className)?.[1] ?? 'gray'
     indicators.push({ label: $(element).text(), color })
   })
   const progress: DashboardView['progress'] = []

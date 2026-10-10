@@ -40,6 +40,8 @@ def execute(filters=None):
     summary = [
         {"label": _("Charges"), "value": sum(flt(row.amount) for row in data), "indicator": "blue", "datatype": "Currency"},
         {"label": _("Unbilled"), "value": sum(flt(row.unbilled) for row in data), "indicator": "orange", "datatype": "Currency"},
+        {"label": _("Billed"), "value": sum(flt(row.amount) for row in data) - sum(flt(row.unbilled) for row in data), "indicator": "green", "datatype": "Currency"},
+        {"label": _("Charge Lines"), "value": len(data), "indicator": "orange", "datatype": "Int"},
     ]
     return get_columns(), data, None, chart, summary
 

@@ -112,6 +112,7 @@ export function DeskFormActivity({ doctype, docname, doc, hideConnections = fals
             {docinfo.loading && <Spinner size="sm" />}
             <Button
               variant="subtle"
+              className="!border !border-outline-gray-2 !bg-surface-base"
               iconLeft="lucide-plus"
               label={__('New Email')}
               onClick={() =>

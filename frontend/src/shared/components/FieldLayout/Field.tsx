@@ -645,7 +645,9 @@ export function Field({ field: baseField, limitWidth = false }: FieldProps) {
     <div
       className={limitWidth ? 'field max-w-[50%] pr-[15px]' : 'field'}
       data-name={baseField.fieldname}
-      data-bold={field.bold || field.reqd || (field.mandatory_depends_on && field.mandatory_via_depends_on) ? '1' : undefined}
+      data-bold={
+        field.bold || field.reqd || (field.mandatory_depends_on && field.mandatory_via_depends_on) ? '1' : undefined
+      }
     >
       {showLabel && (
         <div className={layout.standalone ? 'mb-2 text-base text-ink-gray-7' : 'mb-2 text-sm text-ink-gray-5'}>

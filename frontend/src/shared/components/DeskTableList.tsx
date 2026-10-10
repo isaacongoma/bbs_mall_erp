@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { rpc } from '@/core/api/rpc'
 import { __ } from '@/core/i18n'
-import { Badge, Button, Checkbox, Dropdown, ErrorMessage, Spinner, cn } from '@/design-system'
+import { Badge, Button, Checkbox, Dropdown, ErrorMessage, cn } from '@/design-system'
+import { TableShimmer } from './Shimmer'
 import { frappe } from '../frappe'
 import { indicatorFor, settingsFilters, type ListViewFacade } from '../frappe/listView'
 import { useMeta } from '../hooks/useMeta'
@@ -90,7 +91,11 @@ function likedBy(row: AnyRecord): string[] {
 function cellText(field: DocField | undefined, value: unknown): string {
   if (value === null || value === undefined || value === '') return ''
   if (field && field.fieldtype === 'Check') return Number(value) ? __('Yes') : __('No')
-  if (field && (field.fieldtype === 'Date' || field.fieldtype === 'Datetime') && typeof frappe.datetime?.str_to_user === 'function') {
+  if (
+    field &&
+    (field.fieldtype === 'Date' || field.fieldtype === 'Datetime') &&
+    typeof frappe.datetime?.str_to_user === 'function'
+  ) {
     return String(frappe.datetime.str_to_user(String(value)))
   }
   return String(value)
@@ -456,7 +461,7 @@ export function DeskTableList({
             const current = standard[field.fieldname] ?? { value: '', like: TEXT_TYPES.includes(field.fieldtype) }
             const textual = TEXT_TYPES.includes(field.fieldtype) || field.fieldname === 'name'
             const label = __(field.label ?? field.fieldname)
-            const box = 'h-7 w-[148px] rounded-md bg-surface-gray-2 px-2 py-0 text-base leading-7 text-ink-gray-8'
+            const box = 'h-7 w-[148px] rounded-sm border border-outline-gray-2 bg-surface-base px-2 py-0 text-base leading-7 text-ink-gray-8'
             if (field.fieldtype === 'Check') {
               return (
                 <label
@@ -482,7 +487,7 @@ export function DeskTableList({
                     onChange={(event) => setStandardValue(field.fieldname, { value: event.target.value })}
                     className={cn(
                       box,
-                      'appearance-none border-0 pr-6 focus:ring-0',
+                      'appearance-none pr-6 focus:ring-0',
                       !current.value && 'text-ink-gray-4',
                     )}
                   >
@@ -525,7 +530,7 @@ export function DeskTableList({
             return (
               <div
                 key={field.fieldname}
-                className="flex h-7 w-[148px] items-center overflow-hidden rounded-md bg-surface-gray-2"
+                className="flex h-7 w-[148px] items-center overflow-hidden rounded-sm border border-outline-gray-2 bg-surface-base"
               >
                 <input
                   value={current.value}
@@ -585,7 +590,7 @@ export function DeskTableList({
           <div className="flex h-full min-w-[760px] flex-col">
             <div
               className={cn(
-                'grid items-center rounded-lg bg-surface-gray-2 px-2 py-2 text-base text-ink-gray-7',
+                'grid items-center rounded-t-sm border border-outline-gray-2 bg-surface-base px-2 py-2 text-base font-semibold text-ink-gray-9',
                 !list.loading && !rows.length && 'hidden',
               )}
               style={{ gridTemplateColumns: `28px ${columnTemplate}` }}
@@ -600,7 +605,7 @@ export function DeskTableList({
                   <Dropdown options={bulkOptions} placement="right">
                     <button
                       type="button"
-                      className="flex h-7 items-center gap-1 rounded-md bg-surface-white px-3 text-base text-ink-gray-8 shadow-sm"
+                      className="flex h-7 items-center gap-1 rounded-md bg-surface-base px-3 text-base text-ink-gray-8 shadow-sm"
                     >
                       {__('Actions')}
                       <Icon icon="lucide-chevron-down" className="size-4" />
@@ -646,9 +651,7 @@ export function DeskTableList({
               )}
             </div>
             {list.loading && !rows.length && (
-              <div className="flex justify-center py-16">
-                <Spinner size="md" />
-              </div>
+              <TableShimmer rows={12} />
             )}
             {!list.loading && !rows.length && (
               <div className="flex flex-1 flex-col items-center justify-center gap-3 py-8 text-center">
@@ -701,7 +704,7 @@ export function DeskTableList({
               return (
                 <div
                   key={name}
-                  className="grid cursor-pointer items-center border-b border-outline-gray-1 px-2 py-2.5 text-base text-ink-gray-7 hover:bg-surface-gray-1"
+                  className="grid cursor-pointer items-center border-x border-b border-outline-gray-2 bg-surface-base px-2 py-2.5 text-base text-ink-gray-7 hover:bg-surface-gray-1"
                   style={{ gridTemplateColumns: `28px ${columnTemplate}` }}
                   onClick={() => navigate(`/app/${encodeURIComponent(doctype)}/${encodeURIComponent(name)}`)}
                 >
@@ -798,7 +801,7 @@ export function DeskTableList({
               }}
               className={cn(
                 'rounded-md px-3 py-1 text-base text-ink-gray-7',
-                pageSize === size && 'bg-surface-white text-ink-gray-9 shadow-sm',
+                pageSize === size && 'bg-surface-base text-ink-gray-9 shadow-sm',
               )}
             >
               {size}

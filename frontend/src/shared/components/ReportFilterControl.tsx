@@ -16,7 +16,7 @@ export function ReportFilterControl({
 }) {
   const label = filter.label ? __(filter.label) : undefined
   const strong = filter.reqd || (filter as { bold?: unknown }).bold ? 'font-semibold text-ink-gray-9' : ''
-  const box = `h-7 w-full rounded-md ${invalid ? 'border border-ink-red-3' : 'border-0'} bg-surface-gray-2 px-2 text-base text-ink-gray-8 placeholder:text-ink-gray-4 focus:ring-0`
+  const box = `h-7 w-full rounded-sm border ${invalid ? 'border-ink-red-3' : 'border-outline-gray-2'} bg-surface-base px-2 text-base text-ink-gray-8 py-0 leading-7 placeholder:text-ink-gray-4 focus:ring-0`
   const optionList = (): Array<{ label: string; value: string }> => {
     const raw = filter.options as unknown
     const items: unknown[] = Array.isArray(raw)

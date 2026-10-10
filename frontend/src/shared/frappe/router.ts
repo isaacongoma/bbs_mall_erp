@@ -39,7 +39,10 @@ const router: AnyRecord = {
   current_path: () => pathname(),
   get_sub_path_string(route?: string): string {
     const path = (route ?? pathname()).split('?')[0] ?? ''
-    return path.replace(/^\/+/, '').replace(/^(app|desk)\/?/, '').replace(/\/+$/, '')
+    return path
+      .replace(/^\/+/, '')
+      .replace(/^(app|desk)\/?/, '')
+      .replace(/\/+$/, '')
   },
   get_sub_path(route?: string): string {
     return router.get_sub_path_string(route)
@@ -80,7 +83,9 @@ export function routeToPath(route: unknown[]): string {
   if (lowered === 'list') {
     const [doctype, view] = rest
     if (!doctype) return '/app'
-    return view && view.toLowerCase() !== 'list' ? `/app/${encode(doctype)}/view/${encode(view.toLowerCase())}` : `/app/${encode(doctype)}`
+    return view && view.toLowerCase() !== 'list'
+      ? `/app/${encode(doctype)}/view/${encode(view.toLowerCase())}`
+      : `/app/${encode(doctype)}`
   }
   if (lowered === 'tree') return `/app/${encode(rest[0] ?? '')}/view/tree`
   if (lowered === 'query-report' || lowered === 'report') {

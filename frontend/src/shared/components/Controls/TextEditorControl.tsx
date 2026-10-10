@@ -1,7 +1,13 @@
 import { useState } from 'react'
 import { cn, useLatest } from '@/design-system'
 import { Editor, EditorBubbleMenu, EditorContent, EditorFixedMenu } from '@/design-system/editor'
-import { buildEditorExtensions, bubbleToolbar, fullToolbar, uploadFile, type MentionItem } from '../../utils/editorConfig'
+import {
+  buildEditorExtensions,
+  bubbleToolbar,
+  fullToolbar,
+  uploadFile,
+  type MentionItem,
+} from '../../utils/editorConfig'
 
 export interface TextEditorControlProps {
   value?: string

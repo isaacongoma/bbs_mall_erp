@@ -2,6 +2,7 @@ import { createElement, lazy, Suspense, useEffect, useState, type ComponentType,
 import { useLocation } from 'react-router-dom'
 import { getModuleRoutes } from '@/core/modules/registry'
 import { matchLocation } from '@/core/navigation'
+import { PagePending } from '@/shared/components/Shimmer'
 import { loadDeskBoot } from '@/shared/frappe/boot'
 
 const cache = new Map<string, ComponentType>()
@@ -17,7 +18,7 @@ function pageFor(name: string): ReactElement | null {
 }
 
 function Pending() {
-  return <div className="flex flex-1 items-center justify-center p-8 text-sm text-ink-gray-5" />
+  return <PagePending />
 }
 
 export function DeskSwitch() {

@@ -5,7 +5,6 @@ import { $, frappe } from './runtime'
 
 type AnyRecord = Record<string, any>
 
-
 const cellControls = new WeakMap<AnyRecord, Map<string, AnyRecord>>()
 
 function childFieldDef(row: AnyRecord, fieldname: string): DocField | undefined {
@@ -85,12 +84,14 @@ export function gridUiFor(frm: AnyRecord, table: string): FieldLayoutGridUi | un
     sortable: typeof grid.is_sortable === 'function' ? Boolean(grid.is_sortable()) : true,
     customButtons: buttons,
     multipleAdd: grid.multiple_set ? () => $(grid.wrapper).find('.grid-add-multiple-rows').trigger('click') : undefined,
-    download: $(grid.wrapper).find('.grid-download').length && !$(grid.wrapper).find('.grid-download').hasClass('hidden')
-      ? () => $(grid.wrapper).find('.grid-download').trigger('click')
-      : undefined,
-    upload: $(grid.wrapper).find('.grid-upload').length && !$(grid.wrapper).find('.grid-upload').hasClass('hidden')
-      ? () => $(grid.wrapper).find('.grid-upload').trigger('click')
-      : undefined,
+    download:
+      $(grid.wrapper).find('.grid-download').length && !$(grid.wrapper).find('.grid-download').hasClass('hidden')
+        ? () => $(grid.wrapper).find('.grid-download').trigger('click')
+        : undefined,
+    upload:
+      $(grid.wrapper).find('.grid-upload').length && !$(grid.wrapper).find('.grid-upload').hasClass('hidden')
+        ? () => $(grid.wrapper).find('.grid-upload').trigger('click')
+        : undefined,
   }
 }
 

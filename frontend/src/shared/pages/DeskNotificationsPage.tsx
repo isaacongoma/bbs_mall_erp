@@ -58,7 +58,9 @@ export default function DeskNotificationsPage() {
   async function openNotification(notification: DocRecord) {
     await markRead(notification)
     if (notification.document_type && notification.document_name) {
-      navigate(`/app/${encodeURIComponent(String(notification.document_type))}/${encodeURIComponent(String(notification.document_name))}`)
+      navigate(
+        `/app/${encodeURIComponent(String(notification.document_type))}/${encodeURIComponent(String(notification.document_name))}`,
+      )
     }
   }
 
@@ -66,11 +68,23 @@ export default function DeskNotificationsPage() {
     <main className="flex min-h-0 flex-1 flex-col">
       <LayoutHeader
         left={<h1 className="text-base-medium text-ink-gray-9">{__('Notifications')}</h1>}
-        right={<Button variant="ghost" loading={markingAll} disabled={!notifications.some((notification) => !isRead(notification))} label={__('Mark all as read')} onClick={() => void markAllRead()} />}
+        right={
+          <Button
+            variant="ghost"
+            loading={markingAll}
+            disabled={!notifications.some((notification) => !isRead(notification))}
+            label={__('Mark all as read')}
+            onClick={() => void markAllRead()}
+          />
+        }
       />
       {actionError && <ErrorMessage className="mx-auto w-full max-w-4xl px-4 pt-4 sm:px-8" message={actionError} />}
-      {resource.list.error ? <ErrorMessage className="m-6" message={resource.list.error} /> : resource.list.loading && !notifications.length ? (
-        <div className="flex flex-1 items-center justify-center"><Spinner size="md" /></div>
+      {resource.list.error ? (
+        <ErrorMessage className="m-6" message={resource.list.error} />
+      ) : resource.list.loading && !notifications.length ? (
+        <div className="flex flex-1 items-center justify-center">
+          <Spinner size="md" />
+        </div>
       ) : notifications.length ? (
         <div className="mx-auto flex w-full max-w-4xl flex-col divide-y divide-outline-gray-1 p-4 sm:p-8">
           {notifications.map((notification) => (
@@ -81,8 +95,15 @@ export default function DeskNotificationsPage() {
               onClick={() => void openNotification(notification)}
             >
               <span className="flex flex-col gap-1">
-                <span className="text-sm-medium text-ink-gray-9">{String(notification.subject ?? notification.name)}</span>
-                <span className="text-sm text-ink-gray-6" dangerouslySetInnerHTML={{ __html: sanitizeHTML(notification.email_content ?? notification.description ?? '') }} />
+                <span className="text-sm-medium text-ink-gray-9">
+                  {String(notification.subject ?? notification.name)}
+                </span>
+                <span
+                  className="text-sm text-ink-gray-6"
+                  dangerouslySetInnerHTML={{
+                    __html: sanitizeHTML(notification.email_content ?? notification.description ?? ''),
+                  }}
+                />
                 <span className="text-xs text-ink-gray-5">{String(notification.creation ?? '')}</span>
               </span>
               {!isRead(notification) && <span className="size-2 shrink-0 rounded-full bg-surface-blue-7" />}
@@ -93,7 +114,9 @@ export default function DeskNotificationsPage() {
         <EmptyState name={__('Notifications')} />
       )}
       <div className="flex justify-end border-t border-outline-gray-2 px-4 py-3 sm:px-6">
-        <Button variant="ghost" disabled={!resource.hasNextPage} onClick={() => resource.next()}>{__('Load more')}</Button>
+        <Button variant="ghost" disabled={!resource.hasNextPage} onClick={() => resource.next()}>
+          {__('Load more')}
+        </Button>
       </div>
     </main>
   )

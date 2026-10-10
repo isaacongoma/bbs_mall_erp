@@ -44,7 +44,8 @@ async function openFormNow(doctype: string, name?: string): Promise<AnyRecord> {
     docname = frappe.model.new_names[docname] as string
   } else {
     const existing = locals[doctype]?.[docname]
-    const fresh = existing && frappe.model.get_docinfo(doctype, docname) && (existing.__islocal || frappe.model.is_fresh(existing))
+    const fresh =
+      existing && frappe.model.get_docinfo(doctype, docname) && (existing.__islocal || frappe.model.is_fresh(existing))
     if (!fresh) {
       await frappe.model.with_doc(doctype, docname)
       if (!locals[doctype]?.[docname]) {

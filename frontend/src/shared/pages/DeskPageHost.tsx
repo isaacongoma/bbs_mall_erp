@@ -13,7 +13,11 @@ type AnyRecord = Record<string, any>
 
 export default function DeskPageHost({ name }: DeskPageHostProps) {
   const container = useRef<HTMLDivElement>(null)
-  const [state, setState] = useState<{ name: string; error: string | null; ready: boolean }>({ name, error: null, ready: false })
+  const [state, setState] = useState<{ name: string; error: string | null; ready: boolean }>({
+    name,
+    error: null,
+    ready: false,
+  })
   usePageMeta({ title: name })
 
   useEffect(() => {
@@ -38,7 +42,8 @@ export default function DeskPageHost({ name }: DeskPageHostProps) {
         window.cur_page = { page: wrapper, ...definition }
         setState({ name, error: null, ready: true })
       } catch (reason) {
-        if (!cancelled) setState({ name, error: reason instanceof Error ? reason.message : String(reason), ready: true })
+        if (!cancelled)
+          setState({ name, error: reason instanceof Error ? reason.message : String(reason), ready: true })
       }
     })()
 

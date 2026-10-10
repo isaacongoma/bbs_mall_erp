@@ -29,7 +29,7 @@ it('reports api coverage', { timeout: 60000 }, () => {
     let target: any = frappe
     let ok = true
     for (const part of parts) {
-      if (target == null || typeof target !== 'object' && typeof target !== 'function') {
+      if (target == null || (typeof target !== 'object' && typeof target !== 'function')) {
         break
       }
       if (!(part in target)) {
@@ -47,6 +47,9 @@ it('reports api coverage', { timeout: 60000 }, () => {
     prefixes.set(prefix, (prefixes.get(prefix) ?? 0) + count)
   }
   const out = [...prefixes.entries()].sort((a, b) => b[1] - a[1])
-  fs.writeFileSync(path.resolve(__dirname, process.env.COVERAGE_OUT ?? '../../../coverage_missing.txt'), out.map(([k, v]) => `${v}\t${k}`).join('\n'))
+  fs.writeFileSync(
+    path.resolve(__dirname, process.env.COVERAGE_OUT ?? '../../../coverage_missing.txt'),
+    out.map(([k, v]) => `${v}\t${k}`).join('\n'),
+  )
   void erpnext
 })

@@ -40,6 +40,8 @@ def execute(filters=None):
     summary = [
         {"label": _("Deposits Held"), "value": sum(flt(row["balance"]) for row in data), "indicator": "green", "datatype": "Currency"},
         {"label": _("Shortfall"), "value": sum(flt(row["shortfall"]) for row in data), "indicator": "red", "datatype": "Currency"},
+        {"label": _("Deposits Required"), "value": sum(flt(row["required"]) for row in data), "indicator": "blue", "datatype": "Currency"},
+        {"label": _("Leases"), "value": len(data), "indicator": "orange", "datatype": "Int"},
     ]
     return get_columns(), data, None, None, summary
 

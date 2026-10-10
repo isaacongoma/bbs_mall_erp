@@ -35,16 +35,17 @@ export function DataImportView({ doctype, importName, doctypeMap, doctypeOptions
     )
     .join(',')}`
 
-  const foundData = importName ? imports?.find((entry) => entry.name === importName) ?? null : null
-  const derivedStep: DataImportStep = queryStep === 'list' || (!doctype && !importName)
-    ? 'list'
-    : doctype
-      ? 'upload'
-      : foundData?.import_file || foundData?.google_sheets_url
-        ? queryStep === 'map'
-          ? 'map'
-          : 'preview'
-        : 'upload'
+  const foundData = importName ? (imports?.find((entry) => entry.name === importName) ?? null) : null
+  const derivedStep: DataImportStep =
+    queryStep === 'list' || (!doctype && !importName)
+      ? 'list'
+      : doctype
+        ? 'upload'
+        : foundData?.import_file || foundData?.google_sheets_url
+          ? queryStep === 'map'
+            ? 'map'
+            : 'preview'
+          : 'upload'
   const current = viewState.key === key ? viewState : { key, step: derivedStep, data: foundData }
   const step = current.step
   const data = current.data

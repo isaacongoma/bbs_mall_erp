@@ -95,7 +95,9 @@ export function sidebarRoute(item: SidebarItemData): string | undefined {
     case 'Report': {
       if (!item.report) return undefined
       const query = item.report.report_type === 'Query Report' || item.report.report_type === 'Script Report'
-      return query ? `/app/query-report/${encoded}` : `/app/${encodeURIComponent(item.report.ref_doctype ?? '')}/view/report/${encoded}`
+      return query
+        ? `/app/query-report/${encoded}`
+        : `/app/${encodeURIComponent(item.report.ref_doctype ?? '')}/view/report/${encoded}`
     }
     case 'Workspace':
       return `/app/${encoded}`

@@ -24,10 +24,13 @@ export function useReportSettings(report: string, fallbackFilters: ReportFilterD
   }, [report])
 
   const settings = loaded?.report === report ? loaded.settings : null
-  const scriptFilters = settings?.filters as ReportFilterDef[] | undefined
+  const scriptFilters = useMemo(() => settings?.filters as ReportFilterDef[] | undefined, [settings])
   const filterDefs = scriptFilters?.length ? scriptFilters : fallbackFilters
   const ready = settings !== null
-  const facade = useMemo(() => (ready ? new ReportFacade(report, settings ?? {}, filterDefs) : null), [ready, report, settings, filterDefs])
+  const facade = useMemo(
+    () => (ready ? new ReportFacade(report, settings ?? {}, filterDefs) : null),
+    [ready, report, settings, filterDefs],
+  )
   const subscribe = useMemo(() => (listener: () => void) => facade?.subscribe(listener) ?? (() => undefined), [facade])
   useSyncExternalStore(subscribe, () => facade?.getVersion() ?? 0)
   return { settings: settings ?? EMPTY_SETTINGS, facade, ready }

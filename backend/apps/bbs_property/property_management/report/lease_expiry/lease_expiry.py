@@ -44,6 +44,8 @@ def execute(filters=None):
     summary = [
         {"label": _("Expiring"), "value": len(data), "indicator": "orange", "datatype": "Int"},
         {"label": _("Rent at Risk / Month"), "value": sum(flt(row.total_monthly_rent) for row in data), "indicator": "red", "datatype": "Currency"},
+        {"label": _("Outstanding Balance"), "value": sum(flt(row.outstanding_amount) for row in data), "indicator": "red", "datatype": "Currency"},
+        {"label": _("Area Expiring (sqm)"), "value": sum(flt(row.total_area) for row in data), "indicator": "blue", "datatype": "Float"},
     ]
     return get_columns(), data, None, chart, summary
 

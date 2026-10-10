@@ -3,8 +3,12 @@ import { useNavigate } from 'react-router-dom'
 import { __ } from '@/core/i18n'
 import { useRoute } from '@/core/navigation'
 import { useListResource, useResource } from '@/core/resources'
-import { Button, Dropdown, ErrorMessage, Spinner, usePageMeta } from '@/design-system'
+import { Button, Dropdown, ErrorMessage, usePageMeta } from '@/design-system'
 import { LayoutHeader } from '../components/LayoutHeader'
+import { StatShimmerRow } from '../components/Shimmer'
+import { ModernNumberCard } from '../components/ModernStat'
+import { ModernDeskContext } from '../hooks/useModernDesk'
+import { isModernModule } from '../utils/modernDesk'
 import { unwrapDeskResponse, type DeskWorkspace } from '../utils/deskWorkspace'
 import { WorkspaceChart, WorkspaceNumberCard } from './DeskWorkspacePage'
 
@@ -58,11 +62,14 @@ export default function DeskDashboardPage({ dashboardName: nameProp }: Partial<D
       : []
   }, [dashboard.data?.charts])
 
+  const modern = isModernModule(dashboard.data?.module) || isModernModule(dashboardName)
+
   usePageMeta({ title: dashboardName })
   if (dashboard.loading && !dashboard.data)
     return (
-      <div className="flex flex-1 items-center justify-center">
-        <Spinner size="md" />
+      <div className="flex flex-1 flex-col gap-5 p-4 sm:p-6">
+        <StatShimmerRow />
+        <StatShimmerRow count={2} />
       </div>
     )
   if (dashboard.error)
@@ -95,30 +102,48 @@ export default function DeskDashboardPage({ dashboardName: nameProp }: Partial<D
           </Dropdown>
         }
       />
-      <div className="mx-auto w-full flex-1 overflow-y-auto px-5 py-4 [scrollbar-width:none]">
-        {cards.length > 0 && (
-          <div className="mb-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {cards.map((card) => (
-              <WorkspaceNumberCard key={`${String(card.number_card_name)}:${tick}`} item={card} />
-            ))}
-          </div>
-        )}
-        {charts.length > 0 && (
-          <div className="grid gap-4 lg:grid-cols-2">
-            {charts.map((chart) => (
-              <div
-                key={`${String(chart.chart_name)}:${tick}`}
-                className={chart.width === 'Full' ? 'lg:col-span-2' : undefined}
-              >
-                <WorkspaceChart item={chart} />
-              </div>
-            ))}
-          </div>
-        )}
-        {!cards.length && !charts.length && (
-          <p className="text-sm text-ink-gray-6">{__('This dashboard has no visible cards or charts.')}</p>
-        )}
-      </div>
+      <ModernDeskContext.Provider value={modern}>
+        <div
+          className={
+            modern
+              ? 'mx-auto w-full max-w-[1400px] flex-1 overflow-y-auto px-3 py-4 sm:px-4 sm:py-6 lg:px-6 lg:py-8 xl:px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
+              : 'mx-auto w-full flex-1 overflow-y-auto px-5 py-4 [scrollbar-width:none]'
+          }
+        >
+          {cards.length > 0 && (
+            <div
+              className={
+                modern
+                  ? 'mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4'
+                  : 'mb-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'
+              }
+            >
+              {cards.map((card) =>
+                modern ? (
+                  <ModernNumberCard key={`${String(card.number_card_name)}:${tick}`} item={card} />
+                ) : (
+                  <WorkspaceNumberCard key={`${String(card.number_card_name)}:${tick}`} item={card} />
+                ),
+              )}
+            </div>
+          )}
+          {charts.length > 0 && (
+            <div className="grid gap-4 lg:grid-cols-2">
+              {charts.map((chart) => (
+                <div
+                  key={`${String(chart.chart_name)}:${tick}`}
+                  className={chart.width === 'Full' ? 'lg:col-span-2' : undefined}
+                >
+                  <WorkspaceChart item={chart} />
+                </div>
+              ))}
+            </div>
+          )}
+          {!cards.length && !charts.length && (
+            <p className="text-sm text-ink-gray-6">{__('This dashboard has no visible cards or charts.')}</p>
+          )}
+        </div>
+      </ModernDeskContext.Provider>
     </main>
   )
 }

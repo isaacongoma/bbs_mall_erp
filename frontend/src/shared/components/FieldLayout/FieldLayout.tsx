@@ -110,6 +110,8 @@ function FieldLayoutBody({
         data-standalone={baseContext.standalone ? '' : undefined}
         className={cn(
           'field-layout flex flex-col',
+          baseContext.standalone &&
+            "[&_.field_[class*='bg-surface-gray-2']]:!border [&_.field_[class*='bg-surface-gray-2']]:!border-outline-gray-2 [&_.field_[class*='bg-surface-gray-2']]:!bg-surface-base [&_.field_[class*='bg-surface-gray-2']]:!rounded-sm [&_.field_input:not([type=checkbox])]:!border [&_.field_input:not([type=checkbox])]:!border-outline-gray-2 [&_.field_input:not([type=checkbox])]:!bg-surface-base [&_.field_select]:!border [&_.field_select]:!border-outline-gray-2 [&_.field_select]:!bg-surface-base [&_.field_textarea]:!border [&_.field_textarea]:!border-outline-gray-2 [&_.field_textarea]:!bg-surface-base [&_.field_input]:!rounded-sm [&_.field_select]:!rounded-sm [&_.field_textarea]:!rounded-sm",
           hasTabs && !baseContext.standalone && 'rounded-lg border border-outline-elevation-2',
         )}
       >
@@ -129,14 +131,17 @@ function FieldLayoutBody({
               className={cn(
                 'sections',
                 hasTabs && (baseContext.standalone ? 'mt-1' : 'my-4 sm:my-5'),
-                baseContext.standalone && 'w-full [&>.section:last-child]:border-b [&>.section:last-child]:border-outline-elevation-2',
+                baseContext.standalone &&
+                  'm-3 overflow-hidden rounded-sm border border-outline-gray-2 bg-surface-base sm:m-4',
               )}
             >
               {(tab as unknown as LayoutTab).sections.map((section) => (
                 <Section key={section.name} section={section} />
               ))}
               {(tab as unknown as { extra?: ReactNode }).extra && (
-                <div className="mx-auto w-full max-w-[870px] pt-5">{(tab as unknown as { extra?: ReactNode }).extra}</div>
+                <div className="mx-auto w-full max-w-[870px] pt-5">
+                  {(tab as unknown as { extra?: ReactNode }).extra}
+                </div>
               )}
             </div>
           )}

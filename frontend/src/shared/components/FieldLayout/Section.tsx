@@ -37,8 +37,15 @@ export function Section({ section }: SectionProps) {
     >
       <div className={cn(standalone && 'mx-auto w-full max-w-[870px] pb-4 pt-5 [.section:first-child_&]:pt-4')}>
         <CollapsibleSection
-          className={cn('flex flex-col gap-4 sm:flex-row', standalone ? 'text-base-medium' : 'text-lg-medium', hasTabs && !standalone && 'px-3 sm:px-5')}
-          labelClass={cn(standalone ? 'text-base font-medium text-ink-gray-9' : 'text-lg font-medium', hasTabs && !standalone && 'px-3 sm:px-5')}
+          className={cn(
+            'flex flex-col gap-4 sm:flex-row',
+            standalone ? 'text-base-medium' : 'text-lg-medium',
+            hasTabs && !standalone && 'px-3 sm:px-5',
+          )}
+          labelClass={cn(
+            standalone ? 'text-base font-medium text-ink-gray-9' : 'text-lg font-medium',
+            hasTabs && !standalone && 'px-3 sm:px-5',
+          )}
           label={section.label}
           hideLabel={section.hideLabel || !section.label}
           opened={section.opened ?? !section.collapsed}
@@ -50,7 +57,7 @@ export function Section({ section }: SectionProps) {
               key={column.name}
               className={section.label && !section.hideLabel ? 'mt-6' : undefined}
               column={column}
-            single={section.columns.length === 1}
+              single={section.columns.length === 1}
             />
           ))}
         </CollapsibleSection>

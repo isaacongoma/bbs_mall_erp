@@ -122,10 +122,10 @@ export default function DeskTreePage({ doctype }: DeskTreePageProps) {
         }
       />
       {error && <ErrorMessage className="m-6" message={error} />}
-      <div className="min-h-0 flex-1 overflow-auto">
+      <div className="min-h-0 flex-1 overflow-auto px-3 py-4 sm:px-4 sm:py-6 lg:px-6 lg:py-8 xl:px-8">
         <div
           ref={host}
-          className="frappe-page-host mx-auto w-full max-w-[900px] [&_.page-head]:!hidden [&_.tooltip-content]:hidden"
+          className="frappe-page-host mx-auto w-full max-w-[1400px] rounded-sm border border-outline-gray-2 bg-surface-base p-2 [&_.form-control]:!border [&_.form-control]:!border-outline-gray-2 [&_.form-control]:!bg-surface-base [&_.form-control]:!rounded-sm [&_input]:!bg-surface-base [&_.page-head]:!hidden [&_.tooltip-content]:hidden"
         />
       </div>
     </main>

@@ -642,7 +642,8 @@ class FilterArea {
   }
   render_non_standard_fields_filter(this: any) {
     let get_item_html = (fieldname: any) => {
-      let label: any, fieldtype: any = undefined
+      let label: any,
+        fieldtype: any = undefined
       if (fieldname === 'assigned_to') {
         label = __('Assigned To')
       } else if (fieldname === 'owner') {

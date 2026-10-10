@@ -68,7 +68,13 @@ export function useReportviewList(query: ReportviewQuery | null) {
         }).catch(() => null)
         if (!cancelled) setOutcome({ key, rows, total: count === null ? null : Number(unwrap(count)), error: null })
       } catch (failure) {
-        if (!cancelled) setOutcome({ key, rows: [], total: null, error: failure instanceof Error ? failure.message : String(failure) })
+        if (!cancelled)
+          setOutcome({
+            key,
+            rows: [],
+            total: null,
+            error: failure instanceof Error ? failure.message : String(failure),
+          })
       }
     })()
     return () => {

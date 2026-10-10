@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { useRoute } from '@/core/navigation'
 import { useResource } from '@/core/resources'
 import { __ } from '@/core/i18n'
-import { AxisChart, Button, Dialog, Dropdown, ErrorMessage, FormControl, Spinner, usePageMeta } from '@/design-system'
+import { AxisChart, Button, Dialog, Dropdown, ErrorMessage, FormControl, usePageMeta } from '@/design-system'
 import { Icon } from '../components/Icon'
+import { ReportShimmer } from '../components/Shimmer'
+import { ModernStatCard } from '../components/ModernStat'
 import { ReportDataTable } from '../components/ReportDataTable'
 import { LayoutHeader } from '../components/LayoutHeader'
 import { downloadCsv } from '../utils/csv'
@@ -39,7 +41,7 @@ interface ReportDefinition {
 function formatCell(value: unknown, column: ReportColumn & { options?: string }, row: Record<string, unknown>): string {
   if (value === null || value === undefined || value === '') return ''
   const indent = column.fieldname === 'account' ? Number(row.indent ?? 0) : 0
-  if (indent > 0) return '����'.repeat(indent) + String(value)
+  if (indent > 0) return '    '.repeat(indent) + String(value)
   const scope = window as unknown as Record<string, any>
   const type = String(column.fieldtype ?? '')
   try {
@@ -58,7 +60,8 @@ function formatCell(value: unknown, column: ReportColumn & { options?: string },
 function dependsOk(filter: ReportFilterDef, values: Record<string, unknown>): boolean {
   const expression = typeof filter.depends_on === 'string' ? filter.depends_on : ''
   if (!expression) return true
-  const body = expression.startsWith('eval:') ? expression.slice(5) : expression
+  if (!expression.startsWith('eval:')) return Boolean(values[expression])
+  const body = expression.slice(5)
   try {
     return Boolean(
       new Function('doc', 'report', `return (${body})`)(values, { get_filter_value: (name: string) => values[name] }),
@@ -93,6 +96,9 @@ function parseFilters(value: string): Record<string, unknown> {
   }
 }
 
+const COLLAPSED_FILTERS = 6
+const NO_FILTERS: ReportFilterDef[] = []
+
 export default function DeskReportPage() {
   const route = useRoute()
   const report = decodeURIComponent(route.params.report ?? '')
@@ -126,11 +132,22 @@ export default function DeskReportPage() {
       return response as ReportResult
     },
   })
-  const { settings, facade } = useReportSettings(report, definition.data?.filters ?? [])
+  const { settings, facade } = useReportSettings(report, definition.data?.filters ?? NO_FILTERS)
   const reportFilters = facade?.filterDefs ?? definition.data?.filters ?? []
   const visibleFilters = reportFilters.filter(
     (filter) => !filter.hidden && !facade?.hiddenFilters.has(filter.fieldname) && dependsOk(filter, filters),
   )
+  const nonBreakFilters = [
+    ...visibleFilters.filter((filter) => filter.fieldtype !== 'Break' && filter.fieldtype !== 'Check'),
+    ...visibleFilters.filter((filter) => filter.fieldtype === 'Check'),
+  ]
+  const checkStart = nonBreakFilters.findIndex((filter) => filter.fieldtype === 'Check')
+  const orderedFilters: ReportFilterDef[] =
+    checkStart > 0
+      ? [...nonBreakFilters.slice(0, checkStart), { fieldtype: 'Break', fieldname: '' } as ReportFilterDef, ...nonBreakFilters.slice(checkStart)]
+      : nonBreakFilters
+  const collapsible = nonBreakFilters.length > COLLAPSED_FILTERS
+  const [filtersExpanded, setFiltersExpanded] = useState(false)
 
   const [missingFilters, setMissingFilters] = useState<string[]>([])
   const resourceRef = useRef(resource)
@@ -443,25 +460,46 @@ export default function DeskReportPage() {
         }
       />
       <div className="flex flex-wrap items-start gap-x-3 gap-y-3 px-5 pb-1 pt-3">
-        {visibleFilters.map((filter, index) => (
-          <div
-            key={filter.fieldname ?? `break-${index}`}
-            className={filter.fieldtype === 'Break' ? 'basis-full' : 'w-[calc((100%-60px)/6)] min-w-[140px]'}
-          >
-            <ReportFilterControl
-              filter={filter}
-              invalid={missingFilters.includes(filter.fieldname)}
-              value={filters[filter.fieldname] ?? ''}
-              onChange={(value) => {
-                if (facade) {
-                  void facade.set_filter_value(filter.fieldname, value, false)
-                  if (typeof filter.on_change === 'function') filter.on_change(facade)
-                  if (filter.fieldtype !== 'Data') facade.refresh()
-                } else setFilters((current) => ({ ...current, [filter.fieldname]: value }))
-              }}
-            />
-          </div>
-        ))}
+        {orderedFilters.map((filter, index) => {
+          if (filter.fieldtype === 'Break') return filtersExpanded ? <div key={`break-${index}`} className="basis-full" /> : null
+          const position = nonBreakFilters.indexOf(filter)
+          if (!filtersExpanded && position >= COLLAPSED_FILTERS) return null
+          const isToggleRow = collapsible && position === COLLAPSED_FILTERS - 1
+          return (
+            <Fragment key={filter.fieldname ?? `filter-${index}`}>
+              <div
+                className={
+                  isToggleRow
+                    ? 'w-[calc((100%-60px)/6-40px)] min-w-[100px]'
+                    : 'w-[calc((100%-60px)/6)] min-w-[140px]'
+                }
+              >
+                <ReportFilterControl
+                  filter={filter}
+                  invalid={missingFilters.includes(filter.fieldname)}
+                  value={filters[filter.fieldname] ?? ''}
+                  onChange={(value) => {
+                    if (facade) {
+                      void facade.set_filter_value(filter.fieldname, value, false)
+                      if (typeof filter.on_change === 'function') filter.on_change(facade)
+                      if (filter.fieldtype !== 'Data') facade.refresh()
+                    } else setFilters((current) => ({ ...current, [filter.fieldname]: value }))
+                  }}
+                />
+              </div>
+              {isToggleRow && (
+                <button
+                  type="button"
+                  aria-label={filtersExpanded ? __('Collapse filters') : __('Expand filters')}
+                  onClick={() => setFiltersExpanded((open) => !open)}
+                  className="flex h-7 w-7 items-center justify-center rounded-sm text-ink-gray-6 hover:bg-surface-gray-2"
+                >
+                  <Icon icon={filtersExpanded ? 'lucide-chevron-up' : 'lucide-chevron-down'} className="size-4" />
+                </button>
+              )}
+            </Fragment>
+          )
+        })}
         {preparedReportName && (
           <span className="text-xs text-ink-gray-5">{__('Prepared report: {0}', [preparedReportName])}</span>
         )}
@@ -473,14 +511,12 @@ export default function DeskReportPage() {
       ) : resource.error ? (
         <ErrorMessage className="m-6" message={readableError(resource.error)} />
       ) : resource.loading && !data.columns ? (
-        <div className="flex flex-1 items-center justify-center">
-          <Spinner size="md" />
-        </div>
+        <ReportShimmer />
       ) : (
         <div className="flex min-h-0 flex-1 flex-col overflow-auto p-4 sm:p-6">
           {actionError && <ErrorMessage className="mb-4" message={actionError} />}
           {summary.length > 0 && (
-            <div className="mb-5 flex flex-wrap justify-around gap-4 border-b border-outline-gray-2 px-4 pb-6 pt-8 text-center">
+            <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {summary.map((item, index) => {
                 const scope = window as unknown as Record<string, any>
                 const raw = item.value
@@ -488,17 +524,13 @@ export default function DeskReportPage() {
                   String(item.datatype ?? '') === 'Currency' && typeof scope.format_currency === 'function'
                     ? String(scope.format_currency(raw, item.currency))
                     : String(raw ?? '')
-                const red = /red/i.test(String(item.indicator ?? ''))
-                const green = /green/i.test(String(item.indicator ?? ''))
+                const indicator = String(item.indicator ?? '')
+                const accent = /red/i.test(indicator) ? '#dc2626' : /green/i.test(indicator) ? '#16a34a' : undefined
                 return (
-                  <div key={`${String(item.label ?? index)}`}>
-                    <div className="text-[13px] text-ink-gray-6">{String(item.label ?? '')}</div>
-                    <div
-                      className={`mt-1 text-lg font-semibold ${red ? 'text-ink-red-6' : green ? 'text-ink-green-6' : 'text-ink-gray-9'}`}
-                    >
-                      {text}
-                    </div>
-                  </div>
+                  <ModernStatCard
+                    key={`${String(item.label ?? index)}`}
+                    item={{ label: String(item.label ?? ''), value: text, accent }}
+                  />
                 )
               })}
             </div>
@@ -529,11 +561,11 @@ export default function DeskReportPage() {
                     min={1}
                     value={level}
                     onChange={(event) => setDepth(Math.max(1, Number(event.target.value) || 1))}
-                    className="h-7 w-16 rounded-md border-0 bg-surface-gray-2 px-2 text-base text-ink-gray-8 focus:ring-0"
+                    className="h-7 w-16 rounded-sm border border-outline-gray-2 bg-surface-base px-2 text-base text-ink-gray-8 focus:ring-0"
                   />
-                  <Button variant="subtle" label={__('Set Level')} onClick={() => setDepth(level)} />
+                  <Button variant="outline" label={__('Set Level')} onClick={() => setDepth(level)} />
                   <Button
-                    variant="subtle"
+                    variant="outline"
                     label={level > 1 ? __('Collapse All') : __('Expand All')}
                     onClick={() => setDepth(level > 1 ? 1 : 99)}
                   />

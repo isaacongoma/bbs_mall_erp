@@ -47,6 +47,8 @@ def execute(filters=None):
     summary = [
         {"label": _("Revenue"), "value": total_revenue, "indicator": "green", "datatype": "Currency"},
         {"label": _("Average per sqm / month"), "value": total_revenue / total_area / months if total_area else 0, "indicator": "blue", "datatype": "Currency"},
+        {"label": _("Units Billed"), "value": len([row for row in data if flt(row.revenue) > 0]), "indicator": "blue", "datatype": "Int"},
+        {"label": _("Top Unit Revenue"), "value": max([flt(row.revenue) for row in data] or [0]), "indicator": "orange", "datatype": "Currency"},
     ]
     return get_columns(), data, None, chart, summary
 

@@ -68,11 +68,6 @@ export default function DeskDataImportPage() {
   usePageMeta({ title: __('Data Import') })
 
   return (
-    <DataImportView
-      doctype={doctype}
-      importName={importName}
-      doctypeMap={doctypeMap}
-      doctypeOptions={doctypeOptions}
-    />
+    <DataImportView doctype={doctype} importName={importName} doctypeMap={doctypeMap} doctypeOptions={doctypeOptions} />
   )
 }

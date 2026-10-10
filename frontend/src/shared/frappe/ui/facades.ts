@@ -80,7 +80,9 @@ export class FormSidebar {
   }
 
   add_user_action(label: string, click: (event?: unknown) => unknown): JQuery {
-    const element = $(`<li class="user-action"><a class="grey-link" href="#" data-label="${encodeURIComponent(label)}">${label}</a></li>`)
+    const element = $(
+      `<li class="user-action"><a class="grey-link" href="#" data-label="${encodeURIComponent(label)}">${label}</a></li>`,
+    )
     element.on('click', (event: any) => {
       event.preventDefault()
       click(event)

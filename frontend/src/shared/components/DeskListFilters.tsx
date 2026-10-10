@@ -96,7 +96,7 @@ export function FilterPopover({ fields, filters, onApply, count, trigger }: Filt
               <Icon icon="lucide-filter" className="size-4" />
               <span>{count ? __('Filters') : __('Filter')}</span>
               {count > 0 && (
-                <span className="flex size-5 items-center justify-center rounded-full bg-surface-white text-sm text-ink-gray-8">
+                <span className="flex size-5 items-center justify-center rounded-full bg-surface-base text-sm text-ink-gray-8">
                   {count}
                 </span>
               )}
@@ -113,7 +113,7 @@ export function FilterPopover({ fields, filters, onApply, count, trigger }: Filt
         )
       }
       body={({ close }) => (
-        <div className="w-[640px] max-w-[92vw] rounded-2xl bg-surface-white p-4 shadow-2xl ring-1 ring-black/5">
+        <div className="w-[640px] max-w-[92vw] rounded-sm border border-outline-gray-2 bg-surface-base p-4 shadow-2xl">
           {draft.length === 0 && <p className="px-1 pb-3 text-base text-ink-gray-5">{__('No filters applied')}</p>}
           <div className="flex flex-col gap-2">
             {draft.map((entry, index) => {

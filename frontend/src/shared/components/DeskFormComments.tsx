@@ -70,7 +70,7 @@ export function DeskFormComments({ doctype, docname, readOnly = false }: DeskFor
       {error && <ErrorMessage className="mb-2" message={error} />}
       {!readOnly && (
         <div className="flex items-start gap-3">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface-gray-2 text-sm text-ink-gray-7">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-full border border-outline-gray-2 bg-surface-base text-sm text-ink-gray-7">
             {initials(user)}
           </span>
           <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -78,7 +78,7 @@ export function DeskFormComments({ doctype, docname, readOnly = false }: DeskFor
               value={draft}
               rows={draft ? 3 : 1}
               placeholder={__('Type a reply / comment')}
-              className="w-full resize-none rounded-lg border-0 bg-surface-gray-2 px-3 py-2.5 text-base text-ink-gray-8 placeholder:text-ink-gray-5 focus:ring-0"
+              className="w-full resize-none rounded-sm border border-outline-gray-2 bg-surface-base px-3 py-2.5 text-base text-ink-gray-8 placeholder:text-ink-gray-5 focus:ring-0"
               onChange={(event) => setDraft(event.target.value)}
             />
             {draft && (
@@ -96,10 +96,10 @@ export function DeskFormComments({ doctype, docname, readOnly = false }: DeskFor
       <div className="mt-4 flex flex-col gap-3">
         {(comments.data ?? []).map((item) => (
           <div key={String(item.name)} className="flex items-start gap-3">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface-gray-2 text-sm text-ink-gray-7">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-full border border-outline-gray-2 bg-surface-base text-sm text-ink-gray-7">
               {initials(String(item.owner ?? ''))}
             </span>
-            <div className="min-w-0 flex-1 rounded-lg bg-surface-gray-1 px-3 py-2">
+            <div className="min-w-0 flex-1 rounded-sm border border-outline-gray-2 bg-surface-base px-3 py-2">
               <div className="text-sm text-ink-gray-6">
                 {String(item.owner ?? '')} · {timeAgo(String(item.creation ?? ''))}
               </div>

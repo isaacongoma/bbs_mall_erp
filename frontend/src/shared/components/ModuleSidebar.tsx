@@ -40,9 +40,10 @@ function iconName(item: SidebarItemData): string {
 
 function LinkItem({ item, hideIcon, collapsed }: { item: SidebarItemData; hideIcon: boolean; collapsed: boolean }) {
   const location = useLocation()
-  const path = sidebarRoute(item)
-  if (!path) return null
-  const external = item.link_type === 'URL'
+  const rawPath = sidebarRoute(item)
+  if (!rawPath) return null
+  const external = item.link_type === 'URL' && /^(https?:)?\/\//.test(rawPath)
+  const path = item.link_type === 'URL' ? rawPath.replace(/^\/hr(?=\/|$)/, '/hrms') : rawPath
   const label = __(item.label)
   if (external) {
     return (
@@ -70,9 +71,7 @@ function LinkItem({ item, hideIcon, collapsed }: { item: SidebarItemData; hideIc
             }
           : undefined
       }
-      prefix={
-        hideIcon ? undefined : <Icon icon={iconName(item)} className="size-4 text-ink-gray-7" />
-      }
+      prefix={hideIcon ? undefined : <Icon icon={iconName(item)} className="size-4 text-ink-gray-7" />}
     >
       <span className={cn('truncate text-sm text-ink-gray-8', collapsed && 'sr-only')}>{label}</span>
     </SidebarItem>

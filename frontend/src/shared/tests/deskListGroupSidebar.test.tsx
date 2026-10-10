@@ -8,7 +8,10 @@ describe('DeskListGroupSidebar', () => {
     render(
       <DeskListGroupSidebar
         fieldLabel="Status"
-        groups={[{ value: 'Open', count: 3 }, { value: 'Closed', count: 2 }]}
+        groups={[
+          { value: 'Open', count: 3 },
+          { value: 'Closed', count: 2 },
+        ]}
         selected=""
         onSelect={onSelect}
       />,

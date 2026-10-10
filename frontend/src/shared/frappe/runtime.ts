@@ -136,7 +136,8 @@ export const get_number_format = (currency?: string) =>
       getBoot().sysdefaults?.number_format ??
       '#,###.##',
   )
-export const precision = (fieldname: string, doc?: AnyRecord) => (window as unknown as AnyRecord).precision(fieldname, doc)
+export const precision = (fieldname: string, doc?: AnyRecord) =>
+  (window as unknown as AnyRecord).precision(fieldname, doc)
 
 installWindowGlobals({
   get_number_format,

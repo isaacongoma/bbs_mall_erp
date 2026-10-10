@@ -126,7 +126,9 @@ export function GridCell({ field, row, doctype, parentDoc, editable, onChange, o
           value={value ?? ''}
           options={
             typeof field.options === 'string'
-              ? field.options.split(String.fromCharCode(10)).map((option: string) => ({ label: __(option), value: option }))
+              ? field.options
+                  .split(String.fromCharCode(10))
+                  .map((option: string) => ({ label: __(option), value: option }))
               : field.options
           }
           disabled={disabled}

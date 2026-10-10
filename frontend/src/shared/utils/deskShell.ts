@@ -71,3 +71,32 @@ export function shellLanding(shell: DeskShellData, sidebar: string): string | un
   }
   return undefined
 }
+
+function routeKey(path: string): string {
+  const parts = (path.split(/[?#]/)[0] ?? '')
+    .split('/')
+    .filter(Boolean)
+    .map((part) => {
+      try {
+        return decodeURIComponent(part).toLowerCase().replace(/\s+/g, '-')
+      } catch {
+        return part.toLowerCase()
+      }
+    })
+  if (parts[0] === 'app' || parts[0] === 'desk') parts.shift()
+  return parts.slice(0, parts[0] === 'query-report' || parts[0] === 'dashboard-view' ? 2 : 1).join('/')
+}
+
+export function sidebarOwnsPath(shell: DeskShellData, sidebar: string | undefined, pathname: string): boolean {
+  const data = sidebar ? shell.sidebars[sidebar] : undefined
+  if (!data) return false
+  const target = routeKey(pathname)
+  if (!target) return false
+  const visit = (items: ModuleSidebarData['items']): boolean =>
+    items.some((item) => {
+      const path = sidebarRoute(item)
+      if (path && routeKey(path) === target) return true
+      return item.nested_items ? visit(item.nested_items) : false
+    })
+  return visit(data.items)
+}

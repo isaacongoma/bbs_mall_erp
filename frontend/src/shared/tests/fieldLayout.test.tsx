@@ -99,7 +99,13 @@ describe('FieldLayout', () => {
     render(
       <FieldLayout
         tabs={specialTabs}
-        data={{ markdown: '# Heading', payload: '{"enabled":true}', barcode: '12345', phone: '+254700000000', color: '#112233' }}
+        data={{
+          markdown: '# Heading',
+          payload: '{"enabled":true}',
+          barcode: '12345',
+          phone: '+254700000000',
+          color: '#112233',
+        }}
         doctype=""
         context={{ onFieldChange }}
       />,

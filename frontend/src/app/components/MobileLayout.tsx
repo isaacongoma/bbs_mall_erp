@@ -7,7 +7,7 @@ export function MobileLayout({ children }: { children?: ReactNode }) {
   return (
     <div className="isolate flex h-screen w-screen">
       <MobileSidebar />
-      <div className="flex h-full flex-1 flex-col overflow-auto bg-surface-base">
+      <div className="flex h-full flex-1 flex-col overflow-auto bg-(--content-bg)">
         <MobileAppHeader />
         {children}
       </div>

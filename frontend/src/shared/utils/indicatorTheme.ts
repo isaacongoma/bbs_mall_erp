@@ -18,4 +18,3 @@ const INDICATOR_THEMES: Record<string, BadgeTheme> = {
 export function indicatorTheme(color: string): BadgeTheme {
   return INDICATOR_THEMES[color] ?? 'gray'
 }
-

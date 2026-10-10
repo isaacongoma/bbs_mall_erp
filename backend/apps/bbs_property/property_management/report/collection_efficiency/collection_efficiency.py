@@ -76,6 +76,7 @@ def execute(filters=None):
         {"label": _("Billed"), "value": total_billed, "indicator": "blue", "datatype": "Currency"},
         {"label": _("Collected"), "value": total_collected, "indicator": "green", "datatype": "Currency"},
         {"label": _("Collection Rate"), "value": flt(total_collected * 100.0 / total_billed, 1) if total_billed else 0, "indicator": "orange", "datatype": "Percent"},
+        {"label": _("Outstanding"), "value": total_billed - total_collected, "indicator": "red", "datatype": "Currency"},
     ]
     return get_columns(), data, None, chart, summary
 

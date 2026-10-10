@@ -109,7 +109,8 @@ export function SignatureControl({ value = null, disabled = false, onChange }: S
   function finish(event: React.PointerEvent<HTMLCanvasElement>) {
     if (!drawing) return
     setDrawing(false)
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
+    if (event.currentTarget.hasPointerCapture(event.pointerId))
+      event.currentTarget.releasePointerCapture(event.pointerId)
     const canvas = canvasRef.current
     if (!canvas) return
     try {

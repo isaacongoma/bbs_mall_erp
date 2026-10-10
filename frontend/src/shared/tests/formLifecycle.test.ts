@@ -7,7 +7,15 @@ import { setDeskBoot } from '../frappe/boot'
 type AnyRecord = Record<string, any>
 
 function field(fieldname: string, fieldtype = 'Data', extra: AnyRecord = {}) {
-  return { doctype: 'DocField', name: `${fieldname}-df`, fieldname, fieldtype, label: fieldname, parent: 'Test Doc', ...extra }
+  return {
+    doctype: 'DocField',
+    name: `${fieldname}-df`,
+    fieldname,
+    fieldtype,
+    label: fieldname,
+    parent: 'Test Doc',
+    ...extra,
+  }
 }
 
 function setup() {
@@ -18,11 +26,20 @@ function setup() {
       module: 'Test',
       istable: 1,
       permissions: [],
-      fields: [field('item', 'Data', { in_list_view: 1, parent: 'Test Row' }), field('qty', 'Float', { in_list_view: 1, parent: 'Test Row' })],
+      fields: [
+        field('item', 'Data', { in_list_view: 1, parent: 'Test Row' }),
+        field('qty', 'Float', { in_list_view: 1, parent: 'Test Row' }),
+      ],
     },
   ])
   setDeskBoot({
-    user: { name: 'admin@example.com', roles: ['System Manager'], can_read: ['Test Doc'], can_write: ['Test Doc'], can_create: ['Test Doc'] },
+    user: {
+      name: 'admin@example.com',
+      roles: ['System Manager'],
+      can_read: ['Test Doc'],
+      can_write: ['Test Doc'],
+      can_create: ['Test Doc'],
+    },
     sysdefaults: { float_precision: 3, currency_precision: 2, date_format: 'yyyy-mm-dd', number_format: '#,###.##' },
     desk_settings: { dashboard: 1, timeline: 1, form_sidebar: 1 },
   })
@@ -33,7 +50,19 @@ function setup() {
       module: 'Test',
       istable: 0,
       is_submittable: 0,
-      permissions: [{ role: 'System Manager', permlevel: 0, read: 1, write: 1, create: 1, delete: 1, submit: 0, cancel: 0, amend: 0 }],
+      permissions: [
+        {
+          role: 'System Manager',
+          permlevel: 0,
+          read: 1,
+          write: 1,
+          create: 1,
+          delete: 1,
+          submit: 0,
+          cancel: 0,
+          amend: 0,
+        },
+      ],
       fields: [
         field('section_one', 'Section Break'),
         field('rows', 'Table', { options: 'Test Row' }),

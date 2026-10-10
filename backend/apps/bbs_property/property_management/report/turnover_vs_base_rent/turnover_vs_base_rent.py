@@ -48,6 +48,8 @@ def execute(filters=None):
     summary = [
         {"label": _("Declared Sales"), "value": sum(flt(row.sales) for row in data), "indicator": "blue", "datatype": "Currency"},
         {"label": _("Turnover Rent"), "value": sum(flt(row.turnover_rent) for row in data), "indicator": "green", "datatype": "Currency"},
+        {"label": _("Tenants Reporting"), "value": len(data), "indicator": "orange", "datatype": "Int"},
+        {"label": _("Average Turnover Rent"), "value": sum(flt(row.turnover_rent) for row in data) / len(data) if data else 0, "indicator": "blue", "datatype": "Currency"},
     ]
     return get_columns(), data, None, chart, summary
 

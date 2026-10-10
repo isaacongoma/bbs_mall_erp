@@ -58,7 +58,10 @@ export function downloadCsv<T extends Record<string, unknown>>(
   rows: T[],
   columns: Array<{ key: string; label: string }>,
 ): void {
-  const content = toCsv(rows, columns.map((column) => column.key))
+  const content = toCsv(
+    rows,
+    columns.map((column) => column.key),
+  )
   const blob = new Blob([content], { type: 'text/csv;charset=utf-8' })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')

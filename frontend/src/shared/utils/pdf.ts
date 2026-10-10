@@ -1,7 +1,8 @@
 import { rpc } from '@/core/api/rpc'
 
 function unwrapMessage(value: unknown): unknown {
-  if (value && typeof value === 'object' && 'message' in (value as object)) return (value as Record<string, unknown>).message
+  if (value && typeof value === 'object' && 'message' in (value as object))
+    return (value as Record<string, unknown>).message
   return value
 }
 

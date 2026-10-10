@@ -14,7 +14,6 @@ prototype.make = function (this: { $wrapper: JQuery }) {
   this.$wrapper.data('frappe-dialog', this)
 }
 
-
 const metaSync = frappe.meta.sync
 frappe.meta.sync = function (this: unknown, doc: Record<string, unknown>) {
   metaSync.call(this, doc)

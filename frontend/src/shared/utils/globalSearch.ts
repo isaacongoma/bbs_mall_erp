@@ -17,7 +17,10 @@ export function readRecentSearches(storage: Storage | undefined): RecentSearchIt
     const value = JSON.parse(storage.getItem('desk-global-search-recent') ?? '[]')
     if (!Array.isArray(value)) return []
     return value
-      .filter((item): item is SearchResultItem & Partial<RecentSearchItem> => item && typeof item === 'object' && typeof item.value === 'string')
+      .filter(
+        (item): item is SearchResultItem & Partial<RecentSearchItem> =>
+          item && typeof item === 'object' && typeof item.value === 'string',
+      )
       .map((item) => ({ ...item, scope: item.scope ?? 'records' }))
       .slice(0, 8)
   } catch {
@@ -32,7 +35,10 @@ export function addRecentSearch(
   doctype?: string,
 ): RecentSearchItem[] {
   const item = { ...result, scope, ...(doctype ? { doctype } : {}) }
-  return [item, ...recent.filter((entry) => !(entry.value === result.value && entry.scope === scope && entry.doctype === doctype))].slice(0, 8)
+  return [
+    item,
+    ...recent.filter((entry) => !(entry.value === result.value && entry.scope === scope && entry.doctype === doctype)),
+  ].slice(0, 8)
 }
 
 export function searchResultPath(result: RecentSearchItem, currentDoctype?: string): string {

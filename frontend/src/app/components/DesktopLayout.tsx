@@ -7,7 +7,7 @@ export function DesktopLayout({ children }: { children?: ReactNode }) {
   return (
     <div className="isolate flex h-screen w-screen">
       <AppSidebar />
-      <div className="flex h-full flex-1 flex-col overflow-auto bg-surface-base">
+      <div className="flex h-full flex-1 flex-col overflow-auto bg-(--content-bg)">
         <AppHeader />
         {children}
       </div>

@@ -7,7 +7,7 @@ export function AppHeader() {
   const actions = getShellContributions('headerActions')
   const desk = route.path.startsWith('/app') && !route.path.startsWith('/app/notifications')
   return (
-    <div className="flex border-b pr-5">
+    <div className="flex border-b bg-surface-base pr-5">
       <div id="app-header" className="flex-1" />
       <div className="flex items-center justify-center">
         <div className={desk ? 'hidden' : 'contents'}>

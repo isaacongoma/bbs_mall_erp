@@ -13,6 +13,11 @@ import { downloadCsv } from '../utils/csv'
 import { toReportviewFilters, type ListFilter } from '../utils/listFilters'
 import type { ReportFilterDef } from '../frappe/queryReport'
 import { ChartFilterButton } from '../components/ChartFilterButton'
+import { ModernNumberCard } from '../components/ModernStat'
+import { PagePending } from '../components/Shimmer'
+import { ModernDeskContext, useModernDesk } from '../hooks/useModernDesk'
+import { useNumberCardValue } from '../hooks/useNumberCardValue'
+import { isModernModule } from '../utils/modernDesk'
 import { useDeskShell } from '../hooks/useDeskShell'
 import { useMeta } from '../hooks/useMeta'
 import { useUsers } from '../hooks/useUsers'
@@ -102,68 +107,12 @@ function WorkspaceLinkGroup({ group }: { group: DeskWorkspace }) {
   )
 }
 
-function parseFilterList(value: unknown): unknown[][] {
-  try {
-    const parsed = JSON.parse(String(value ?? '[]')) as unknown
-    return Array.isArray(parsed) ? (parsed as unknown[][]) : []
-  } catch {
-    return []
-  }
-}
-
-function cardFilters(card: AnyRecord): unknown[][] {
-  const fixed = parseFilterList(card.filters_json)
-  const dynamic = parseFilterList(card.dynamic_filters_json).map((entry) => {
-    const expression = entry[3]
-    if (typeof expression !== 'string' || !expression.startsWith('frappe.')) return entry
-    try {
-      const value = new Function('frappe', `return ${expression}`)(frappe)
-      return [entry[0], entry[1], entry[2], value]
-    } catch {
-      return null
-    }
-  })
-  return [
-    ...fixed,
-    ...dynamic.filter((entry): entry is unknown[] => Boolean(entry && entry[3] !== undefined && entry[3] !== null)),
-  ]
-}
-
 export function WorkspaceNumberCard({ item }: { item: DeskWorkspace }) {
-  const card = useResource<AnyRecord>({
-    url: 'frappe.client.get',
-    params: { doctype: 'Number Card', name: item.number_card_name },
-    cache: ['desk-number-card', item.number_card_name],
-    auto: Boolean(item.number_card_name),
-    initialData: null,
-    transform: (value) => unwrapDeskDocument(value) as AnyRecord | null,
-  })
-  const result = useResource<number>({
-    url: 'frappe.desk.doctype.number_card.number_card.get_result',
-    params: { doc: card.data ?? {}, filters: {} },
-    cache: ['desk-number-card-result', item.number_card_name],
-    auto: Boolean(card.data?.name),
-    initialData: 0,
-    transform: (value) => Number(unwrapDeskResponse(value) ?? 0),
-  })
-  const cardDoc = card.data
-  useEffect(() => {
-    if (!cardDoc?.name) return
-    result.update({ params: { doc: cardDoc, filters: JSON.stringify(cardFilters(cardDoc)) }, auto: true })
-    void result.reload().catch(() => undefined)
-  }, [cardDoc, result])
-  const scope = window as unknown as Record<string, any>
-  const isCount = String(card.data?.function ?? '') === 'Count'
-  const display =
-    !isCount && typeof scope.format_currency === 'function'
-      ? String(scope.format_currency(result.data ?? 0))
-      : String(result.data ?? 0)
+  const { display, loading } = useNumberCardValue(item)
   return (
     <div className="rounded-xl border border-outline-gray-2 bg-surface-base px-4 py-3">
       <div className="text-[13px] text-ink-gray-6">{String(item.label ?? item.number_card_name ?? '')}</div>
-      <div className="mt-2 text-xl font-semibold text-ink-gray-9">
-        {result.loading && !result.fetched ? <Spinner size="sm" /> : display}
-      </div>
+      <div className="mt-2 text-xl font-semibold text-ink-gray-9">{loading ? <Spinner size="sm" /> : display}</div>
     </div>
   )
 }
@@ -240,6 +189,7 @@ function ChartControl({
 }
 
 export function WorkspaceChart({ item }: { item: DeskWorkspace }) {
+  const modern = useModernDesk()
   const navigate = useNavigate()
   const doc = useResource<AnyRecord | null>({
     url: 'frappe.client.get',
@@ -407,16 +357,38 @@ export function WorkspaceChart({ item }: { item: DeskWorkspace }) {
     if (wasLoading.current && !chart.loading) void doc.reload().catch(() => undefined)
     wasLoading.current = chart.loading
   }, [chart.loading, doc])
-  const labels = Array.isArray(data?.labels) ? data.labels : Array.isArray(data?.data?.labels) ? data.data.labels : []
-  const datasets = Array.isArray(data?.datasets)
-    ? data.datasets
-    : Array.isArray(data?.data?.datasets)
-      ? data.data.datasets
-      : []
-  const chartData = labels.map((label: unknown, index: number) => ({
-    label: String(label),
-    value: datasets[0]?.values?.[index] ?? 0,
-  }))
+  const { labels, datasets, chartData } = useMemo(() => {
+    const labels: unknown[] = Array.isArray(data?.labels)
+      ? data.labels
+      : Array.isArray(data?.data?.labels)
+        ? data.data.labels
+        : []
+    const sets: AnyRecord[] = Array.isArray(data?.datasets)
+      ? data.datasets
+      : Array.isArray(data?.data?.datasets)
+        ? data.data.datasets
+        : []
+    return {
+      labels,
+      datasets: sets,
+      chartData: labels.map((label, index) => {
+        const value = sets[0]?.values?.[index] ?? 0
+        return { label: String(label), value, [String(sets[0]?.name ?? __('Value'))]: value }
+      }),
+    }
+  }, [data])
+  const seriesName = String(datasets[0]?.name ?? __('Value'))
+  const axisConfig = useMemo(
+    () => ({
+      title: '',
+      colors: modern ? ['#b8860b', '#2563eb', '#16a34a', '#dc2626'] : undefined,
+      data: chartData,
+      xAxis: { key: 'label', type: 'category' as const },
+      yAxis: {},
+      series: [{ name: seriesName, type: 'bar' as const }],
+    }),
+    [chartData, seriesName, modern],
+  )
   const hasValues = chartData.some((point: { value: unknown }) => Number(point.value) !== 0)
   const title = String(item.label ?? item.chart_name ?? '')
   const synced = definition?.last_synced_on ? timeAgo(String(definition.last_synced_on)) : ''
@@ -470,11 +442,38 @@ export function WorkspaceChart({ item }: { item: DeskWorkspace }) {
         : 'lucide-chart-line'
   const loading = (doc.loading || chart.loading) && !data
   return (
-    <section className="rounded-xl border border-outline-gray-2 bg-surface-base px-5 pb-5 pt-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h3 className="truncate text-base font-medium text-ink-gray-9">{__(title)}</h3>
-          {synced ? <p className="mt-1 text-[13px] text-ink-gray-6">{__('Last synced {0}', [synced])}</p> : null}
+    <section
+      className={
+        modern
+          ? 'flex flex-col overflow-hidden rounded-sm border border-outline-gray-2 bg-white'
+          : 'rounded-xl border border-outline-gray-2 bg-surface-base px-5 pb-5 pt-4'
+      }
+    >
+      <div
+        className={
+          modern
+            ? 'flex h-14 shrink-0 items-center gap-2.5 border-b border-outline-gray-2 px-4'
+            : 'flex items-start justify-between gap-3'
+        }
+      >
+        {modern ? (
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#b8860b]/10 text-[#8a6508]">
+            <Icon icon={emptyIcon} className="size-4" />
+          </span>
+        ) : null}
+        <div className="min-w-0 flex-1">
+          <h3
+            className={
+              modern
+                ? 'truncate text-sm font-semibold text-ink-gray-9'
+                : 'truncate text-base font-medium text-ink-gray-9'
+            }
+          >
+            {__(title)}
+          </h3>
+          {synced && !modern ? (
+            <p className="mt-1 text-[13px] text-ink-gray-6">{__('Last synced {0}', [synced])}</p>
+          ) : null}
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
           <ChartFilterButton
@@ -510,19 +509,11 @@ export function WorkspaceChart({ item }: { item: DeskWorkspace }) {
           </Dropdown>
         </div>
       </div>
-      <div className="mt-2">
+      <div className={modern ? 'flex-1 p-4' : 'mt-2'}>
         {loading ? (
           <div className="flex h-60 items-center justify-center text-sm text-ink-gray-5">{__('Loading...')}</div>
         ) : chartData.length && hasValues ? (
-          <AxisChart
-            config={{
-              title: '',
-              data: chartData,
-              xAxis: { key: 'label', type: 'category' },
-              yAxis: {},
-              series: [{ name: String(datasets[0]?.name ?? __('Value')), type: 'bar' }],
-            }}
-          />
+          <AxisChart config={axisConfig} />
         ) : (
           <div className="relative flex h-60 flex-col items-center justify-center gap-3 text-center">
             <ChartEmptySample />
@@ -541,6 +532,14 @@ function parseQuickListFilter(value: unknown): unknown {
   if (typeof value !== 'string' || !value.trim()) return {}
   try {
     const parsed = JSON.parse(value) as unknown
+    if (Array.isArray(parsed)) {
+      const filters: Record<string, unknown> = {}
+      for (const entry of parsed as unknown[][]) {
+        const [, field, operator, operand] = entry
+        filters[String(field)] = operator === '=' ? operand : [operator, operand]
+      }
+      return filters
+    }
     return parsed && typeof parsed === 'object' ? parsed : {}
   } catch {
     return {}
@@ -548,6 +547,7 @@ function parseQuickListFilter(value: unknown): unknown {
 }
 
 function WorkspaceQuickList({ item }: { item: DeskWorkspace }) {
+  const modern = useModernDesk()
   const navigate = useNavigate()
   const doctype = String(item.document_type ?? '')
   const resource = useListResource({
@@ -560,7 +560,13 @@ function WorkspaceQuickList({ item }: { item: DeskWorkspace }) {
   })
   const rows = (resource.data ?? []) as DeskWorkspace[]
   return (
-    <section className="rounded-xl border border-outline-gray-2 bg-surface-base p-4">
+    <section
+      className={
+        modern
+          ? 'rounded-sm border border-outline-gray-2 bg-white p-4'
+          : 'rounded-xl border border-outline-gray-2 bg-surface-base p-4'
+      }
+    >
       <h2 className="mb-3 text-sm-medium text-ink-gray-9">{__(String(item.label ?? doctype))}</h2>
       {resource.list.error ? (
         <ErrorMessage message={resource.list.error} />
@@ -660,6 +666,7 @@ function OnboardingStepActions({
 }
 
 function WorkspaceOnboarding({ item }: { item: DeskWorkspace }) {
+  const modern = useModernDesk()
   const [actionError, setActionError] = useState<string | null>(null)
   const shell = useDeskShell()
   const { getUser } = useUsers()
@@ -749,7 +756,13 @@ function WorkspaceOnboarding({ item }: { item: DeskWorkspace }) {
   const user = currentSessionUser()
   const firstName = String(getUser(user ?? '').full_name ?? '').split(' ')[0]
   return (
-    <section className="rounded-xl bg-surface-gray-1 px-3 pb-3 pt-4">
+    <section
+      className={
+        modern
+          ? 'rounded-sm border border-outline-gray-2 bg-white px-3 pb-3 pt-4'
+          : 'rounded-xl bg-surface-gray-1 px-3 pb-3 pt-4'
+      }
+    >
       <div className="flex items-start justify-between gap-3 px-2">
         <div>
           <h2 className="text-lg font-medium leading-[21px] text-ink-gray-9">
@@ -780,7 +793,7 @@ function WorkspaceOnboarding({ item }: { item: DeskWorkspace }) {
             return (
               <div
                 key={String(step.name)}
-                className={`flex gap-5 rounded-md px-2 ${open ? 'bg-surface-white py-[10px] pt-3' : 'py-2'}`}
+                className={`flex gap-5 rounded-md px-2 ${open ? 'bg-surface-base py-[10px] pt-3' : 'py-2'}`}
               >
                 <div className="min-w-0 flex-1">
                   <button
@@ -882,7 +895,7 @@ const COL_SPAN: Record<number, string> = {
   12: 'md:col-span-12',
 }
 
-function renderWorkspaceBlock(block: DeskWorkspace, data: AnyRecord, index: number) {
+function renderWorkspaceBlock(block: DeskWorkspace, data: AnyRecord, index: number, modern: boolean) {
   const type = String(block.type ?? '')
   const item = block.data ?? {}
   if (type === 'header')
@@ -916,7 +929,12 @@ function renderWorkspaceBlock(block: DeskWorkspace, data: AnyRecord, index: numb
     const numberCard = workspaceItems(data.number_cards).find(
       (entry) => String(entry.number_card_name) === String(item.number_card_name),
     )
-    return numberCard ? <WorkspaceNumberCard key={`${type}:${index}`} item={numberCard} /> : null
+    if (!numberCard) return null
+    return modern ? (
+      <ModernNumberCard key={`${type}:${index}`} item={numberCard} />
+    ) : (
+      <WorkspaceNumberCard key={`${type}:${index}`} item={numberCard} />
+    )
   }
   if (type === 'chart') {
     const chart = workspaceItems(data.charts).find((entry) => String(entry.chart_name) === String(item.chart_name))
@@ -924,7 +942,9 @@ function renderWorkspaceBlock(block: DeskWorkspace, data: AnyRecord, index: numb
   }
   if (type === 'quick_list') {
     const quickList = workspaceItems(data.quick_lists).find(
-      (entry) => String(entry.document_type) === String(item.quick_list_name),
+      (entry) =>
+        String(entry.label) === String(item.quick_list_name) ||
+        String(entry.document_type) === String(item.quick_list_name),
     )
     return quickList ? <WorkspaceQuickList key={`${type}:${index}`} item={quickList} /> : null
   }
@@ -966,6 +986,7 @@ export default function DeskWorkspacePage({ page }: DeskWorkspacePageProps) {
     void desktop.reload().catch(() => undefined)
   }, [activePage, desktop])
   const blocks = useMemo(() => parseWorkspaceBlocks(activePage?.content), [activePage?.content])
+  const modern = isModernModule(activePage?.module)
   const content = desktop.data ?? {}
   const fallbackShortcuts = workspaceItems(content.shortcuts)
   const fallbackCards = workspaceItems(content.cards)
@@ -973,11 +994,7 @@ export default function DeskWorkspacePage({ page }: DeskWorkspacePageProps) {
   usePageMeta({ title })
 
   if (workspaces.loading && !activePage)
-    return (
-      <div className="flex flex-1 items-center justify-center">
-        <Spinner size="md" />
-      </div>
-    )
+    return <PagePending />
   if (workspaces.error && !activePage)
     return <ErrorMessage className="m-6" message={String(workspaces.error.message ?? workspaces.error)} />
   if (!activePage)
@@ -988,62 +1005,74 @@ export default function DeskWorkspacePage({ page }: DeskWorkspacePageProps) {
     )
 
   return (
-    <main className="flex min-h-0 flex-1 flex-col">
-      <LayoutHeader
-        className="h-12"
-        left={<h1 className="text-lg font-medium text-ink-gray-9">{__(title)}</h1>}
-        right={
-          <Dropdown
-            placement="right"
-            options={[
-              {
-                label: __('Edit'),
-                icon: 'lucide-pencil',
-                onClick: () => navigate(`/app/workspace/${encodeURIComponent(workspaceName(activePage))}`),
-              },
-              { label: __('New'), icon: 'lucide-plus', onClick: () => navigate('/app/workspace/new') },
-              { label: __('Manage'), icon: 'lucide-settings', onClick: () => navigate('/app/workspace') },
-            ]}
-          >
-            {() => <Button variant="subtle" icon="lucide-ellipsis" aria-label={__('Menu')} />}
-          </Dropdown>
-        }
-      />
-      <div className="mx-auto w-full max-w-[870px] flex-1 overflow-y-auto py-[17px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {desktop.error && <ErrorMessage className="mb-4" message={String(desktop.error.message ?? desktop.error)} />}
-        {blocks.length ? (
-          <div className="grid grid-cols-1 gap-[14px] md:grid-cols-12">
-            {blocks.map((block, index) => (
-              <div
-                key={`${String(block.id ?? block.type)}:${index}`}
-                className={COL_SPAN[Number(block.data?.col) || 12] ?? 'md:col-span-12'}
-              >
-                {renderWorkspaceBlock(block, content, index)}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="flex flex-col gap-6">
-            {fallbackShortcuts.length > 0 && (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                {fallbackShortcuts.map((item) => (
-                  <WorkspaceShortcut key={String(item.name ?? item.label)} item={item} />
-                ))}
-              </div>
-            )}
-            {fallbackCards.length > 0 && (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {fallbackCards.map((group) => (
-                  <WorkspaceLinkGroup key={String(group.label)} group={group} />
-                ))}
-              </div>
-            )}
-            {!fallbackShortcuts.length && !fallbackCards.length && (
-              <p className="text-sm text-ink-gray-6">{__('This workspace has no visible items.')}</p>
-            )}
-          </div>
-        )}
-      </div>
-    </main>
+    <ModernDeskContext.Provider value={modern}>
+      <main className="flex min-h-0 flex-1 flex-col">
+        <LayoutHeader
+          className="h-12"
+          left={<h1 className="text-lg font-medium text-ink-gray-9">{__(title)}</h1>}
+          right={
+            <Dropdown
+              placement="right"
+              options={[
+                {
+                  label: __('Edit'),
+                  icon: 'lucide-pencil',
+                  onClick: () => navigate(`/app/workspace/${encodeURIComponent(workspaceName(activePage))}`),
+                },
+                { label: __('New'), icon: 'lucide-plus', onClick: () => navigate('/app/workspace/new') },
+                { label: __('Manage'), icon: 'lucide-settings', onClick: () => navigate('/app/workspace') },
+              ]}
+            >
+              {() => <Button variant="subtle" icon="lucide-ellipsis" aria-label={__('Menu')} />}
+            </Dropdown>
+          }
+        />
+        <div
+          className={
+            modern
+              ? 'mx-auto w-full max-w-[1400px] flex-1 overflow-y-auto px-3 py-4 sm:px-4 sm:py-6 lg:px-6 lg:py-8 xl:px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
+              : 'mx-auto w-full max-w-[870px] flex-1 overflow-y-auto py-[17px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
+          }
+        >
+          {desktop.error && <ErrorMessage className="mb-4" message={String(desktop.error.message ?? desktop.error)} />}
+          {blocks.length ? (
+            <div
+              className={
+                modern ? 'grid grid-cols-1 gap-4 md:grid-cols-12' : 'grid grid-cols-1 gap-[14px] md:grid-cols-12'
+              }
+            >
+              {blocks.map((block, index) => (
+                <div
+                  key={`${String(block.id ?? block.type)}:${index}`}
+                  className={COL_SPAN[Number(block.data?.col) || 12] ?? 'md:col-span-12'}
+                >
+                  {renderWorkspaceBlock(block, content, index, modern)}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-6">
+              {fallbackShortcuts.length > 0 && (
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  {fallbackShortcuts.map((item) => (
+                    <WorkspaceShortcut key={String(item.name ?? item.label)} item={item} />
+                  ))}
+                </div>
+              )}
+              {fallbackCards.length > 0 && (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {fallbackCards.map((group) => (
+                    <WorkspaceLinkGroup key={String(group.label)} group={group} />
+                  ))}
+                </div>
+              )}
+              {!fallbackShortcuts.length && !fallbackCards.length && (
+                <p className="text-sm text-ink-gray-6">{__('This workspace has no visible items.')}</p>
+              )}
+            </div>
+          )}
+        </div>
+      </main>
+    </ModernDeskContext.Provider>
   )
 }

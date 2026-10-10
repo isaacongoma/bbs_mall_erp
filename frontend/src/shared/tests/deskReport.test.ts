@@ -11,10 +11,14 @@ describe('Desk report export', () => {
     vi.spyOn(document, 'createElement').mockReturnValue(anchor)
     vi.spyOn(document.body, 'appendChild')
     vi.spyOn(document.body, 'removeChild')
-    downloadCsv('Employee.csv', [{ name: 'EMP-0001', status: 'Active' }], [
-      { key: 'name', label: 'Name' },
-      { key: 'status', label: 'Status' },
-    ])
+    downloadCsv(
+      'Employee.csv',
+      [{ name: 'EMP-0001', status: 'Active' }],
+      [
+        { key: 'name', label: 'Name' },
+        { key: 'status', label: 'Status' },
+      ],
+    )
     expect(click).toHaveBeenCalled()
   })
 })
