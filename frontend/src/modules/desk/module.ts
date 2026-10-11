@@ -4,7 +4,7 @@ import { deskRoutes } from './routes'
 import { registerClientScripts, registerDoctypeExtensions, registerSharedScripts } from '@/shared/frappe/scriptLoader'
 
 registerClientScripts(
-  import.meta.glob<Record<string, unknown>>('../{erpnext,frappe,hrms,bbs_property}/**/{doctype,report,page}/*/*.ts'),
+  import.meta.glob<Record<string, unknown>>('../{erpnext,frappe,hrms,bbs_property,bbs_marketplace}/**/{doctype,report,page}/*/*.ts'),
 )
 registerSharedScripts('erpnext', () => import('../erpnext/erpnext.bundle'))
 registerSharedScripts('hrms', () => import('../hrms/hrms.bundle'))

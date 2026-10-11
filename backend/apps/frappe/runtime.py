@@ -43,6 +43,10 @@ class _dict(dict):
     def copy(self):
         return _dict(self)
 
+    def set(self, key, value):
+        self[key] = value
+        return self
+
 
 _local = contextvars.ContextVar("frappe_local", default=None)
 
@@ -105,9 +109,9 @@ class _LocalProxy:
         if key == "db":
             return db
         if key == "app_modules":
-            return {app: _read_modules(app) for app in ("frappe", "erpnext", "hrms", "bbs_property")}
+            return {app: _read_modules(app) for app in ("frappe", "erpnext", "hrms", "bbs_property", "bbs_marketplace")}
         if key == "module_app":
-            return {scrub(module): app for app in ("frappe", "erpnext", "hrms", "bbs_property") for module in _read_modules(app)}
+            return {scrub(module): app for app in ("frappe", "erpnext", "hrms", "bbs_property", "bbs_marketplace") for module in _read_modules(app)}
         if key == "qb":
             from apps.frappe.query_builder import builder as _builder
 
@@ -125,7 +129,7 @@ class _LocalProxy:
             apps_file = os.path.join(sites, "apps.txt")
             if not os.path.exists(apps_file):
                 with open(apps_file, "w") as handle:
-                    handle.write("\n".join(("frappe", "erpnext", "hrms", "bbs_property")) + "\n")
+                    handle.write("\n".join(("frappe", "erpnext", "hrms", "bbs_property", "bbs_marketplace")) + "\n")
             return path
         state = _state()
         if key not in state:
@@ -650,7 +654,7 @@ def get_module(path):
     return importlib.import_module(path)
 
 
-HOOK_APPS = ("apps.frappe.hooks", "apps.erpnext.hooks", "apps.hrms.hooks", "apps.bbs_property.hooks", "apps.erpnext.regional.kenya.hooks", "apps.erpnext.erpnext_integrations.hooks")
+HOOK_APPS = ("apps.frappe.hooks", "apps.erpnext.hooks", "apps.hrms.hooks", "apps.bbs_property.hooks", "apps.bbs_marketplace.hooks", "apps.erpnext.regional.kenya.hooks", "apps.erpnext.erpnext_integrations.hooks")
 DOCTYPE_HOOK_LISTS = {
     "advance_payment_payable_doctypes",
     "invoice_doctypes",
@@ -806,7 +810,7 @@ def resolve_hook_handler(path):
     try:
         return get_attr(path)
     except (ModuleNotFoundError, AttributeError) as exc:
-        if isinstance(exc, ModuleNotFoundError) and exc.name and not exc.name.startswith(("frappe", "erpnext", "hrms", "bbs_property", "apps")):
+        if isinstance(exc, ModuleNotFoundError) and exc.name and not exc.name.startswith(("frappe", "erpnext", "hrms", "bbs_property", "bbs_marketplace", "apps")):
             raise
         UNRESOLVED_HOOK_HANDLERS.add(path)
         return None
@@ -845,6 +849,18 @@ def get_system_settings(key=None):
     return _dict(defaults)
 
 
+def _expects_zero(expected):
+    if isinstance(expected, bool):
+        return expected is False
+    if isinstance(expected, int):
+        return expected == 0
+    if isinstance(expected, (list, tuple)):
+        if len(expected) == 2 and isinstance(expected[0], str):
+            return _expects_zero(expected[1]) if not isinstance(expected[1], (list, tuple)) else 0 in expected[1]
+        return 0 in expected
+    return False
+
+
 def _row_matches(row, filters):
     if isinstance(filters, dict):
         items = filters.items()
@@ -852,6 +868,8 @@ def _row_matches(row, filters):
         items = [(f[0], f[1:]) for f in filters]
     for key, expected in items:
         actual = row.get(key)
+        if actual is None and _expects_zero(expected):
+            actual = 0
         if isinstance(expected, (list, tuple)) and len(expected) == 2 and isinstance(expected[0], str):
             operator, operand = expected
             operator = operator.lower()
@@ -1248,7 +1266,7 @@ def get_module_path(module, *joins):
     from django.conf import settings
 
     scrubbed = scrub(module)
-    for app in ("erpnext", "hrms", "bbs_property", "frappe"):
+    for app in ("erpnext", "hrms", "bbs_property", "bbs_marketplace", "frappe"):
         if scrubbed in {scrub(name) for name in _read_modules(app)}:
             return os.path.join(settings.BASE_DIR, "apps", app, scrubbed, *joins)
     return os.path.join(settings.BASE_DIR, "apps", "erpnext", scrubbed, *joins)
@@ -2690,7 +2708,9 @@ class Database:
         except LookupError:
             return False
         from django.db import connection
-        return model._meta.db_table in connection.introspection.table_names()
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT to_regclass(%s) IS NOT NULL", [connection.ops.quote_name(model._meta.db_table)])
+            return bool(cursor.fetchone()[0])
 
     def add_index(self, doctype, fields, index_name=None, using=None, where=None, include=None):
         import hashlib

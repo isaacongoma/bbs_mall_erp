@@ -1,0 +1,161 @@
+{
+ "actions": [],
+ "creation": "2026-10-12 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "listing",
+  "customer",
+  "marketplace_order",
+  "rating",
+  "status",
+  "verified_purchase",
+  "column_break_18",
+  "title",
+  "body",
+  "seller_reply",
+  "seller"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "REV-.YYYY.-",
+   "default": "REV-.YYYY.-",
+   "hidden": 1
+  },
+  {
+   "fieldname": "listing",
+   "fieldtype": "Link",
+   "label": "Listing",
+   "options": "Marketplace Listing",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Buyer",
+   "options": "Customer",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "marketplace_order",
+   "fieldtype": "Link",
+   "label": "Order",
+   "options": "Marketplace Order"
+  },
+  {
+   "fieldname": "rating",
+   "fieldtype": "Int",
+   "label": "Rating (1-5)",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Pending\nPublished\nRejected",
+   "default": "Pending",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "verified_purchase",
+   "fieldtype": "Check",
+   "label": "Verified Purchase",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_18",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "body",
+   "fieldtype": "Small Text",
+   "label": "Review"
+  },
+  {
+   "fieldname": "seller_reply",
+   "fieldtype": "Small Text",
+   "label": "Seller Reply"
+  },
+  {
+   "fieldname": "seller",
+   "fieldtype": "Link",
+   "label": "Seller",
+   "options": "Marketplace Seller",
+   "fetch_from": "listing.seller",
+   "read_only": 1,
+   "in_standard_filter": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-12 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace",
+ "name": "Product Review",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Catalog Moderator",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Operations",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  }
+ ],
+ "track_changes": 1,
+ "autoname": "naming_series:",
+ "naming_rule": "By \"Naming Series\" field"
+}

@@ -1,0 +1,68 @@
+{
+ "actions": [],
+ "creation": "2026-10-12 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "document_type",
+  "file",
+  "reference_no",
+  "expiry_date",
+  "verified",
+  "verified_by"
+ ],
+ "fields": [
+  {
+   "fieldname": "document_type",
+   "fieldtype": "Select",
+   "label": "Document",
+   "options": "Business Registration\nKRA PIN Certificate\nBusiness Permit\nID or Passport\nTax Compliance Certificate\nBank Letter\nOther",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "file",
+   "fieldtype": "Attach",
+   "label": "File",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "reference_no",
+   "fieldtype": "Data",
+   "label": "Reference No",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "expiry_date",
+   "fieldtype": "Date",
+   "label": "Expiry",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "verified",
+   "fieldtype": "Check",
+   "label": "Verified",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "verified_by",
+   "fieldtype": "Link",
+   "label": "Verified By",
+   "options": "User",
+   "read_only": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-12 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace",
+ "name": "Seller KYC Document",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "editable_grid": 1,
+ "permissions": [],
+ "istable": 1
+}

@@ -1,0 +1,21 @@
+{
+ "action": "Create Entry",
+ "action_label": "Add Courier",
+ "creation": "2026-10-11 09:00:00.000000",
+ "description": "Add each courier with its rate card per zone and weight band. Couriers are also Suppliers so their fees post to Accounts Payable.",
+ "docstatus": 0,
+ "doctype": "Onboarding Step",
+ "idx": 0,
+ "is_complete": 0,
+ "is_single": 0,
+ "is_skipped": 0,
+ "modified": "2026-10-11 09:00:00.000000",
+ "modified_by": "Administrator",
+ "name": "Add a Courier",
+ "owner": "Administrator",
+ "reference_document": "Courier",
+ "show_form_tour": 0,
+ "show_full_form": 1,
+ "title": "Connect a delivery partner",
+ "validate_action": 1
+}

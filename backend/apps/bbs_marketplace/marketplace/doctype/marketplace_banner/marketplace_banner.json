@@ -1,0 +1,148 @@
+{
+ "actions": [],
+ "creation": "2026-10-12 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "placement",
+  "image",
+  "mobile_image",
+  "column_break_19",
+  "link_type",
+  "link_value",
+  "start_date",
+  "end_date",
+  "sort_order",
+  "enabled"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "placement",
+   "fieldtype": "Select",
+   "label": "Placement",
+   "options": "Home Hero\nHome Strip\nCategory Page\nCheckout\nApp Splash",
+   "default": "Home Hero",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "image",
+   "fieldtype": "Attach Image",
+   "label": "Desktop Image",
+   "reqd": 1
+  },
+  {
+   "fieldname": "mobile_image",
+   "fieldtype": "Attach Image",
+   "label": "Mobile Image"
+  },
+  {
+   "fieldname": "column_break_19",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "link_type",
+   "fieldtype": "Select",
+   "label": "Links To",
+   "options": "None\nListing\nCategory\nSeller\nCampaign\nURL",
+   "default": "None",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "link_value",
+   "fieldtype": "Data",
+   "label": "Link Value",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Datetime",
+   "label": "Starts"
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Datetime",
+   "label": "Ends"
+  },
+  {
+   "fieldname": "sort_order",
+   "fieldtype": "Int",
+   "label": "Order",
+   "default": "0",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1",
+   "in_list_view": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-12 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace",
+ "name": "Marketplace Banner",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Catalog Moderator",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Operations",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  }
+ ],
+ "track_changes": 1,
+ "autoname": "Prompt",
+ "naming_rule": "Set by user",
+ "title_field": "title"
+}

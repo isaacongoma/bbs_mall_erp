@@ -1,0 +1,172 @@
+{
+ "actions": [],
+ "creation": "2026-10-12 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "campaign_type",
+  "status",
+  "funded_by",
+  "column_break_52",
+  "start_date",
+  "end_date",
+  "buyer_type",
+  "platform_share_percent",
+  "content_section",
+  "banner",
+  "description",
+  "listings_section",
+  "listings"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Campaign",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "campaign_type",
+   "fieldtype": "Select",
+   "label": "Type",
+   "options": "Flash Sale\nSeasonal Sale\nFree Delivery\nClearance\nBundle Deal",
+   "default": "Flash Sale",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nScheduled\nActive\nEnded\nCancelled",
+   "default": "Draft",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "funded_by",
+   "fieldtype": "Select",
+   "label": "Funded By",
+   "options": "Platform\nSeller\nShared",
+   "default": "Seller",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "column_break_52",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Datetime",
+   "label": "Starts",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Datetime",
+   "label": "Ends",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "buyer_type",
+   "fieldtype": "Select",
+   "label": "Audience",
+   "options": "Both\nB2C\nB2B",
+   "default": "Both"
+  },
+  {
+   "fieldname": "platform_share_percent",
+   "fieldtype": "Percent",
+   "label": "Platform Share %",
+   "depends_on": "eval:doc.funded_by=='Shared'"
+  },
+  {
+   "fieldname": "content_section",
+   "fieldtype": "Section Break",
+   "label": "Content",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "banner",
+   "fieldtype": "Attach Image",
+   "label": "Banner"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "listings_section",
+   "fieldtype": "Section Break",
+   "label": "Listings"
+  },
+  {
+   "fieldname": "listings",
+   "fieldtype": "Table",
+   "label": "Listings on Promotion",
+   "options": "Campaign Listing"
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-12 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace",
+ "name": "Marketplace Campaign",
+ "owner": "Administrator",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Catalog Moderator",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Operations",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  }
+ ],
+ "track_changes": 1,
+ "autoname": "Prompt",
+ "naming_rule": "Set by user",
+ "title_field": "title"
+}

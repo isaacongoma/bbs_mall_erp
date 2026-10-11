@@ -1,0 +1,349 @@
+{
+ "actions": [],
+ "creation": "2026-10-12 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "seller_order",
+  "marketplace_order",
+  "seller",
+  "column_break_47",
+  "status",
+  "courier",
+  "service_level",
+  "tracking_no",
+  "parcel_section",
+  "parcels",
+  "weight_kg",
+  "declared_value",
+  "column_break_48",
+  "cod_amount",
+  "cod_collected",
+  "cod_remitted",
+  "addresses_section",
+  "pickup_address",
+  "pickup_station",
+  "column_break_49",
+  "recipient_name",
+  "recipient_phone",
+  "delivery_address",
+  "costs_section",
+  "customer_fee",
+  "courier_cost",
+  "column_break_50",
+  "purchase_invoice",
+  "delivery_note",
+  "timeline_section",
+  "scheduled_pickup",
+  "picked_up_on",
+  "column_break_51",
+  "delivered_on",
+  "proof_of_delivery",
+  "delivery_otp",
+  "failure_reason",
+  "events"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "SHP-.YYYY.-",
+   "default": "SHP-.YYYY.-",
+   "hidden": 1
+  },
+  {
+   "fieldname": "seller_order",
+   "fieldtype": "Link",
+   "label": "Seller Order",
+   "options": "Seller Order",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "marketplace_order",
+   "fieldtype": "Link",
+   "label": "Order",
+   "options": "Marketplace Order",
+   "fetch_from": "seller_order.marketplace_order",
+   "read_only": 1
+  },
+  {
+   "fieldname": "seller",
+   "fieldtype": "Link",
+   "label": "Seller",
+   "options": "Marketplace Seller",
+   "fetch_from": "seller_order.seller",
+   "read_only": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "column_break_47",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Pending\nPickup Scheduled\nPicked Up\nIn Transit\nOut for Delivery\nDelivered\nFailed Delivery\nReturning\nReturned to Seller\nCancelled",
+   "default": "Pending",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "courier",
+   "fieldtype": "Link",
+   "label": "Courier",
+   "options": "Courier",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "service_level",
+   "fieldtype": "Select",
+   "label": "Service",
+   "options": "Standard\nExpress\nSame Day\nFreight",
+   "default": "Standard"
+  },
+  {
+   "fieldname": "tracking_no",
+   "fieldtype": "Data",
+   "label": "Tracking No",
+   "in_list_view": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "parcel_section",
+   "fieldtype": "Section Break",
+   "label": "Parcel"
+  },
+  {
+   "fieldname": "parcels",
+   "fieldtype": "Int",
+   "label": "Parcels",
+   "default": "1"
+  },
+  {
+   "fieldname": "weight_kg",
+   "fieldtype": "Float",
+   "label": "Weight (kg)",
+   "precision": "3"
+  },
+  {
+   "fieldname": "declared_value",
+   "fieldtype": "Currency",
+   "label": "Declared Value"
+  },
+  {
+   "fieldname": "column_break_48",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "cod_amount",
+   "fieldtype": "Currency",
+   "label": "Cash on Delivery"
+  },
+  {
+   "fieldname": "cod_collected",
+   "fieldtype": "Currency",
+   "label": "COD Collected",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cod_remitted",
+   "fieldtype": "Check",
+   "label": "COD Remitted",
+   "read_only": 1
+  },
+  {
+   "fieldname": "addresses_section",
+   "fieldtype": "Section Break",
+   "label": "Addresses"
+  },
+  {
+   "fieldname": "pickup_address",
+   "fieldtype": "Small Text",
+   "label": "Pickup"
+  },
+  {
+   "fieldname": "pickup_station",
+   "fieldtype": "Link",
+   "label": "Drop Station",
+   "options": "Pickup Station"
+  },
+  {
+   "fieldname": "column_break_49",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "recipient_name",
+   "fieldtype": "Data",
+   "label": "Recipient"
+  },
+  {
+   "fieldname": "recipient_phone",
+   "fieldtype": "Data",
+   "label": "Recipient Phone",
+   "options": "Phone"
+  },
+  {
+   "fieldname": "delivery_address",
+   "fieldtype": "Small Text",
+   "label": "Deliver To"
+  },
+  {
+   "fieldname": "costs_section",
+   "fieldtype": "Section Break",
+   "label": "Costs"
+  },
+  {
+   "fieldname": "customer_fee",
+   "fieldtype": "Currency",
+   "label": "Fee Charged to Buyer",
+   "read_only": 1
+  },
+  {
+   "fieldname": "courier_cost",
+   "fieldtype": "Currency",
+   "label": "Courier Charge"
+  },
+  {
+   "fieldname": "column_break_50",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "purchase_invoice",
+   "fieldtype": "Link",
+   "label": "Courier Invoice",
+   "options": "Purchase Invoice",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "delivery_note",
+   "fieldtype": "Link",
+   "label": "Delivery Note (Own Stock)",
+   "options": "Delivery Note",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "timeline_section",
+   "fieldtype": "Section Break",
+   "label": "Timeline"
+  },
+  {
+   "fieldname": "scheduled_pickup",
+   "fieldtype": "Datetime",
+   "label": "Pickup Scheduled"
+  },
+  {
+   "fieldname": "picked_up_on",
+   "fieldtype": "Datetime",
+   "label": "Picked Up",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_51",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "delivered_on",
+   "fieldtype": "Datetime",
+   "label": "Delivered",
+   "read_only": 1
+  },
+  {
+   "fieldname": "proof_of_delivery",
+   "fieldtype": "Attach Image",
+   "label": "Proof of Delivery"
+  },
+  {
+   "fieldname": "delivery_otp",
+   "fieldtype": "Data",
+   "label": "Delivery OTP",
+   "read_only": 1,
+   "no_copy": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "failure_reason",
+   "fieldtype": "Small Text",
+   "label": "Failure Reason"
+  },
+  {
+   "fieldname": "events",
+   "fieldtype": "Table",
+   "label": "Tracking Events",
+   "options": "Shipment Event"
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-12 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace",
+ "name": "Marketplace Shipment",
+ "owner": "Administrator",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Operations",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Catalog Moderator",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  },
+  {
+   "role": "Marketplace Finance",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  }
+ ],
+ "track_changes": 1,
+ "search_fields": "tracking_no,seller_order,courier",
+ "autoname": "naming_series:",
+ "naming_rule": "By \"Naming Series\" field"
+}

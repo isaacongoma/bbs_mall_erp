@@ -1,0 +1,143 @@
+{
+ "actions": [],
+ "creation": "2026-10-12 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "plan_name",
+  "enabled",
+  "is_default",
+  "column_break_53",
+  "monthly_fee",
+  "annual_fee",
+  "allowance_section",
+  "listing_limit",
+  "commission_rate",
+  "featured_slots",
+  "description"
+ ],
+ "fields": [
+  {
+   "fieldname": "plan_name",
+   "fieldtype": "Data",
+   "label": "Plan",
+   "reqd": 1,
+   "unique": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "is_default",
+   "fieldtype": "Check",
+   "label": "Default Plan for New Sellers"
+  },
+  {
+   "fieldname": "column_break_53",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "monthly_fee",
+   "fieldtype": "Currency",
+   "label": "Monthly Fee (excl. VAT)",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "annual_fee",
+   "fieldtype": "Currency",
+   "label": "Annual Fee (excl. VAT)",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "allowance_section",
+   "fieldtype": "Section Break",
+   "label": "Allowances"
+  },
+  {
+   "fieldname": "listing_limit",
+   "fieldtype": "Int",
+   "label": "Listings Allowed",
+   "description": "0 means unlimited",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "commission_rate",
+   "fieldtype": "Percent",
+   "label": "Commission % Override",
+   "description": "Leave empty to use the marketplace commission rules"
+  },
+  {
+   "fieldname": "featured_slots",
+   "fieldtype": "Int",
+   "label": "Sponsored Listings Included"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-12 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace",
+ "name": "Seller Plan",
+ "owner": "Administrator",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Catalog Moderator",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Operations",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  }
+ ],
+ "track_changes": 1,
+ "autoname": "field:plan_name",
+ "naming_rule": "By fieldname",
+ "title_field": "plan_name"
+}

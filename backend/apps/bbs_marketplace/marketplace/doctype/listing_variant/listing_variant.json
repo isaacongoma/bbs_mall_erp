@@ -1,0 +1,112 @@
+{
+ "actions": [],
+ "creation": "2026-10-12 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "item_code",
+  "options",
+  "sku",
+  "enabled",
+  "price",
+  "compare_at_price",
+  "stock_qty",
+  "reserved_qty",
+  "available_qty",
+  "image",
+  "barcode",
+  "weight_kg"
+ ],
+ "fields": [
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "label": "Variant Item",
+   "options": "Item",
+   "reqd": 1,
+   "in_list_view": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "options",
+   "fieldtype": "Small Text",
+   "label": "Options",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "sku",
+   "fieldtype": "Data",
+   "label": "SKU",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "price",
+   "fieldtype": "Currency",
+   "label": "Price",
+   "description": "Leave empty to use the listing price",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "compare_at_price",
+   "fieldtype": "Currency",
+   "label": "Was Price"
+  },
+  {
+   "fieldname": "stock_qty",
+   "fieldtype": "Float",
+   "label": "Quantity on Hand",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "reserved_qty",
+   "fieldtype": "Float",
+   "label": "Reserved",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "available_qty",
+   "fieldtype": "Float",
+   "label": "Available",
+   "read_only": 1,
+   "no_copy": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "image",
+   "fieldtype": "Attach Image",
+   "label": "Image"
+  },
+  {
+   "fieldname": "barcode",
+   "fieldtype": "Data",
+   "label": "Barcode"
+  },
+  {
+   "fieldname": "weight_kg",
+   "fieldtype": "Float",
+   "label": "Weight (kg)",
+   "precision": "3"
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-12 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace",
+ "name": "Listing Variant",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "editable_grid": 1,
+ "permissions": [],
+ "istable": 1
+}

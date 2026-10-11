@@ -1,0 +1,117 @@
+{
+ "actions": [],
+ "creation": "2026-10-12 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "listing",
+  "variant_item",
+  "variant_label",
+  "item_code",
+  "item_name",
+  "qty",
+  "rate",
+  "vat_rate",
+  "vat_amount",
+  "amount",
+  "commission_rate",
+  "commission",
+  "returned_qty"
+ ],
+ "fields": [
+  {
+   "fieldname": "listing",
+   "fieldtype": "Link",
+   "label": "Listing",
+   "options": "Marketplace Listing",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "variant_item",
+   "fieldtype": "Link",
+   "label": "Variant",
+   "options": "Item",
+   "read_only": 1
+  },
+  {
+   "fieldname": "variant_label",
+   "fieldtype": "Data",
+   "label": "Options",
+   "read_only": 1
+  },
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "label": "Item",
+   "options": "Item",
+   "read_only": 1
+  },
+  {
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "label": "Name",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "qty",
+   "fieldtype": "Float",
+   "label": "Qty",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "rate",
+   "fieldtype": "Currency",
+   "label": "Rate",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "vat_rate",
+   "fieldtype": "Percent",
+   "label": "VAT %"
+  },
+  {
+   "fieldname": "vat_amount",
+   "fieldtype": "Currency",
+   "label": "VAT"
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "label": "Amount",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "commission_rate",
+   "fieldtype": "Percent",
+   "label": "Commission %",
+   "read_only": 1
+  },
+  {
+   "fieldname": "commission",
+   "fieldtype": "Currency",
+   "label": "Commission",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "returned_qty",
+   "fieldtype": "Float",
+   "label": "Returned",
+   "read_only": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-12 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace",
+ "name": "Seller Order Item",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "editable_grid": 1,
+ "permissions": [],
+ "istable": 1
+}

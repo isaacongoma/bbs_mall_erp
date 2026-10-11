@@ -160,6 +160,7 @@ class BootStrapTestData:
         self.make_fiscal_year()
         self.make_holiday_list()
         self.make_company()
+        frappe.db.set_default("currency", "INR")
         self.make_test_account()
         self.make_supplier_group()
         self.make_payment_term()

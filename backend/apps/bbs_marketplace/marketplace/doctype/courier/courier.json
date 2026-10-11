@@ -1,0 +1,201 @@
+{
+ "actions": [],
+ "creation": "2026-10-12 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "courier_name",
+  "courier_type",
+  "enabled",
+  "supplier",
+  "column_break_44",
+  "cod_supported",
+  "max_weight_kg",
+  "insurance_percent",
+  "tracking_url_template",
+  "integration_section",
+  "integration",
+  "api_base_url",
+  "account_id",
+  "column_break_45",
+  "api_key",
+  "webhook_token",
+  "rates_section",
+  "rates"
+ ],
+ "fields": [
+  {
+   "fieldname": "courier_name",
+   "fieldtype": "Data",
+   "label": "Courier",
+   "reqd": 1,
+   "in_list_view": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "courier_type",
+   "fieldtype": "Select",
+   "label": "Type",
+   "options": "Third Party\nOwn Fleet\nSeller Delivery\nStation Network",
+   "default": "Third Party",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Supplier",
+   "options": "Supplier",
+   "description": "Courier invoices are booked against this supplier"
+  },
+  {
+   "fieldname": "column_break_44",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "cod_supported",
+   "fieldtype": "Check",
+   "label": "Cash on Delivery"
+  },
+  {
+   "fieldname": "max_weight_kg",
+   "fieldtype": "Float",
+   "label": "Maximum Parcel kg"
+  },
+  {
+   "fieldname": "insurance_percent",
+   "fieldtype": "Percent",
+   "label": "Insurance %"
+  },
+  {
+   "fieldname": "tracking_url_template",
+   "fieldtype": "Data",
+   "label": "Tracking URL",
+   "description": "Use {tracking_no} where the number goes"
+  },
+  {
+   "fieldname": "integration_section",
+   "fieldtype": "Section Break",
+   "label": "Integration",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "integration",
+   "fieldtype": "Select",
+   "label": "Integration",
+   "options": "Manual\nGeneric REST",
+   "default": "Manual"
+  },
+  {
+   "fieldname": "api_base_url",
+   "fieldtype": "Data",
+   "label": "API Base URL",
+   "depends_on": "eval:doc.integration=='Generic REST'"
+  },
+  {
+   "fieldname": "account_id",
+   "fieldtype": "Data",
+   "label": "Account ID"
+  },
+  {
+   "fieldname": "column_break_45",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "api_key",
+   "fieldtype": "Password",
+   "label": "API Key"
+  },
+  {
+   "fieldname": "webhook_token",
+   "fieldtype": "Data",
+   "label": "Webhook Token",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "rates_section",
+   "fieldtype": "Section Break",
+   "label": "Rates"
+  },
+  {
+   "fieldname": "rates",
+   "fieldtype": "Table",
+   "label": "Rate Card",
+   "options": "Courier Rate"
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-12 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace",
+ "name": "Courier",
+ "owner": "Administrator",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Operations",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Catalog Moderator",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  },
+  {
+   "role": "Marketplace Finance",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  }
+ ],
+ "track_changes": 1,
+ "autoname": "field:courier_name",
+ "naming_rule": "By fieldname",
+ "title_field": "courier_name"
+}

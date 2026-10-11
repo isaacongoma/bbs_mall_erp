@@ -1,0 +1,80 @@
+{
+ "actions": [],
+ "creation": "2026-10-12 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "listing",
+  "seller",
+  "discount_type",
+  "discount_value",
+  "stock_limit",
+  "sold_qty",
+  "pricing_rule"
+ ],
+ "fields": [
+  {
+   "fieldname": "listing",
+   "fieldtype": "Link",
+   "label": "Listing",
+   "options": "Marketplace Listing",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "seller",
+   "fieldtype": "Link",
+   "label": "Seller",
+   "options": "Marketplace Seller",
+   "fetch_from": "listing.seller",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "discount_type",
+   "fieldtype": "Select",
+   "label": "Discount",
+   "options": "Percent\nAmount",
+   "default": "Percent",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "discount_value",
+   "fieldtype": "Float",
+   "label": "Value",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "stock_limit",
+   "fieldtype": "Float",
+   "label": "Promo Stock"
+  },
+  {
+   "fieldname": "sold_qty",
+   "fieldtype": "Float",
+   "label": "Sold",
+   "read_only": 1
+  },
+  {
+   "fieldname": "pricing_rule",
+   "fieldtype": "Link",
+   "label": "Pricing Rule",
+   "options": "Pricing Rule",
+   "read_only": 1,
+   "no_copy": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-12 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace",
+ "name": "Campaign Listing",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "editable_grid": 1,
+ "permissions": [],
+ "istable": 1
+}

@@ -1,0 +1,377 @@
+{
+ "actions": [],
+ "creation": "2026-10-12 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "marketplace_order",
+  "seller",
+  "customer",
+  "buyer_type",
+  "column_break_26",
+  "status",
+  "settlement_status",
+  "fulfilment_mode",
+  "sla_due",
+  "items_section",
+  "items",
+  "amounts_section",
+  "items_total",
+  "vat_total",
+  "seller_discount",
+  "platform_discount",
+  "column_break_27",
+  "shipping_fee",
+  "commission_rate",
+  "commission_amount",
+  "commission_vat",
+  "seller_net",
+  "settlement_section",
+  "settle_on",
+  "settled_on",
+  "journal_entry",
+  "column_break_28",
+  "reversal_journal",
+  "wallet_transaction",
+  "fulfilment_section",
+  "courier",
+  "shipment",
+  "accepted_on",
+  "packed_on",
+  "column_break_29",
+  "shipped_on",
+  "delivered_on",
+  "cancel_reason",
+  "status_log"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "SOR-.YYYY.-",
+   "default": "SOR-.YYYY.-",
+   "hidden": 1
+  },
+  {
+   "fieldname": "marketplace_order",
+   "fieldtype": "Link",
+   "label": "Order",
+   "options": "Marketplace Order",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "seller",
+   "fieldtype": "Link",
+   "label": "Seller",
+   "options": "Marketplace Seller",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Buyer",
+   "options": "Customer",
+   "fetch_from": "marketplace_order.customer",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "buyer_type",
+   "fieldtype": "Data",
+   "label": "Buyer Type",
+   "fetch_from": "marketplace_order.buyer_type",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_26",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "New\nAccepted\nPacked\nShipped\nDelivered\nCompleted\nCancelled\nReturned",
+   "default": "New",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "settlement_status",
+   "fieldtype": "Select",
+   "label": "Settlement",
+   "options": "Unsettled\nHeld\nSettled\nReversed",
+   "default": "Unsettled",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "fulfilment_mode",
+   "fieldtype": "Select",
+   "label": "Fulfilment",
+   "options": "Seller Ships\nPlatform Fulfils\nSeller Drops at Station"
+  },
+  {
+   "fieldname": "sla_due",
+   "fieldtype": "Datetime",
+   "label": "Action Due By",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "items_section",
+   "fieldtype": "Section Break",
+   "label": "Items"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "Seller Order Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "amounts_section",
+   "fieldtype": "Section Break",
+   "label": "Amounts"
+  },
+  {
+   "fieldname": "items_total",
+   "fieldtype": "Currency",
+   "label": "Items Total (incl. VAT)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "vat_total",
+   "fieldtype": "Currency",
+   "label": "VAT in Items",
+   "read_only": 1
+  },
+  {
+   "fieldname": "seller_discount",
+   "fieldtype": "Currency",
+   "label": "Seller Funded Discount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "platform_discount",
+   "fieldtype": "Currency",
+   "label": "Platform Funded Discount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_27",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "shipping_fee",
+   "fieldtype": "Currency",
+   "label": "Delivery Fee Charged",
+   "read_only": 1
+  },
+  {
+   "fieldname": "commission_rate",
+   "fieldtype": "Percent",
+   "label": "Commission %",
+   "read_only": 1
+  },
+  {
+   "fieldname": "commission_amount",
+   "fieldtype": "Currency",
+   "label": "Commission",
+   "read_only": 1
+  },
+  {
+   "fieldname": "commission_vat",
+   "fieldtype": "Currency",
+   "label": "VAT on Commission",
+   "read_only": 1
+  },
+  {
+   "fieldname": "seller_net",
+   "fieldtype": "Currency",
+   "label": "Seller Receives",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "settlement_section",
+   "fieldtype": "Section Break",
+   "label": "Settlement",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "settle_on",
+   "fieldtype": "Date",
+   "label": "Funds Available On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "settled_on",
+   "fieldtype": "Datetime",
+   "label": "Posted On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "journal_entry",
+   "fieldtype": "Link",
+   "label": "Settlement Journal",
+   "options": "Journal Entry",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "column_break_28",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "reversal_journal",
+   "fieldtype": "Link",
+   "label": "Reversal Journal",
+   "options": "Journal Entry",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "wallet_transaction",
+   "fieldtype": "Link",
+   "label": "Wallet Entry",
+   "options": "Seller Wallet Transaction",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "fulfilment_section",
+   "fieldtype": "Section Break",
+   "label": "Fulfilment"
+  },
+  {
+   "fieldname": "courier",
+   "fieldtype": "Link",
+   "label": "Courier",
+   "options": "Courier"
+  },
+  {
+   "fieldname": "shipment",
+   "fieldtype": "Link",
+   "label": "Shipment",
+   "options": "Marketplace Shipment",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "accepted_on",
+   "fieldtype": "Datetime",
+   "label": "Accepted",
+   "read_only": 1
+  },
+  {
+   "fieldname": "packed_on",
+   "fieldtype": "Datetime",
+   "label": "Packed",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_29",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "shipped_on",
+   "fieldtype": "Datetime",
+   "label": "Shipped",
+   "read_only": 1
+  },
+  {
+   "fieldname": "delivered_on",
+   "fieldtype": "Datetime",
+   "label": "Delivered",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cancel_reason",
+   "fieldtype": "Small Text",
+   "label": "Cancellation Reason"
+  },
+  {
+   "fieldname": "status_log",
+   "fieldtype": "Table",
+   "label": "Status Log",
+   "options": "Order Status Event",
+   "read_only": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-12 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace",
+ "name": "Seller Order",
+ "owner": "Administrator",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Operations",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Catalog Moderator",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  },
+  {
+   "role": "Marketplace Finance",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  }
+ ],
+ "track_changes": 1,
+ "search_fields": "marketplace_order,seller,status",
+ "autoname": "naming_series:",
+ "naming_rule": "By \"Naming Series\" field"
+}

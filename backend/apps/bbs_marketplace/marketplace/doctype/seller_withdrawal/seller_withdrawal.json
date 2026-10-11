@@ -1,0 +1,309 @@
+{
+ "actions": [],
+ "creation": "2026-10-12 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "seller",
+  "amount",
+  "fee",
+  "net_amount",
+  "column_break_36",
+  "status",
+  "method",
+  "requested_on",
+  "processed_on",
+  "destination_section",
+  "payout_account",
+  "mpesa_number",
+  "bank_account",
+  "column_break_37",
+  "account_holder",
+  "balance_before",
+  "processing_section",
+  "approved_by",
+  "conversation_id",
+  "originator_conversation_id",
+  "column_break_38",
+  "receipt_no",
+  "failure_reason",
+  "accounting_section",
+  "hold_journal",
+  "payout_journal",
+  "column_break_39",
+  "wallet_transaction",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "WDR-.YYYY.-",
+   "default": "WDR-.YYYY.-",
+   "hidden": 1
+  },
+  {
+   "fieldname": "seller",
+   "fieldtype": "Link",
+   "label": "Seller",
+   "options": "Marketplace Seller",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "label": "Amount",
+   "reqd": 1,
+   "in_list_view": 1,
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "fee",
+   "fieldtype": "Currency",
+   "label": "Fee",
+   "read_only": 1
+  },
+  {
+   "fieldname": "net_amount",
+   "fieldtype": "Currency",
+   "label": "Seller Receives",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "column_break_36",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Requested\nPending Approval\nApproved\nProcessing\nPaid\nFailed\nRejected\nCancelled",
+   "default": "Requested",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "method",
+   "fieldtype": "Select",
+   "label": "Method",
+   "options": "M-Pesa\nBank Transfer",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "requested_on",
+   "fieldtype": "Datetime",
+   "label": "Requested",
+   "read_only": 1
+  },
+  {
+   "fieldname": "processed_on",
+   "fieldtype": "Datetime",
+   "label": "Processed",
+   "read_only": 1
+  },
+  {
+   "fieldname": "destination_section",
+   "fieldtype": "Section Break",
+   "label": "Destination"
+  },
+  {
+   "fieldname": "payout_account",
+   "fieldtype": "Data",
+   "label": "Payout Account Row",
+   "read_only": 1
+  },
+  {
+   "fieldname": "mpesa_number",
+   "fieldtype": "Data",
+   "label": "M-Pesa Number",
+   "depends_on": "eval:doc.method=='M-Pesa'"
+  },
+  {
+   "fieldname": "bank_account",
+   "fieldtype": "Link",
+   "label": "Bank Account",
+   "options": "Bank Account",
+   "depends_on": "eval:doc.method=='Bank Transfer'"
+  },
+  {
+   "fieldname": "column_break_37",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "account_holder",
+   "fieldtype": "Data",
+   "label": "Account Holder"
+  },
+  {
+   "fieldname": "balance_before",
+   "fieldtype": "Currency",
+   "label": "Available Before",
+   "read_only": 1
+  },
+  {
+   "fieldname": "processing_section",
+   "fieldtype": "Section Break",
+   "label": "Processing"
+  },
+  {
+   "fieldname": "approved_by",
+   "fieldtype": "Link",
+   "label": "Approved By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "conversation_id",
+   "fieldtype": "Data",
+   "label": "Daraja Conversation ID",
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "originator_conversation_id",
+   "fieldtype": "Data",
+   "label": "Originator Conversation ID",
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "column_break_38",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "receipt_no",
+   "fieldtype": "Data",
+   "label": "Receipt / Bank Reference",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "failure_reason",
+   "fieldtype": "Small Text",
+   "label": "Failure Reason",
+   "read_only": 1
+  },
+  {
+   "fieldname": "accounting_section",
+   "fieldtype": "Section Break",
+   "label": "Accounting",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "hold_journal",
+   "fieldtype": "Link",
+   "label": "Hold Journal",
+   "options": "Journal Entry",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "payout_journal",
+   "fieldtype": "Link",
+   "label": "Payout Journal",
+   "options": "Journal Entry",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "column_break_39",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "wallet_transaction",
+   "fieldtype": "Link",
+   "label": "Wallet Entry",
+   "options": "Seller Wallet Transaction",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-12 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace",
+ "name": "Seller Withdrawal",
+ "owner": "Administrator",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Finance",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Accounts Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Accounts User",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  },
+  {
+   "role": "Marketplace Operations",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  }
+ ],
+ "track_changes": 1,
+ "autoname": "naming_series:",
+ "naming_rule": "By \"Naming Series\" field"
+}

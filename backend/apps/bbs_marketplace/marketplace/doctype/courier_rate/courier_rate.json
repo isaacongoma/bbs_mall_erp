@@ -1,0 +1,87 @@
+{
+ "actions": [],
+ "creation": "2026-10-12 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "zone",
+  "service_level",
+  "min_weight",
+  "max_weight",
+  "base_rate",
+  "per_kg_rate",
+  "eta_days_min",
+  "eta_days_max",
+  "cod_fee_percent"
+ ],
+ "fields": [
+  {
+   "fieldname": "zone",
+   "fieldtype": "Link",
+   "label": "Zone",
+   "options": "Delivery Zone",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "service_level",
+   "fieldtype": "Select",
+   "label": "Service",
+   "options": "Standard\nExpress\nSame Day\nFreight",
+   "default": "Standard",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "min_weight",
+   "fieldtype": "Float",
+   "label": "From kg",
+   "default": "0"
+  },
+  {
+   "fieldname": "max_weight",
+   "fieldtype": "Float",
+   "label": "Up To kg",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "base_rate",
+   "fieldtype": "Currency",
+   "label": "Base Rate",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "per_kg_rate",
+   "fieldtype": "Currency",
+   "label": "Per Extra kg",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "eta_days_min",
+   "fieldtype": "Int",
+   "label": "ETA From (days)"
+  },
+  {
+   "fieldname": "eta_days_max",
+   "fieldtype": "Int",
+   "label": "ETA To (days)"
+  },
+  {
+   "fieldname": "cod_fee_percent",
+   "fieldtype": "Percent",
+   "label": "COD Fee %"
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-12 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace",
+ "name": "Courier Rate",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "editable_grid": 1,
+ "permissions": [],
+ "istable": 1
+}

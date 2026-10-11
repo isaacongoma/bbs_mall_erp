@@ -444,6 +444,20 @@ class Document:
         for field in get_meta(self.doctype).get("fields", []):
             default = field.get("default")
             fieldname = field.get("fieldname")
+            if (
+                fieldname
+                and default in (None, "")
+                and field.get("fieldtype") == "Link"
+                and field.get("options") in ("Currency", "Company", "Country")
+                and self.__dict__.get(fieldname) in (None, "")
+            ):
+                try:
+                    user_default = frappe.defaults.get_user_default(fieldname) or frappe.defaults.get_user_default(field.get("options"))
+                except Exception:
+                    user_default = None
+                if user_default:
+                    setattr(self, fieldname, user_default)
+                continue
             if default not in DYNAMIC_DEFAULTS or not fieldname or self.__dict__.get(fieldname) not in (None, ""):
                 continue
             if default == "Today":
@@ -648,7 +662,8 @@ class Document:
 
     def _submit(self):
         from apps.erpnext.registry import get_meta
-        if not get_meta(self.doctype).get("is_submittable"):
+        _meta = get_meta(self.doctype)
+        if not _meta.get("is_submittable") and not _meta.get("istable"):
             from apps.frappe import exceptions
             raise exceptions.ValidationError(f"{self.doctype} is not submittable")
         self._action = "submit"
@@ -664,7 +679,8 @@ class Document:
 
     def _cancel(self):
         from apps.erpnext.registry import get_meta
-        if not get_meta(self.doctype).get("is_submittable"):
+        _meta = get_meta(self.doctype)
+        if not _meta.get("is_submittable") and not _meta.get("istable"):
             from apps.frappe import exceptions
             raise exceptions.ValidationError(f"{self.doctype} is not submittable")
         self._action = "cancel"

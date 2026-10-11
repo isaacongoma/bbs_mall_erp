@@ -1,0 +1,40 @@
+{
+ "based_on": "settled_on",
+ "chart_name": "Commission Earned by Month",
+ "chart_type": "Sum",
+ "color": "#16a34a",
+ "creation": "2026-10-11 09:00:00.000000",
+ "docstatus": 0,
+ "doctype": "Dashboard Chart",
+ "document_type": "Seller Order",
+ "dynamic_filters_json": "[]",
+ "filters_json": "[]",
+ "idx": 0,
+ "is_public": 1,
+ "is_standard": 1,
+ "modified": "2026-10-11 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace Orders",
+ "name": "Commission Earned by Month",
+ "owner": "Administrator",
+ "roles": [
+  {
+   "role": "Marketplace Manager"
+  },
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Accounts Manager"
+  }
+ ],
+ "show_values_over_chart": 0,
+ "source": "",
+ "time_interval": "Monthly",
+ "timeseries": 1,
+ "timespan": "Last Year",
+ "type": "Line",
+ "use_report_chart": 0,
+ "value_based_on": "commission_amount",
+ "y_axis": []
+}

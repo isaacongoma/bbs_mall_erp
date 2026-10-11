@@ -1,0 +1,181 @@
+{
+ "actions": [],
+ "creation": "2026-10-12 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "customer",
+  "session_key",
+  "buyer_type",
+  "status",
+  "column_break_20",
+  "coupon_code",
+  "delivery_zone",
+  "subtotal",
+  "last_activity",
+  "reminder_count",
+  "last_reminder_on",
+  "items_section",
+  "items"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "CART-.YYYY.-",
+   "default": "CART-.YYYY.-",
+   "hidden": 1
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "session_key",
+   "fieldtype": "Data",
+   "label": "Guest Session",
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "buyer_type",
+   "fieldtype": "Select",
+   "label": "Buyer Type",
+   "options": "B2C\nB2B",
+   "default": "B2C",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Active\nConverted\nAbandoned",
+   "default": "Active",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "column_break_20",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "coupon_code",
+   "fieldtype": "Link",
+   "label": "Coupon",
+   "options": "Coupon Code"
+  },
+  {
+   "fieldname": "delivery_zone",
+   "fieldtype": "Link",
+   "label": "Delivery Zone",
+   "options": "Delivery Zone"
+  },
+  {
+   "fieldname": "subtotal",
+   "fieldtype": "Currency",
+   "label": "Subtotal",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_activity",
+   "fieldtype": "Datetime",
+   "label": "Last Activity",
+   "read_only": 1
+  },
+  {
+   "fieldname": "reminder_count",
+   "fieldtype": "Int",
+   "label": "Reminders Sent",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "last_reminder_on",
+   "fieldtype": "Datetime",
+   "label": "Last Reminder",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "items_section",
+   "fieldtype": "Section Break",
+   "label": "Items"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "Marketplace Cart Item"
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-12 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace",
+ "name": "Marketplace Cart",
+ "owner": "Administrator",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Operations",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Catalog Moderator",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  },
+  {
+   "role": "Marketplace Finance",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  }
+ ],
+ "track_changes": 1,
+ "autoname": "naming_series:",
+ "naming_rule": "By \"Naming Series\" field"
+}

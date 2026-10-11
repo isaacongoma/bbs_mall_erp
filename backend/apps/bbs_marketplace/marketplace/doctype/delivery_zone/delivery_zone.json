@@ -1,0 +1,130 @@
+{
+ "actions": [],
+ "creation": "2026-10-12 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "zone_name",
+  "enabled",
+  "free_delivery_above",
+  "column_break_43",
+  "b2b_only",
+  "is_pickup_only",
+  "coverage_section",
+  "areas"
+ ],
+ "fields": [
+  {
+   "fieldname": "zone_name",
+   "fieldtype": "Data",
+   "label": "Zone",
+   "reqd": 1,
+   "in_list_view": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "free_delivery_above",
+   "fieldtype": "Currency",
+   "label": "Free Delivery Above",
+   "description": "Order value above which the delivery fee is waived"
+  },
+  {
+   "fieldname": "column_break_43",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "b2b_only",
+   "fieldtype": "Check",
+   "label": "B2B Only"
+  },
+  {
+   "fieldname": "is_pickup_only",
+   "fieldtype": "Check",
+   "label": "Station Pickup Only"
+  },
+  {
+   "fieldname": "coverage_section",
+   "fieldtype": "Section Break",
+   "label": "Coverage"
+  },
+  {
+   "fieldname": "areas",
+   "fieldtype": "Table",
+   "label": "Areas Covered",
+   "options": "Delivery Zone Area"
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-12 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace",
+ "name": "Delivery Zone",
+ "owner": "Administrator",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Operations",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Catalog Moderator",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  },
+  {
+   "role": "Marketplace Finance",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  }
+ ],
+ "track_changes": 1,
+ "autoname": "field:zone_name",
+ "naming_rule": "By fieldname",
+ "title_field": "zone_name"
+}

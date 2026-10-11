@@ -177,3 +177,11 @@ Status: the full suite was green at 257 before this round; it is being restored 
 - Backend tests: `apps/bbs_property/tests` (run with `TEST_DATABASE_NAME=test_bbs_prop ... manage.py test apps.bbs_property.tests --keepdb --noinput`; the first run builds the test database and takes about 30 minutes).
 - Demo data: `manage.py seed_property_demo` (login tenant@bbsmall.demo / DemoPass123!), `--clear` to remove.
 - Also fixed: Journal Entry crash (HRMS script ran before ERPNext's), onboarding video plays inline, desk URLs follow the reference scheme.
+
+
+## Marketplace (2026-10-11)
+- New app `bbs_marketplace`: 35 doctypes, accounting for sales, commission, VAT, holds, withdrawals, wallet bill payments and returns; courier and shipment tracking; storefront API for the future website and app; seller API for the tenant portal.
+- Desk: five modules with dock, sidebars, workspaces, 19 number cards, 10 charts, dashboard, onboarding, 9 reports (Seller Performance, Listing Stock Status, Marketplace Sales Register, Marketplace Commission Report, Returns Summary, Seller Wallet Statement, Wallet Liability, Courier Performance, COD Reconciliation) and form scripts under `frontend/src/modules/bbs_marketplace`.
+- Tenant portal: My Shop, Products (editor with photos, bulk tiers), Shop Orders, Shop Wallet (withdraw, payout accounts, pay rent and bills).
+- Tests: `TEST_DATABASE_NAME=test_sweep_selling manage.py test apps.bbs_marketplace --keepdb --noinput`.
+- Feature document: `docs/MARKETPLACE.md`.

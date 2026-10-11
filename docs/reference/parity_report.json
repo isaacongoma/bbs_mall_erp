@@ -1,0 +1,525 @@
+{
+ "accounts": {
+  "py": {
+   "files": 476,
+   "missing_file": 0,
+   "same": 463,
+   "functions": 4689,
+   "identical": 4667,
+   "changed": 22,
+   "missing": 0
+  },
+  "doctype": {
+   "source": 191,
+   "missing": [],
+   "same": 191,
+   "changed": 0,
+   "differing": []
+  },
+  "report": {
+   "source": 56,
+   "missing": [],
+   "same": 56,
+   "changed": 0,
+   "differing": []
+  },
+  "js": 172,
+  "js_missing": [
+   "accounts\\dashboard_chart_source\\account_balance_timeline\\account_balance_timeline.js"
+  ],
+  "worst": [
+   [
+    6,
+    "accounts\\doctype\\bank_statement_import_log\\test_bank_statement_import_log.py",
+    0,
+    6
+   ],
+   [
+    4,
+    "accounts\\doctype\\pricing_rule\\utils.py",
+    0,
+    4
+   ],
+   [
+    2,
+    "accounts\\utils.py",
+    0,
+    2
+   ],
+   [
+    1,
+    "accounts\\report\\trial_balance\\trial_balance.py",
+    0,
+    1
+   ],
+   [
+    1,
+    "accounts\\report\\general_ledger\\general_ledger.py",
+    0,
+    1
+   ],
+   [
+    1,
+    "accounts\\doctype\\sales_invoice\\sales_invoice.py",
+    0,
+    1
+   ],
+   [
+    1,
+    "accounts\\doctype\\purchase_invoice\\purchase_invoice.py",
+    0,
+    1
+   ],
+   [
+    1,
+    "accounts\\doctype\\promotional_scheme\\promotional_scheme.py",
+    0,
+    1
+   ],
+   [
+    1,
+    "accounts\\doctype\\pos_profile\\test_pos_profile.py",
+    0,
+    1
+   ],
+   [
+    1,
+    "accounts\\doctype\\payment_request\\payment_request.py",
+    0,
+    1
+   ],
+   [
+    1,
+    "accounts\\doctype\\payment_entry\\payment_entry.py",
+    0,
+    1
+   ],
+   [
+    1,
+    "accounts\\doctype\\cheque_print_template\\cheque_print_template.py",
+    0,
+    1
+   ],
+   [
+    1,
+    "accounts\\doctype\\accounts_settings\\accounts_settings.py",
+    0,
+    1
+   ]
+  ]
+ },
+ "stock": {
+  "py": {
+   "files": 274,
+   "missing_file": 0,
+   "same": 263,
+   "functions": 3999,
+   "identical": 3984,
+   "changed": 15,
+   "missing": 0
+  },
+  "doctype": {
+   "source": 78,
+   "missing": [],
+   "same": 78,
+   "changed": 0,
+   "differing": []
+  },
+  "report": {
+   "source": 52,
+   "missing": [],
+   "same": 52,
+   "changed": 0,
+   "differing": []
+  },
+  "js": 111,
+  "js_missing": [
+   "stock\\dashboard\\item_dashboard.js",
+   "stock\\dashboard_chart_source\\stock_value_by_item_group\\stock_value_by_item_group.js",
+   "stock\\dashboard_chart_source\\warehouse_wise_stock_value\\warehouse_wise_stock_value.js"
+  ],
+  "worst": [
+   [
+    4,
+    "stock\\stock_ledger.py",
+    0,
+    4
+   ],
+   [
+    2,
+    "stock\\report\\stock_ledger\\stock_ledger.py",
+    0,
+    2
+   ],
+   [
+    1,
+    "stock\\serial_batch_bundle.py",
+    0,
+    1
+   ],
+   [
+    1,
+    "stock\\doctype\\serial_no\\serial_no.py",
+    0,
+    1
+   ],
+   [
+    1,
+    "stock\\doctype\\serial_and_batch_bundle\\serial_and_batch_bundle.py",
+    0,
+    1
+   ],
+   [
+    1,
+    "stock\\doctype\\putaway_rule\\putaway_rule.py",
+    0,
+    1
+   ],
+   [
+    1,
+    "stock\\doctype\\purchase_receipt\\purchase_receipt.py",
+    0,
+    1
+   ],
+   [
+    1,
+    "stock\\doctype\\item_standard_cost\\item_standard_cost.py",
+    0,
+    1
+   ],
+   [
+    1,
+    "stock\\doctype\\item\\item.py",
+    0,
+    1
+   ],
+   [
+    1,
+    "stock\\doctype\\inventory_dimension\\inventory_dimension.py",
+    0,
+    1
+   ],
+   [
+    1,
+    "stock\\doctype\\delivery_note\\delivery_note.py",
+    0,
+    1
+   ]
+  ]
+ },
+ "buying": {
+  "py": {
+   "files": 62,
+   "missing_file": 0,
+   "same": 61,
+   "functions": 520,
+   "identical": 519,
+   "changed": 1,
+   "missing": 0
+  },
+  "doctype": {
+   "source": 19,
+   "missing": [],
+   "same": 19,
+   "changed": 0,
+   "differing": []
+  },
+  "report": {
+   "source": 10,
+   "missing": [],
+   "same": 10,
+   "changed": 0,
+   "differing": []
+  },
+  "js": 24,
+  "js_missing": [],
+  "worst": [
+   [
+    1,
+    "buying\\report\\supplier_quotation_comparison\\supplier_quotation_comparison.py",
+    0,
+    1
+   ]
+  ]
+ },
+ "projects": {
+  "py": {
+   "files": 41,
+   "missing_file": 0,
+   "same": 39,
+   "functions": 264,
+   "identical": 260,
+   "changed": 4,
+   "missing": 0
+  },
+  "doctype": {
+   "source": 15,
+   "missing": [],
+   "same": 15,
+   "changed": 0,
+   "differing": []
+  },
+  "report": {
+   "source": 5,
+   "missing": [],
+   "same": 5,
+   "changed": 0,
+   "differing": []
+  },
+  "js": 23,
+  "js_missing": [
+   "projects\\web_form\\tasks\\tasks.js"
+  ],
+  "worst": [
+   [
+    3,
+    "projects\\doctype\\project\\project.py",
+    0,
+    3
+   ],
+   [
+    1,
+    "projects\\doctype\\task\\task.py",
+    0,
+    1
+   ]
+  ]
+ },
+ "setup": {
+  "py": {
+   "files": 82,
+   "missing_file": 0,
+   "same": 79,
+   "functions": 477,
+   "identical": 473,
+   "changed": 4,
+   "missing": 0
+  },
+  "doctype": {
+   "source": 40,
+   "missing": [],
+   "same": 40,
+   "changed": 0,
+   "differing": []
+  },
+  "report": {
+   "source": 0,
+   "missing": [],
+   "same": 0,
+   "changed": 0,
+   "differing": []
+  },
+  "js": 38,
+  "js_missing": [],
+  "worst": [
+   [
+    2,
+    "setup\\doctype\\authorization_control\\authorization_control.py",
+    0,
+    2
+   ],
+   [
+    1,
+    "setup\\doctype\\email_digest\\email_digest.py",
+    0,
+    1
+   ],
+   [
+    1,
+    "setup\\doctype\\company\\company.py",
+    0,
+    1
+   ]
+  ]
+ },
+ "subcontracting": {
+  "py": {
+   "files": 29,
+   "missing_file": 0,
+   "same": 28,
+   "functions": 249,
+   "identical": 248,
+   "changed": 1,
+   "missing": 0
+  },
+  "doctype": {
+   "source": 13,
+   "missing": [],
+   "same": 13,
+   "changed": 0,
+   "differing": []
+  },
+  "report": {
+   "source": 3,
+   "missing": [],
+   "same": 3,
+   "changed": 0,
+   "differing": []
+  },
+  "js": 10,
+  "js_missing": [],
+  "worst": [
+   [
+    1,
+    "subcontracting\\doctype\\subcontracting_receipt\\subcontracting_receipt.py",
+    0,
+    1
+   ]
+  ]
+ },
+ "utilities": {
+  "py": {
+   "files": 23,
+   "missing_file": 0,
+   "same": 22,
+   "functions": 100,
+   "identical": 99,
+   "changed": 1,
+   "missing": 0
+  },
+  "doctype": {
+   "source": 4,
+   "missing": [],
+   "same": 4,
+   "changed": 0,
+   "differing": []
+  },
+  "report": {
+   "source": 1,
+   "missing": [],
+   "same": 1,
+   "changed": 0,
+   "differing": []
+  },
+  "js": 6,
+  "js_missing": [
+   "utilities\\web_form\\addresses\\addresses.js"
+  ],
+  "worst": [
+   [
+    1,
+    "utilities\\bulk_transaction.py",
+    0,
+    1
+   ]
+  ]
+ },
+ "telephony": {
+  "py": {
+   "files": 9,
+   "missing_file": 0,
+   "same": 8,
+   "functions": 25,
+   "identical": 24,
+   "changed": 1,
+   "missing": 0
+  },
+  "doctype": {
+   "source": 5,
+   "missing": [],
+   "same": 5,
+   "changed": 0,
+   "differing": []
+  },
+  "report": {
+   "source": 0,
+   "missing": [],
+   "same": 0,
+   "changed": 0,
+   "differing": []
+  },
+  "js": 4,
+  "js_missing": [],
+  "worst": [
+   [
+    1,
+    "telephony\\doctype\\call_log\\call_log.py",
+    0,
+    1
+   ]
+  ]
+ },
+ "controllers": {
+  "py": {
+   "files": 19,
+   "missing_file": 0,
+   "same": 15,
+   "functions": 598,
+   "identical": 593,
+   "changed": 5,
+   "missing": 0
+  },
+  "doctype": {
+   "source": 0,
+   "missing": [],
+   "same": 0,
+   "changed": 0,
+   "differing": []
+  },
+  "report": {
+   "source": 0,
+   "missing": [],
+   "same": 0,
+   "changed": 0,
+   "differing": []
+  },
+  "js": 0,
+  "js_missing": [],
+  "worst": [
+   [
+    2,
+    "controllers\\trends.py",
+    0,
+    2
+   ],
+   [
+    1,
+    "controllers\\status_updater.py",
+    0,
+    1
+   ],
+   [
+    1,
+    "controllers\\selling_controller.py",
+    0,
+    1
+   ],
+   [
+    1,
+    "controllers\\accounts_controller.py",
+    0,
+    1
+   ]
+  ]
+ },
+ "support": {
+  "py": {
+   "files": 27,
+   "missing_file": 0,
+   "same": 27,
+   "functions": 220,
+   "identical": 220,
+   "changed": 0,
+   "missing": 0
+  },
+  "doctype": {
+   "source": 11,
+   "missing": [],
+   "same": 11,
+   "changed": 0,
+   "differing": []
+  },
+  "report": {
+   "source": 4,
+   "missing": [],
+   "same": 4,
+   "changed": 0,
+   "differing": []
+  },
+  "js": 13,
+  "js_missing": [
+   "support\\web_form\\issues\\issues.js"
+  ],
+  "worst": []
+ }
+}

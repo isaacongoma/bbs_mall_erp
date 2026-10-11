@@ -1,0 +1,17 @@
+<svg id="marketplace-module-symbols" aria-hidden="true" style="display: none;" class="icon" xmlns="http://www.w3.org/2000/svg">
+	<symbol viewBox="0 0 24 24" id="icon-store-duotone" stroke="none">
+		<path d="M3 9.5L4.6 4.2A1.5 1.5 0 0 1 6 3H18A1.5 1.5 0 0 1 19.4 4.2L21 9.5Z" style="fill: var(--duotone-dark, light-dark(var(--ink-gray-5), var(--ink-gray-6)))"/><path d="M4.5 10.5H19.5V20A1 1 0 0 1 18.5 21H5.5A1 1 0 0 1 4.5 20Z" style="fill: var(--duotone-light, var(--ink-gray-3))"/><rect x="9.5" y="14" width="5" height="7" rx="0.6" style="fill: var(--duotone-dark, light-dark(var(--ink-gray-5), var(--ink-gray-6)))"/>
+	</symbol>
+	<symbol viewBox="0 0 24 24" id="icon-orders-duotone" stroke="none">
+		<path d="M2.5 4H5.2L7.6 15.2H18.3L20.4 7H6" fill="none" stroke="none"/><path d="M5 6H21L19 15H7.2Z" style="fill: var(--duotone-light, var(--ink-gray-3))"/><path d="M2.5 3.5H5.2L5.8 6H5L7.2 15H8.5L6.6 4.9A1 1 0 0 0 5.6 4Z" style="fill: var(--duotone-dark, light-dark(var(--ink-gray-5), var(--ink-gray-6)))"/><circle cx="9.5" cy="19" r="1.7" style="fill: var(--duotone-dark, light-dark(var(--ink-gray-5), var(--ink-gray-6)))"/><circle cx="17" cy="19" r="1.7" style="fill: var(--duotone-dark, light-dark(var(--ink-gray-5), var(--ink-gray-6)))"/>
+	</symbol>
+	<symbol viewBox="0 0 24 24" id="icon-wallet-duotone" stroke="none">
+		<path d="M4.5 6.5H19A1.5 1.5 0 0 1 20.5 8V19A1.5 1.5 0 0 1 19 20.5H4.5A1.5 1.5 0 0 1 3 19V8A1.5 1.5 0 0 1 4.5 6.5Z" style="fill: var(--duotone-light, var(--ink-gray-3))"/><path d="M5 6.5L16 3.2A1 1 0 0 1 17.3 4.2V6.5Z" style="fill: var(--duotone-dark, light-dark(var(--ink-gray-5), var(--ink-gray-6)))"/><path d="M14.5 11.5H21V16H14.5A2.25 2.25 0 0 1 14.5 11.5Z" style="fill: var(--duotone-dark, light-dark(var(--ink-gray-5), var(--ink-gray-6)))"/><circle cx="16.6" cy="13.75" r="0.9" style="fill: var(--duotone-light, var(--ink-gray-3))"/>
+	</symbol>
+	<symbol viewBox="0 0 24 24" id="icon-logistics-duotone" stroke="none">
+		<path d="M2 6.5A1.5 1.5 0 0 1 3.5 5H13V17H2Z" style="fill: var(--duotone-light, var(--ink-gray-3))"/><path d="M13 9H17.2L21.5 12.6V17H13Z" style="fill: var(--duotone-dark, light-dark(var(--ink-gray-5), var(--ink-gray-6)))"/><circle cx="7" cy="18" r="2" style="fill: var(--duotone-dark, light-dark(var(--ink-gray-5), var(--ink-gray-6)))"/><circle cx="17" cy="18" r="2" style="fill: var(--duotone-light, var(--ink-gray-3))"/>
+	</symbol>
+	<symbol viewBox="0 0 24 24" id="icon-promotions-duotone" stroke="none">
+		<path d="M3 12.5L11.5 4H19.5A1 1 0 0 1 20.5 5V13L12 21.5A1.5 1.5 0 0 1 9.9 21.5L3 14.6A1.5 1.5 0 0 1 3 12.5Z" style="fill: var(--duotone-light, var(--ink-gray-3))"/><circle cx="16" cy="8.5" r="1.7" style="fill: var(--duotone-dark, light-dark(var(--ink-gray-5), var(--ink-gray-6)))"/><path d="M8.2 14.6L12.2 10.6" stroke="none"/><path d="M10 15.5L14.5 11" stroke-width="0"/>
+	</symbol>
+</svg>

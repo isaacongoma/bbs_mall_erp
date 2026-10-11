@@ -1,0 +1,483 @@
+{
+ "actions": [],
+ "creation": "2026-10-12 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "seller_name",
+  "customer",
+  "supplier",
+  "column_break_8",
+  "status",
+  "seller_type",
+  "kyc_status",
+  "fulfilment_mode",
+  "shop_section",
+  "shop_slug",
+  "logo",
+  "banner",
+  "tagline",
+  "description",
+  "column_break_9",
+  "contact_phone",
+  "contact_email",
+  "lease",
+  "holiday_mode",
+  "tax_section",
+  "kra_pin",
+  "vat_registered",
+  "commission_override",
+  "column_break_10",
+  "return_policy",
+  "warehouse",
+  "ship_from_address",
+  "kyc_section",
+  "kyc_documents",
+  "payout_section",
+  "payout_accounts",
+  "profile_section",
+  "current_plan",
+  "plan_expires_on",
+  "working_hours",
+  "closed_dates",
+  "social_links",
+  "gallery",
+  "shop_tags",
+  "performance_section",
+  "rating",
+  "rating_count",
+  "total_orders",
+  "total_sales",
+  "column_break_11",
+  "fulfilment_rate",
+  "cancel_rate",
+  "return_rate",
+  "wallet_section",
+  "wallet_balance",
+  "available_balance",
+  "column_break_12",
+  "pending_balance",
+  "approved_by",
+  "approved_on"
+ ],
+ "fields": [
+  {
+   "fieldname": "seller_name",
+   "fieldtype": "Data",
+   "label": "Shop Name",
+   "reqd": 1,
+   "in_list_view": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Tenant (Customer)",
+   "options": "Customer",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "set_only_once": 1,
+   "description": "Sellers are tenants of BBS Mall; their Customer record carries invoices, rent and utilities"
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Wallet Supplier",
+   "options": "Supplier",
+   "read_only": 1,
+   "no_copy": 1,
+   "description": "Created automatically. The seller wallet is this supplier's ledger"
+  },
+  {
+   "fieldname": "column_break_8",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Pending Approval\nActive\nSuspended\nRejected\nClosed",
+   "default": "Pending Approval",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "seller_type",
+   "fieldtype": "Select",
+   "label": "Seller Type",
+   "options": "Marketplace Seller\nBBS Mall Own Stock",
+   "default": "Marketplace Seller",
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "kyc_status",
+   "fieldtype": "Select",
+   "label": "KYC",
+   "options": "Pending\nVerified\nRejected",
+   "default": "Pending",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "fulfilment_mode",
+   "fieldtype": "Select",
+   "label": "Fulfilment",
+   "options": "Seller Ships\nPlatform Fulfils\nSeller Drops at Station",
+   "default": "Seller Ships"
+  },
+  {
+   "fieldname": "shop_section",
+   "fieldtype": "Section Break",
+   "label": "Shop Page"
+  },
+  {
+   "fieldname": "shop_slug",
+   "fieldtype": "Data",
+   "label": "Shop URL Slug",
+   "unique": 1
+  },
+  {
+   "fieldname": "logo",
+   "fieldtype": "Attach Image",
+   "label": "Logo"
+  },
+  {
+   "fieldname": "banner",
+   "fieldtype": "Attach Image",
+   "label": "Banner"
+  },
+  {
+   "fieldname": "tagline",
+   "fieldtype": "Data",
+   "label": "Tagline"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text Editor",
+   "label": "About the Shop"
+  },
+  {
+   "fieldname": "column_break_9",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "contact_phone",
+   "fieldtype": "Data",
+   "label": "Phone",
+   "options": "Phone"
+  },
+  {
+   "fieldname": "contact_email",
+   "fieldtype": "Data",
+   "label": "Email",
+   "options": "Email"
+  },
+  {
+   "fieldname": "lease",
+   "fieldtype": "Link",
+   "label": "Lease",
+   "options": "Lease Agreement",
+   "description": "Optional. Ties the shop to the tenant's unit in the mall"
+  },
+  {
+   "fieldname": "holiday_mode",
+   "fieldtype": "Check",
+   "label": "Holiday Mode",
+   "description": "Hides all listings temporarily"
+  },
+  {
+   "fieldname": "tax_section",
+   "fieldtype": "Section Break",
+   "label": "Tax and Terms"
+  },
+  {
+   "fieldname": "kra_pin",
+   "fieldtype": "Data",
+   "label": "KRA PIN",
+   "fetch_from": "customer.tax_id"
+  },
+  {
+   "fieldname": "vat_registered",
+   "fieldtype": "Check",
+   "label": "VAT Registered"
+  },
+  {
+   "fieldname": "commission_override",
+   "fieldtype": "Percent",
+   "label": "Commission Override %",
+   "description": "Leave blank to follow Commission Rules"
+  },
+  {
+   "fieldname": "column_break_10",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "return_policy",
+   "fieldtype": "Small Text",
+   "label": "Return Policy"
+  },
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "label": "Warehouse",
+   "options": "Warehouse",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "ship_from_address",
+   "fieldtype": "Link",
+   "label": "Ship From Address",
+   "options": "Address"
+  },
+  {
+   "fieldname": "kyc_section",
+   "fieldtype": "Section Break",
+   "label": "Verification"
+  },
+  {
+   "fieldname": "kyc_documents",
+   "fieldtype": "Table",
+   "label": "KYC Documents",
+   "options": "Seller KYC Document"
+  },
+  {
+   "fieldname": "payout_section",
+   "fieldtype": "Section Break",
+   "label": "Payout Accounts"
+  },
+  {
+   "fieldname": "payout_accounts",
+   "fieldtype": "Table",
+   "label": "Payout Accounts",
+   "options": "Seller Payout Account"
+  },
+  {
+   "fieldname": "profile_section",
+   "fieldtype": "Section Break",
+   "label": "Shop Profile",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "current_plan",
+   "fieldtype": "Link",
+   "label": "Subscription Plan",
+   "options": "Seller Plan",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "plan_expires_on",
+   "fieldtype": "Date",
+   "label": "Plan Expires On",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "working_hours",
+   "fieldtype": "Table",
+   "label": "Opening Hours",
+   "options": "Seller Working Hours"
+  },
+  {
+   "fieldname": "closed_dates",
+   "fieldtype": "Table",
+   "label": "Closed Dates",
+   "options": "Seller Closed Date"
+  },
+  {
+   "fieldname": "social_links",
+   "fieldtype": "Table",
+   "label": "Social Links",
+   "options": "Seller Social Link"
+  },
+  {
+   "fieldname": "gallery",
+   "fieldtype": "Table",
+   "label": "Gallery",
+   "options": "Seller Gallery Image"
+  },
+  {
+   "fieldname": "shop_tags",
+   "fieldtype": "Table",
+   "label": "Shop Tags",
+   "options": "Seller Tag"
+  },
+  {
+   "fieldname": "performance_section",
+   "fieldtype": "Section Break",
+   "label": "Performance",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "rating",
+   "fieldtype": "Float",
+   "label": "Rating",
+   "read_only": 1,
+   "no_copy": 1,
+   "precision": "2"
+  },
+  {
+   "fieldname": "rating_count",
+   "fieldtype": "Int",
+   "label": "Ratings",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "total_orders",
+   "fieldtype": "Int",
+   "label": "Orders",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "total_sales",
+   "fieldtype": "Currency",
+   "label": "Lifetime Sales",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "column_break_11",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "fulfilment_rate",
+   "fieldtype": "Percent",
+   "label": "Fulfilment Rate",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "cancel_rate",
+   "fieldtype": "Percent",
+   "label": "Cancellation Rate",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "return_rate",
+   "fieldtype": "Percent",
+   "label": "Return Rate",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "wallet_section",
+   "fieldtype": "Section Break",
+   "label": "Wallet",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "wallet_balance",
+   "fieldtype": "Currency",
+   "label": "Wallet Balance",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "available_balance",
+   "fieldtype": "Currency",
+   "label": "Available to Withdraw",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "column_break_12",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "pending_balance",
+   "fieldtype": "Currency",
+   "label": "Pending (Return Window)",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "approved_by",
+   "fieldtype": "Link",
+   "label": "Approved By",
+   "options": "User",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "approved_on",
+   "fieldtype": "Datetime",
+   "label": "Approved On",
+   "read_only": 1,
+   "no_copy": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-12 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace",
+ "name": "Marketplace Seller",
+ "owner": "Administrator",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Operations",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Catalog Moderator",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  },
+  {
+   "role": "Marketplace Finance",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  }
+ ],
+ "track_changes": 1,
+ "autoname": "field:seller_name",
+ "naming_rule": "By fieldname",
+ "title_field": "seller_name",
+ "image_field": "logo",
+ "search_fields": "customer,status,kra_pin",
+ "allow_rename": 1
+}

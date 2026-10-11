@@ -1,0 +1,23 @@
+{
+ "color": "#0891b2",
+ "creation": "2026-10-11 09:00:00.000000",
+ "docstatus": 0,
+ "doctype": "Number Card",
+ "document_type": "Marketplace Order",
+ "dynamic_filters_json": "[]",
+ "filters_json": "[[\"Marketplace Order\", \"status\", \"=\", \"Delivered\", false]]",
+ "function": "Count",
+ "idx": 0,
+ "is_public": 1,
+ "is_standard": 1,
+ "label": "Delivered Orders",
+ "modified": "2026-10-11 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace Orders",
+ "name": "Delivered Orders",
+ "owner": "Administrator",
+ "show_full_number": 0,
+ "show_percentage_stats": 0,
+ "stats_time_interval": "Monthly",
+ "type": "Document Type"
+}

@@ -1,0 +1,647 @@
+{
+ "actions": [],
+ "creation": "2026-10-12 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "listing_title",
+  "item",
+  "seller",
+  "status",
+  "column_break_13",
+  "listing_type",
+  "slug",
+  "item_group",
+  "brand",
+  "stock_uom",
+  "template_item",
+  "content_tab",
+  "short_description",
+  "description",
+  "images",
+  "video_url",
+  "attributes",
+  "search_keywords",
+  "variants_tab",
+  "has_variants",
+  "variant_axes",
+  "variants",
+  "price_tab",
+  "price",
+  "compare_at_price",
+  "price_includes_vat",
+  "vat_rate",
+  "column_break_14",
+  "min_order_qty",
+  "max_order_qty",
+  "order_multiple",
+  "lead_time_days",
+  "tiers_section",
+  "price_tiers",
+  "inventory_section",
+  "stock_mode",
+  "stock_qty",
+  "reserved_qty",
+  "column_break_15",
+  "available_qty",
+  "low_stock_threshold",
+  "allow_backorder",
+  "warehouse",
+  "crosssell_tab",
+  "bundle_items",
+  "size_chart",
+  "digital_tab",
+  "is_digital",
+  "digital_files",
+  "download_limit",
+  "delivery_tab",
+  "weight_kg",
+  "length_cm",
+  "width_cm",
+  "height_cm",
+  "column_break_16",
+  "is_fragile",
+  "cod_allowed",
+  "free_delivery",
+  "return_eligible",
+  "return_window_days",
+  "warranty",
+  "is_sponsored",
+  "sponsored_until",
+  "wishlist_count",
+  "seo_tab",
+  "seo_title",
+  "seo_description",
+  "insights_tab",
+  "rating_average",
+  "rating_count",
+  "sold_count",
+  "view_count",
+  "column_break_17",
+  "moderation_notes",
+  "approved_by",
+  "approved_on",
+  "published_on",
+  "primary_image"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "LST-.YYYY.-",
+   "default": "LST-.YYYY.-",
+   "hidden": 1
+  },
+  {
+   "fieldname": "listing_title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "item",
+   "fieldtype": "Link",
+   "label": "Item",
+   "options": "Item",
+   "reqd": 1,
+   "in_list_view": 1,
+   "set_only_once": 1,
+   "in_standard_filter": 1,
+   "description": "The catalogue item. Variants are separate items that share a template"
+  },
+  {
+   "fieldname": "seller",
+   "fieldtype": "Link",
+   "label": "Seller",
+   "options": "Marketplace Seller",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nPending Approval\nApproved\nPublished\nPaused\nRejected\nArchived",
+   "default": "Draft",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "column_break_13",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "listing_type",
+   "fieldtype": "Select",
+   "label": "Sold To",
+   "options": "Both\nB2C\nB2B",
+   "default": "Both",
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "slug",
+   "fieldtype": "Data",
+   "label": "URL Slug",
+   "unique": 1
+  },
+  {
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "label": "Category",
+   "options": "Item Group",
+   "fetch_from": "item.item_group",
+   "read_only": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "brand",
+   "fieldtype": "Link",
+   "label": "Brand",
+   "options": "Brand",
+   "fetch_from": "item.brand",
+   "read_only": 1
+  },
+  {
+   "fieldname": "stock_uom",
+   "fieldtype": "Link",
+   "label": "UOM",
+   "options": "UOM",
+   "fetch_from": "item.stock_uom",
+   "read_only": 1
+  },
+  {
+   "fieldname": "template_item",
+   "fieldtype": "Link",
+   "label": "Variant Of",
+   "options": "Item",
+   "fetch_from": "item.variant_of",
+   "read_only": 1
+  },
+  {
+   "fieldname": "content_tab",
+   "fieldtype": "Tab Break",
+   "label": "Content"
+  },
+  {
+   "fieldname": "short_description",
+   "fieldtype": "Small Text",
+   "label": "Short Description"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text Editor",
+   "label": "Description"
+  },
+  {
+   "fieldname": "images",
+   "fieldtype": "Table",
+   "label": "Images",
+   "options": "Listing Image"
+  },
+  {
+   "fieldname": "video_url",
+   "fieldtype": "Data",
+   "label": "Video URL"
+  },
+  {
+   "fieldname": "attributes",
+   "fieldtype": "Table",
+   "label": "Specifications",
+   "options": "Listing Attribute"
+  },
+  {
+   "fieldname": "search_keywords",
+   "fieldtype": "Small Text",
+   "label": "Search Keywords"
+  },
+  {
+   "fieldname": "variants_tab",
+   "fieldtype": "Tab Break",
+   "label": "Variants"
+  },
+  {
+   "fieldname": "has_variants",
+   "fieldtype": "Check",
+   "label": "Has Variants",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "variant_axes",
+   "fieldtype": "Table",
+   "label": "Variant Attributes",
+   "options": "Listing Variant Axis",
+   "description": "The attributes buyers choose between, for example Colour and Size"
+  },
+  {
+   "fieldname": "variants",
+   "fieldtype": "Table",
+   "label": "Variants",
+   "options": "Listing Variant"
+  },
+  {
+   "fieldname": "price_tab",
+   "fieldtype": "Tab Break",
+   "label": "Price and Stock"
+  },
+  {
+   "fieldname": "price",
+   "fieldtype": "Currency",
+   "label": "Retail Price",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "compare_at_price",
+   "fieldtype": "Currency",
+   "label": "Compare At Price",
+   "description": "Shown struck through when higher than the price"
+  },
+  {
+   "fieldname": "price_includes_vat",
+   "fieldtype": "Check",
+   "label": "Price Includes VAT",
+   "default": "1"
+  },
+  {
+   "fieldname": "vat_rate",
+   "fieldtype": "Percent",
+   "label": "VAT %",
+   "default": "16"
+  },
+  {
+   "fieldname": "column_break_14",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "min_order_qty",
+   "fieldtype": "Float",
+   "label": "Minimum Order Qty",
+   "default": "1"
+  },
+  {
+   "fieldname": "max_order_qty",
+   "fieldtype": "Float",
+   "label": "Maximum Order Qty"
+  },
+  {
+   "fieldname": "order_multiple",
+   "fieldtype": "Float",
+   "label": "Sold in Multiples Of",
+   "default": "1"
+  },
+  {
+   "fieldname": "lead_time_days",
+   "fieldtype": "Int",
+   "label": "Lead Time (days)",
+   "description": "B2B orders may ship later than retail ones"
+  },
+  {
+   "fieldname": "tiers_section",
+   "fieldtype": "Section Break",
+   "label": "Bulk Pricing"
+  },
+  {
+   "fieldname": "price_tiers",
+   "fieldtype": "Table",
+   "label": "Price Tiers",
+   "options": "Listing Price Tier"
+  },
+  {
+   "fieldname": "inventory_section",
+   "fieldtype": "Section Break",
+   "label": "Inventory"
+  },
+  {
+   "fieldname": "stock_mode",
+   "fieldtype": "Select",
+   "label": "Stock Source",
+   "options": "Seller Managed Quantity\nERPNext Stock",
+   "default": "Seller Managed Quantity",
+   "description": "ERPNext Stock reads the Bin of the seller's warehouse"
+  },
+  {
+   "fieldname": "stock_qty",
+   "fieldtype": "Float",
+   "label": "Quantity on Hand",
+   "depends_on": "eval:doc.stock_mode=='Seller Managed Quantity'",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "reserved_qty",
+   "fieldtype": "Float",
+   "label": "Reserved",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "column_break_15",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "available_qty",
+   "fieldtype": "Float",
+   "label": "Available",
+   "read_only": 1,
+   "no_copy": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "low_stock_threshold",
+   "fieldtype": "Float",
+   "label": "Low Stock Alert At",
+   "default": "5"
+  },
+  {
+   "fieldname": "allow_backorder",
+   "fieldtype": "Check",
+   "label": "Allow Backorder"
+  },
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "label": "Warehouse",
+   "options": "Warehouse",
+   "fetch_from": "seller.warehouse",
+   "read_only": 1
+  },
+  {
+   "fieldname": "crosssell_tab",
+   "fieldtype": "Tab Break",
+   "label": "Cross-sell"
+  },
+  {
+   "fieldname": "bundle_items",
+   "fieldtype": "Table",
+   "label": "Frequently Bought Together",
+   "options": "Listing Bundle Item"
+  },
+  {
+   "fieldname": "size_chart",
+   "fieldtype": "Link",
+   "label": "Size Chart",
+   "options": "Marketplace Size Chart"
+  },
+  {
+   "fieldname": "digital_tab",
+   "fieldtype": "Tab Break",
+   "label": "Digital Goods"
+  },
+  {
+   "fieldname": "is_digital",
+   "fieldtype": "Check",
+   "label": "Digital Product",
+   "description": "Nothing is shipped. Buyers download the files after payment"
+  },
+  {
+   "fieldname": "digital_files",
+   "fieldtype": "Table",
+   "label": "Files",
+   "options": "Listing Digital File",
+   "depends_on": "eval:doc.is_digital"
+  },
+  {
+   "fieldname": "download_limit",
+   "fieldtype": "Int",
+   "label": "Downloads per Purchase",
+   "default": "5",
+   "depends_on": "eval:doc.is_digital"
+  },
+  {
+   "fieldname": "delivery_tab",
+   "fieldtype": "Tab Break",
+   "label": "Delivery and Returns"
+  },
+  {
+   "fieldname": "weight_kg",
+   "fieldtype": "Float",
+   "label": "Weight (kg)",
+   "precision": "3"
+  },
+  {
+   "fieldname": "length_cm",
+   "fieldtype": "Float",
+   "label": "Length (cm)"
+  },
+  {
+   "fieldname": "width_cm",
+   "fieldtype": "Float",
+   "label": "Width (cm)"
+  },
+  {
+   "fieldname": "height_cm",
+   "fieldtype": "Float",
+   "label": "Height (cm)"
+  },
+  {
+   "fieldname": "column_break_16",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "is_fragile",
+   "fieldtype": "Check",
+   "label": "Fragile"
+  },
+  {
+   "fieldname": "cod_allowed",
+   "fieldtype": "Check",
+   "label": "Cash on Delivery Allowed",
+   "default": "1"
+  },
+  {
+   "fieldname": "free_delivery",
+   "fieldtype": "Check",
+   "label": "Free Delivery"
+  },
+  {
+   "fieldname": "return_eligible",
+   "fieldtype": "Check",
+   "label": "Returnable",
+   "default": "1"
+  },
+  {
+   "fieldname": "return_window_days",
+   "fieldtype": "Int",
+   "label": "Return Window (days)"
+  },
+  {
+   "fieldname": "warranty",
+   "fieldtype": "Data",
+   "label": "Warranty"
+  },
+  {
+   "fieldname": "is_sponsored",
+   "fieldtype": "Check",
+   "label": "Sponsored",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "sponsored_until",
+   "fieldtype": "Date",
+   "label": "Sponsored Until",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "wishlist_count",
+   "fieldtype": "Int",
+   "label": "Wishlisted By",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "seo_tab",
+   "fieldtype": "Tab Break",
+   "label": "SEO"
+  },
+  {
+   "fieldname": "seo_title",
+   "fieldtype": "Data",
+   "label": "SEO Title"
+  },
+  {
+   "fieldname": "seo_description",
+   "fieldtype": "Small Text",
+   "label": "SEO Description"
+  },
+  {
+   "fieldname": "insights_tab",
+   "fieldtype": "Tab Break",
+   "label": "Insights"
+  },
+  {
+   "fieldname": "rating_average",
+   "fieldtype": "Float",
+   "label": "Rating",
+   "read_only": 1,
+   "no_copy": 1,
+   "precision": "2"
+  },
+  {
+   "fieldname": "rating_count",
+   "fieldtype": "Int",
+   "label": "Reviews",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "sold_count",
+   "fieldtype": "Float",
+   "label": "Units Sold",
+   "read_only": 1,
+   "no_copy": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "view_count",
+   "fieldtype": "Int",
+   "label": "Views",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "column_break_17",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "moderation_notes",
+   "fieldtype": "Small Text",
+   "label": "Moderation Notes"
+  },
+  {
+   "fieldname": "approved_by",
+   "fieldtype": "Link",
+   "label": "Approved By",
+   "options": "User",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "approved_on",
+   "fieldtype": "Datetime",
+   "label": "Approved On",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "published_on",
+   "fieldtype": "Datetime",
+   "label": "Published On",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "primary_image",
+   "fieldtype": "Attach Image",
+   "label": "Primary Image",
+   "hidden": 1,
+   "read_only": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-12 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace",
+ "name": "Marketplace Listing",
+ "owner": "Administrator",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Catalog Moderator",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Operations",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  }
+ ],
+ "track_changes": 1,
+ "autoname": "naming_series:",
+ "naming_rule": "By \"Naming Series\" field",
+ "title_field": "listing_title",
+ "search_fields": "item,seller,item_group,brand",
+ "image_field": "primary_image"
+}

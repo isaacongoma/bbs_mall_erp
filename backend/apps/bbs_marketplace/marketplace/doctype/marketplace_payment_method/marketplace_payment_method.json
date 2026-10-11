@@ -1,0 +1,89 @@
+{
+ "actions": [],
+ "creation": "2026-10-12 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "method",
+  "enabled",
+  "audience",
+  "mode_of_payment",
+  "clearing_account",
+  "fee_percent",
+  "fee_flat",
+  "min_amount",
+  "max_amount"
+ ],
+ "fields": [
+  {
+   "fieldname": "method",
+   "fieldtype": "Select",
+   "label": "Method",
+   "options": "M-Pesa\nCard\nBank Transfer\nCash on Delivery\nWallet\nCredit Terms\nAirtel Money",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "audience",
+   "fieldtype": "Select",
+   "label": "Available To",
+   "options": "Both\nB2C\nB2B",
+   "default": "Both",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "mode_of_payment",
+   "fieldtype": "Link",
+   "label": "Mode of Payment",
+   "options": "Mode of Payment",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "clearing_account",
+   "fieldtype": "Link",
+   "label": "Clearing Account",
+   "options": "Account",
+   "in_list_view": 1,
+   "description": "Where the money sits until it reaches the bank"
+  },
+  {
+   "fieldname": "fee_percent",
+   "fieldtype": "Percent",
+   "label": "Gateway Fee %"
+  },
+  {
+   "fieldname": "fee_flat",
+   "fieldtype": "Currency",
+   "label": "Gateway Fee (flat)"
+  },
+  {
+   "fieldname": "min_amount",
+   "fieldtype": "Currency",
+   "label": "Minimum Order"
+  },
+  {
+   "fieldname": "max_amount",
+   "fieldtype": "Currency",
+   "label": "Maximum Order"
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-12 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace",
+ "name": "Marketplace Payment Method",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "editable_grid": 1,
+ "permissions": [],
+ "istable": 1
+}

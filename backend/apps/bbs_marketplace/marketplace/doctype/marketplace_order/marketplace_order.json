@@ -1,0 +1,418 @@
+{
+ "actions": [],
+ "creation": "2026-10-12 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "customer",
+  "buyer_type",
+  "order_date",
+  "source",
+  "column_break_21",
+  "status",
+  "payment_status",
+  "payment_method",
+  "company",
+  "delivery_section",
+  "recipient_name",
+  "recipient_phone",
+  "shipping_address",
+  "address_snapshot",
+  "column_break_22",
+  "delivery_zone",
+  "delivery_method",
+  "pickup_station",
+  "delivery_notes",
+  "items_section",
+  "items",
+  "totals_section",
+  "subtotal",
+  "vat_total",
+  "discount_total",
+  "column_break_23",
+  "shipping_total",
+  "grand_total",
+  "paid_amount",
+  "outstanding_amount",
+  "promo_section",
+  "coupon_code",
+  "platform_discount",
+  "column_break_24",
+  "seller_discount",
+  "b2b_section",
+  "purchase_order_no",
+  "payment_terms_template",
+  "kra_pin",
+  "column_break_25",
+  "business_name",
+  "invoice_required",
+  "links_section",
+  "sales_order",
+  "sales_invoice",
+  "cancel_reason",
+  "status_log"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "MKT-.YYYY.-",
+   "default": "MKT-.YYYY.-",
+   "hidden": 1
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "buyer_type",
+   "fieldtype": "Select",
+   "label": "Buyer Type",
+   "options": "B2C\nB2B",
+   "default": "B2C",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "order_date",
+   "fieldtype": "Datetime",
+   "label": "Order Date",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "source",
+   "fieldtype": "Select",
+   "label": "Source",
+   "options": "Website\nMobile App\nAdmin\nAPI\nPhone",
+   "default": "Website"
+  },
+  {
+   "fieldname": "column_break_21",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Pending Payment\nPaid\nProcessing\nPartially Shipped\nShipped\nDelivered\nCompleted\nCancelled\nRefunded\nFailed",
+   "default": "Pending Payment",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "payment_status",
+   "fieldtype": "Select",
+   "label": "Payment",
+   "options": "Unpaid\nPending\nPaid\nPartially Refunded\nRefunded\nFailed",
+   "default": "Unpaid",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "payment_method",
+   "fieldtype": "Select",
+   "label": "Payment Method",
+   "options": "M-Pesa\nCard\nBank Transfer\nCash on Delivery\nWallet\nCredit Terms\nAirtel Money"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "delivery_section",
+   "fieldtype": "Section Break",
+   "label": "Delivery"
+  },
+  {
+   "fieldname": "recipient_name",
+   "fieldtype": "Data",
+   "label": "Recipient"
+  },
+  {
+   "fieldname": "recipient_phone",
+   "fieldtype": "Data",
+   "label": "Phone",
+   "options": "Phone"
+  },
+  {
+   "fieldname": "shipping_address",
+   "fieldtype": "Link",
+   "label": "Address",
+   "options": "Address"
+  },
+  {
+   "fieldname": "address_snapshot",
+   "fieldtype": "Small Text",
+   "label": "Delivery Address"
+  },
+  {
+   "fieldname": "column_break_22",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "delivery_zone",
+   "fieldtype": "Link",
+   "label": "Delivery Zone",
+   "options": "Delivery Zone"
+  },
+  {
+   "fieldname": "delivery_method",
+   "fieldtype": "Select",
+   "label": "Delivery Method",
+   "options": "Courier Delivery\nStation Pickup\nSeller Delivery\nMall Collection",
+   "default": "Courier Delivery"
+  },
+  {
+   "fieldname": "pickup_station",
+   "fieldtype": "Link",
+   "label": "Pickup Station",
+   "options": "Pickup Station"
+  },
+  {
+   "fieldname": "delivery_notes",
+   "fieldtype": "Small Text",
+   "label": "Delivery Notes"
+  },
+  {
+   "fieldname": "items_section",
+   "fieldtype": "Section Break",
+   "label": "Items"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "Marketplace Order Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "totals_section",
+   "fieldtype": "Section Break",
+   "label": "Totals"
+  },
+  {
+   "fieldname": "subtotal",
+   "fieldtype": "Currency",
+   "label": "Subtotal (excl. VAT)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "vat_total",
+   "fieldtype": "Currency",
+   "label": "VAT",
+   "read_only": 1
+  },
+  {
+   "fieldname": "discount_total",
+   "fieldtype": "Currency",
+   "label": "Discount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_23",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "shipping_total",
+   "fieldtype": "Currency",
+   "label": "Delivery Fee",
+   "read_only": 1
+  },
+  {
+   "fieldname": "grand_total",
+   "fieldtype": "Currency",
+   "label": "Grand Total",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "paid_amount",
+   "fieldtype": "Currency",
+   "label": "Paid",
+   "read_only": 1
+  },
+  {
+   "fieldname": "outstanding_amount",
+   "fieldtype": "Currency",
+   "label": "Balance",
+   "read_only": 1
+  },
+  {
+   "fieldname": "promo_section",
+   "fieldtype": "Section Break",
+   "label": "Promotions",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "coupon_code",
+   "fieldtype": "Link",
+   "label": "Coupon",
+   "options": "Coupon Code"
+  },
+  {
+   "fieldname": "platform_discount",
+   "fieldtype": "Currency",
+   "label": "Platform Funded Discount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_24",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "seller_discount",
+   "fieldtype": "Currency",
+   "label": "Seller Funded Discount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "b2b_section",
+   "fieldtype": "Section Break",
+   "label": "Business Buyer",
+   "collapsible": 1,
+   "depends_on": "eval:doc.buyer_type=='B2B'"
+  },
+  {
+   "fieldname": "purchase_order_no",
+   "fieldtype": "Data",
+   "label": "Buyer PO No"
+  },
+  {
+   "fieldname": "payment_terms_template",
+   "fieldtype": "Link",
+   "label": "Credit Terms",
+   "options": "Payment Terms Template"
+  },
+  {
+   "fieldname": "kra_pin",
+   "fieldtype": "Data",
+   "label": "Buyer KRA PIN"
+  },
+  {
+   "fieldname": "column_break_25",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "business_name",
+   "fieldtype": "Data",
+   "label": "Business Name"
+  },
+  {
+   "fieldname": "invoice_required",
+   "fieldtype": "Check",
+   "label": "Tax Invoice Required"
+  },
+  {
+   "fieldname": "links_section",
+   "fieldtype": "Section Break",
+   "label": "Links",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "sales_order",
+   "fieldtype": "Link",
+   "label": "Sales Order (Own Stock)",
+   "options": "Sales Order",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "sales_invoice",
+   "fieldtype": "Link",
+   "label": "Sales Invoice (Own Stock)",
+   "options": "Sales Invoice",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "cancel_reason",
+   "fieldtype": "Small Text",
+   "label": "Cancellation Reason"
+  },
+  {
+   "fieldname": "status_log",
+   "fieldtype": "Table",
+   "label": "Status Log",
+   "options": "Order Status Event",
+   "read_only": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-12 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace",
+ "name": "Marketplace Order",
+ "owner": "Administrator",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Operations",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Catalog Moderator",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  },
+  {
+   "role": "Marketplace Finance",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  }
+ ],
+ "track_changes": 1,
+ "title_field": "customer",
+ "search_fields": "customer,status,payment_status,buyer_type",
+ "autoname": "naming_series:",
+ "naming_rule": "By \"Naming Series\" field"
+}

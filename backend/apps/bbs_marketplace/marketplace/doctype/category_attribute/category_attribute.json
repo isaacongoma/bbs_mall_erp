@@ -1,0 +1,53 @@
+{
+ "actions": [],
+ "creation": "2026-10-12 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "attribute",
+  "use_for_variants",
+  "filterable",
+  "required"
+ ],
+ "fields": [
+  {
+   "fieldname": "attribute",
+   "fieldtype": "Link",
+   "label": "Attribute",
+   "options": "Item Attribute",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "use_for_variants",
+   "fieldtype": "Check",
+   "label": "Buyers Choose Between Values",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "filterable",
+   "fieldtype": "Check",
+   "label": "Show as Filter",
+   "default": "1",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "required",
+   "fieldtype": "Check",
+   "label": "Required for Sellers",
+   "in_list_view": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-12 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace",
+ "name": "Category Attribute",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "editable_grid": 1,
+ "permissions": [],
+ "istable": 1
+}

@@ -1,0 +1,40 @@
+{
+ "based_on": "order_date",
+ "chart_name": "Marketplace Sales by Month",
+ "chart_type": "Sum",
+ "color": "#f97316",
+ "creation": "2026-10-11 09:00:00.000000",
+ "docstatus": 0,
+ "doctype": "Dashboard Chart",
+ "document_type": "Marketplace Order",
+ "dynamic_filters_json": "[]",
+ "filters_json": "[]",
+ "idx": 0,
+ "is_public": 1,
+ "is_standard": 1,
+ "modified": "2026-10-11 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace Orders",
+ "name": "Marketplace Sales by Month",
+ "owner": "Administrator",
+ "roles": [
+  {
+   "role": "Marketplace Manager"
+  },
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Accounts Manager"
+  }
+ ],
+ "show_values_over_chart": 0,
+ "source": "",
+ "time_interval": "Monthly",
+ "timeseries": 1,
+ "timespan": "Last Year",
+ "type": "Bar",
+ "use_report_chart": 0,
+ "value_based_on": "grand_total",
+ "y_axis": []
+}

@@ -1,0 +1,39 @@
+{
+ "actions": [],
+ "creation": "2026-10-12 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "platform",
+  "url"
+ ],
+ "fields": [
+  {
+   "fieldname": "platform",
+   "fieldtype": "Select",
+   "label": "Platform",
+   "options": "Website\nFacebook\nInstagram\nX\nTikTok\nYouTube\nWhatsApp",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "url",
+   "fieldtype": "Data",
+   "label": "Link",
+   "reqd": 1,
+   "in_list_view": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-12 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace",
+ "name": "Seller Social Link",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "editable_grid": 1,
+ "permissions": [],
+ "istable": 1
+}

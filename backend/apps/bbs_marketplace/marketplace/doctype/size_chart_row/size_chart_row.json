@@ -1,0 +1,38 @@
+{
+ "actions": [],
+ "creation": "2026-10-12 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "size_label",
+  "measurements"
+ ],
+ "fields": [
+  {
+   "fieldname": "size_label",
+   "fieldtype": "Data",
+   "label": "Size",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "measurements",
+   "fieldtype": "Small Text",
+   "label": "Measurements",
+   "description": "For example Chest 96 cm, Waist 80 cm",
+   "in_list_view": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-12 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace",
+ "name": "Size Chart Row",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "editable_grid": 1,
+ "permissions": [],
+ "istable": 1
+}

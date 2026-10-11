@@ -32,6 +32,12 @@ const NAV: NavItem[] = [
     needs: 'operations',
     feature: 'sales_declarations',
   },
+  { to: '/tenant/shop', label: 'My Shop', icon: 'lucide-store', needs: 'finance' },
+  { to: '/tenant/shop/products', label: 'Products', icon: 'lucide-package', needs: 'finance' },
+  { to: '/tenant/shop/orders', label: 'Shop Orders', icon: 'lucide-shopping-bag', needs: 'finance' },
+  { to: '/tenant/shop/wallet', label: 'Shop Wallet', icon: 'lucide-piggy-bank', needs: 'finance' },
+  { to: '/tenant/shop/growth', label: 'Plans and Ads', icon: 'lucide-rocket', needs: 'finance' },
+  { to: '/tenant/shop/profile', label: 'Shop Profile', icon: 'lucide-settings-2', needs: 'finance' },
   { to: '/tenant/notices', label: 'Notices', icon: 'lucide-megaphone' },
   { to: '/tenant/team', label: 'Team', icon: 'lucide-users', needs: 'manage' },
 ]
@@ -43,7 +49,8 @@ const ACCESS: Record<AccessLevel, string[]> = {
 }
 
 function isActive(path: string, current: string) {
-  return path === '/tenant' ? current === '/tenant' : current === path || current.startsWith(`${path}/`)
+  if (path === '/tenant' || path === '/tenant/shop') return current === path
+  return current === path || current.startsWith(`${path}/`)
 }
 
 export function PortalLayout({

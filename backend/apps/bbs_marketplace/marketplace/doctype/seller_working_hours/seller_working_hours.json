@@ -1,0 +1,52 @@
+{
+ "actions": [],
+ "creation": "2026-10-12 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "day",
+  "is_closed",
+  "opens_at",
+  "closes_at"
+ ],
+ "fields": [
+  {
+   "fieldname": "day",
+   "fieldtype": "Select",
+   "label": "Day",
+   "options": "Monday\nTuesday\nWednesday\nThursday\nFriday\nSaturday\nSunday",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "is_closed",
+   "fieldtype": "Check",
+   "label": "Closed",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "opens_at",
+   "fieldtype": "Time",
+   "label": "Opens",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "closes_at",
+   "fieldtype": "Time",
+   "label": "Closes",
+   "in_list_view": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-12 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace",
+ "name": "Seller Working Hours",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "editable_grid": 1,
+ "permissions": [],
+ "istable": 1
+}

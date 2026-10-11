@@ -1,0 +1,157 @@
+{
+ "actions": [],
+ "creation": "2026-10-12 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "event_name",
+  "audience",
+  "enabled",
+  "column_break_59",
+  "send_email",
+  "send_sms",
+  "email_section",
+  "email_subject",
+  "email_body",
+  "sms_section",
+  "sms_body"
+ ],
+ "fields": [
+  {
+   "fieldname": "event_name",
+   "fieldtype": "Select",
+   "label": "Event",
+   "options": "Abandoned Cart Reminder\nOrder Placed\nPayment Received\nPayment Failed\nOrder Partially Shipped\nOrder Shipped\nOut for Delivery\nOrder Delivered\nDelivery Failed\nOrder Cancelled\nOrder Refunded\nReturn Requested\nReturn Approved\nReturn Rejected\nReturn Received\nRefund Issued\nNew Order for Seller\nSeller Order Cancelled\nSeller Return Request\nWithdrawal Requested\nWithdrawal Paid\nWithdrawal Failed\nListing Approved\nListing Rejected\nSeller Approved\nSeller Suspended\nLate Order Warning\nLow Stock Alert\nSubscription Activated\nAd Activated\nSeller Application Received\nListing Awaiting Review\nWithdrawal Awaiting Approval",
+   "reqd": 1,
+   "unique": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "audience",
+   "fieldtype": "Select",
+   "label": "Sent To",
+   "options": "Buyer\nSeller\nStaff",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "column_break_59",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "send_email",
+   "fieldtype": "Check",
+   "label": "Send Email",
+   "default": "1",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "send_sms",
+   "fieldtype": "Check",
+   "label": "Send SMS",
+   "default": "1",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "email_section",
+   "fieldtype": "Section Break",
+   "label": "Email"
+  },
+  {
+   "fieldname": "email_subject",
+   "fieldtype": "Data",
+   "label": "Subject"
+  },
+  {
+   "fieldname": "email_body",
+   "fieldtype": "Text Editor",
+   "label": "Message",
+   "description": "Jinja. Available: order, doc, customer_name, seller_name, tracking_no, tracking_url, order_url, brand, support_phone, amount"
+  },
+  {
+   "fieldname": "sms_section",
+   "fieldtype": "Section Break",
+   "label": "SMS"
+  },
+  {
+   "fieldname": "sms_body",
+   "fieldtype": "Small Text",
+   "label": "Text",
+   "description": "Keep it under 160 characters. Same variables as the email"
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-12 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace",
+ "name": "Marketplace Notification Template",
+ "owner": "Administrator",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Operations",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Catalog Moderator",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  },
+  {
+   "role": "Marketplace Finance",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  }
+ ],
+ "track_changes": 1,
+ "autoname": "field:event_name",
+ "naming_rule": "By fieldname",
+ "title_field": "event_name"
+}

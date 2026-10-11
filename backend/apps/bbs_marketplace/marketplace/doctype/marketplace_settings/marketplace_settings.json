@@ -1,0 +1,528 @@
+{
+ "actions": [],
+ "creation": "2026-10-12 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "currency",
+  "column_break_1",
+  "enable_b2c",
+  "enable_b2b",
+  "require_listing_approval",
+  "allow_guest_checkout",
+  "commission_section",
+  "default_commission_rate",
+  "commission_vat_rate",
+  "return_window_days",
+  "hold_days_after_delivery",
+  "column_break_2",
+  "min_withdrawal",
+  "max_withdrawal_per_day",
+  "withdrawal_fee_percent",
+  "withdrawal_fee_flat",
+  "auto_approve_below",
+  "require_kyc_for_withdrawal",
+  "orders_section",
+  "seller_accept_hours",
+  "seller_ship_hours",
+  "cart_expiry_hours",
+  "cart_reminders_enabled",
+  "cart_first_reminder_hours",
+  "cart_second_reminder_hours",
+  "unpaid_order_expiry_minutes",
+  "column_break_3",
+  "stock_reservation_minutes",
+  "default_courier",
+  "default_delivery_zone",
+  "pricing_section",
+  "price_list_b2c",
+  "price_list_b2b",
+  "column_break_4",
+  "prices_include_vat",
+  "default_vat_rate",
+  "platform_seller",
+  "own_stock_warehouse",
+  "accounts_section",
+  "cost_center",
+  "customer_advance_account",
+  "seller_wallet_account",
+  "payouts_in_transit_account",
+  "column_break_5",
+  "commission_income_account",
+  "shipping_income_account",
+  "withdrawal_fee_account",
+  "marketing_expense_account",
+  "output_vat_account",
+  "refund_clearing_account",
+  "payout_bank_account",
+  "column_break_6",
+  "storefront_section",
+  "storefront_url",
+  "brand_name",
+  "support_phone",
+  "support_email",
+  "column_break_7",
+  "notifications_enabled",
+  "send_email_notifications",
+  "send_sms_notifications",
+  "staff_notification_emails",
+  "plans_section",
+  "subscription_income_account",
+  "advertising_income_account",
+  "methods_section",
+  "payment_methods"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency",
+   "fetch_from": "company.default_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "enable_b2c",
+   "fieldtype": "Check",
+   "label": "Enable B2C (Retail)",
+   "default": "1"
+  },
+  {
+   "fieldname": "enable_b2b",
+   "fieldtype": "Check",
+   "label": "Enable B2B (Wholesale)",
+   "default": "1"
+  },
+  {
+   "fieldname": "require_listing_approval",
+   "fieldtype": "Check",
+   "label": "Moderate Every New Listing",
+   "default": "1"
+  },
+  {
+   "fieldname": "allow_guest_checkout",
+   "fieldtype": "Check",
+   "label": "Allow Guest Checkout (B2C)",
+   "default": "0"
+  },
+  {
+   "fieldname": "commission_section",
+   "fieldtype": "Section Break",
+   "label": "Commission and Wallet"
+  },
+  {
+   "fieldname": "default_commission_rate",
+   "fieldtype": "Percent",
+   "label": "Default Commission %",
+   "default": "10",
+   "description": "Used when no Commission Rule matches"
+  },
+  {
+   "fieldname": "commission_vat_rate",
+   "fieldtype": "Percent",
+   "label": "VAT on Commission %",
+   "default": "16",
+   "description": "BBS Mall charges VAT on its own service"
+  },
+  {
+   "fieldname": "return_window_days",
+   "fieldtype": "Int",
+   "label": "Default Return Window (days)",
+   "default": "7"
+  },
+  {
+   "fieldname": "hold_days_after_delivery",
+   "fieldtype": "Int",
+   "label": "Hold Days After Delivery",
+   "default": "7",
+   "description": "Sale proceeds stay in Pending until the return window closes"
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "min_withdrawal",
+   "fieldtype": "Currency",
+   "label": "Minimum Withdrawal",
+   "default": "500"
+  },
+  {
+   "fieldname": "max_withdrawal_per_day",
+   "fieldtype": "Currency",
+   "label": "Maximum Withdrawal per Day",
+   "default": "500000"
+  },
+  {
+   "fieldname": "withdrawal_fee_percent",
+   "fieldtype": "Percent",
+   "label": "Withdrawal Fee %"
+  },
+  {
+   "fieldname": "withdrawal_fee_flat",
+   "fieldtype": "Currency",
+   "label": "Withdrawal Fee (flat)"
+  },
+  {
+   "fieldname": "auto_approve_below",
+   "fieldtype": "Currency",
+   "label": "Auto Approve Withdrawals Up To",
+   "default": "0",
+   "description": "0 means every withdrawal needs approval"
+  },
+  {
+   "fieldname": "require_kyc_for_withdrawal",
+   "fieldtype": "Check",
+   "label": "Require Verified KYC to Withdraw",
+   "default": "1"
+  },
+  {
+   "fieldname": "orders_section",
+   "fieldtype": "Section Break",
+   "label": "Orders"
+  },
+  {
+   "fieldname": "seller_accept_hours",
+   "fieldtype": "Int",
+   "label": "Seller Must Accept Within (hours)",
+   "default": "24"
+  },
+  {
+   "fieldname": "seller_ship_hours",
+   "fieldtype": "Int",
+   "label": "Seller Must Ship Within (hours)",
+   "default": "48"
+  },
+  {
+   "fieldname": "cart_expiry_hours",
+   "fieldtype": "Int",
+   "label": "Abandon Carts After (hours)",
+   "default": "72"
+  },
+  {
+   "fieldname": "cart_reminders_enabled",
+   "fieldtype": "Check",
+   "label": "Email Abandoned Cart Reminders",
+   "default": "1"
+  },
+  {
+   "fieldname": "cart_first_reminder_hours",
+   "fieldtype": "Int",
+   "label": "First Reminder After (hours)",
+   "default": "4"
+  },
+  {
+   "fieldname": "cart_second_reminder_hours",
+   "fieldtype": "Int",
+   "label": "Second Reminder After (hours)",
+   "default": "48",
+   "description": "Set to 0 for one reminder only"
+  },
+  {
+   "fieldname": "unpaid_order_expiry_minutes",
+   "fieldtype": "Int",
+   "label": "Cancel Unpaid Orders After (minutes)",
+   "default": "30"
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "stock_reservation_minutes",
+   "fieldtype": "Int",
+   "label": "Hold Stock for Unpaid Orders (minutes)",
+   "default": "30"
+  },
+  {
+   "fieldname": "default_courier",
+   "fieldtype": "Link",
+   "label": "Default Courier",
+   "options": "Courier"
+  },
+  {
+   "fieldname": "default_delivery_zone",
+   "fieldtype": "Link",
+   "label": "Default Delivery Zone",
+   "options": "Delivery Zone"
+  },
+  {
+   "fieldname": "pricing_section",
+   "fieldtype": "Section Break",
+   "label": "Price Lists and Tax"
+  },
+  {
+   "fieldname": "price_list_b2c",
+   "fieldtype": "Link",
+   "label": "B2C Price List",
+   "options": "Price List"
+  },
+  {
+   "fieldname": "price_list_b2b",
+   "fieldtype": "Link",
+   "label": "B2B Price List",
+   "options": "Price List"
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "prices_include_vat",
+   "fieldtype": "Check",
+   "label": "Listed Prices Include VAT",
+   "default": "1"
+  },
+  {
+   "fieldname": "default_vat_rate",
+   "fieldtype": "Percent",
+   "label": "Default VAT %",
+   "default": "16"
+  },
+  {
+   "fieldname": "platform_seller",
+   "fieldtype": "Link",
+   "label": "BBS Mall Own-Stock Seller",
+   "options": "Marketplace Seller"
+  },
+  {
+   "fieldname": "own_stock_warehouse",
+   "fieldtype": "Link",
+   "label": "Own-Stock Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "accounts_section",
+   "fieldtype": "Section Break",
+   "label": "Accounts"
+  },
+  {
+   "fieldname": "cost_center",
+   "fieldtype": "Link",
+   "label": "Cost Center",
+   "options": "Cost Center"
+  },
+  {
+   "fieldname": "customer_advance_account",
+   "fieldtype": "Link",
+   "label": "Customer Receipts Held (Liability)",
+   "options": "Account",
+   "description": "Money received from buyers before the order is settled"
+  },
+  {
+   "fieldname": "seller_wallet_account",
+   "fieldtype": "Link",
+   "label": "Seller Wallet Payable (Liability)",
+   "options": "Account",
+   "description": "What BBS Mall owes sellers. One ledger per seller through the Supplier party"
+  },
+  {
+   "fieldname": "payouts_in_transit_account",
+   "fieldtype": "Link",
+   "label": "Payouts in Transit",
+   "options": "Account"
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "commission_income_account",
+   "fieldtype": "Link",
+   "label": "Commission Income",
+   "options": "Account"
+  },
+  {
+   "fieldname": "shipping_income_account",
+   "fieldtype": "Link",
+   "label": "Delivery Fee Income",
+   "options": "Account"
+  },
+  {
+   "fieldname": "withdrawal_fee_account",
+   "fieldtype": "Link",
+   "label": "Withdrawal Fee Income",
+   "options": "Account"
+  },
+  {
+   "fieldname": "marketing_expense_account",
+   "fieldtype": "Link",
+   "label": "Promotion Expense (Platform Funded Discounts)",
+   "options": "Account"
+  },
+  {
+   "fieldname": "output_vat_account",
+   "fieldtype": "Link",
+   "label": "Output VAT Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "refund_clearing_account",
+   "fieldtype": "Link",
+   "label": "Refunds Clearing",
+   "options": "Account"
+  },
+  {
+   "fieldname": "payout_bank_account",
+   "fieldtype": "Link",
+   "label": "Payout Bank or M-Pesa Account",
+   "options": "Account",
+   "description": "Where withdrawals are paid from"
+  },
+  {
+   "fieldname": "column_break_6",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "storefront_section",
+   "fieldtype": "Section Break",
+   "label": "Storefront and Notifications"
+  },
+  {
+   "fieldname": "storefront_url",
+   "fieldtype": "Data",
+   "label": "Storefront URL",
+   "description": "Used for order and tracking links in emails and SMS, for example https://shop.bbsmall.co.ke"
+  },
+  {
+   "fieldname": "brand_name",
+   "fieldtype": "Data",
+   "label": "Brand Name",
+   "default": "BBS Mall"
+  },
+  {
+   "fieldname": "support_phone",
+   "fieldtype": "Data",
+   "label": "Support Phone"
+  },
+  {
+   "fieldname": "support_email",
+   "fieldtype": "Data",
+   "label": "Support Email"
+  },
+  {
+   "fieldname": "column_break_7",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "notifications_enabled",
+   "fieldtype": "Check",
+   "label": "Send Order Notifications",
+   "default": "1"
+  },
+  {
+   "fieldname": "send_email_notifications",
+   "fieldtype": "Check",
+   "label": "Send Emails",
+   "default": "1"
+  },
+  {
+   "fieldname": "send_sms_notifications",
+   "fieldtype": "Check",
+   "label": "Send SMS",
+   "default": "1"
+  },
+  {
+   "fieldname": "staff_notification_emails",
+   "fieldtype": "Small Text",
+   "label": "Staff Alert Emails",
+   "description": "One per line. Marketplace Managers are alerted as well"
+  },
+  {
+   "fieldname": "plans_section",
+   "fieldtype": "Section Break",
+   "label": "Subscriptions and Advertising"
+  },
+  {
+   "fieldname": "subscription_income_account",
+   "fieldtype": "Link",
+   "label": "Seller Subscription Income",
+   "options": "Account"
+  },
+  {
+   "fieldname": "advertising_income_account",
+   "fieldtype": "Link",
+   "label": "Advertising Income",
+   "options": "Account"
+  },
+  {
+   "fieldname": "methods_section",
+   "fieldtype": "Section Break",
+   "label": "Payment Methods"
+  },
+  {
+   "fieldname": "payment_methods",
+   "fieldtype": "Table",
+   "label": "Payment Methods",
+   "options": "Marketplace Payment Method"
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-12 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace",
+ "name": "Marketplace Settings",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Operations",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Finance",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  }
+ ],
+ "track_changes": 1,
+ "issingle": 1
+}

@@ -1,0 +1,160 @@
+{
+ "cards": [
+  {
+   "card": "Active Sellers",
+   "doctype": "Number Card Link"
+  },
+  {
+   "card": "Sellers Awaiting Approval",
+   "doctype": "Number Card Link"
+  },
+  {
+   "card": "Published Listings",
+   "doctype": "Number Card Link"
+  },
+  {
+   "card": "Listings Awaiting Review",
+   "doctype": "Number Card Link"
+  },
+  {
+   "card": "Open Support Tickets",
+   "doctype": "Number Card Link"
+  },
+  {
+   "card": "Orders Awaiting Payment",
+   "doctype": "Number Card Link"
+  },
+  {
+   "card": "Orders In Progress",
+   "doctype": "Number Card Link"
+  },
+  {
+   "card": "Paid Order Value",
+   "doctype": "Number Card Link"
+  },
+  {
+   "card": "New Seller Orders",
+   "doctype": "Number Card Link"
+  },
+  {
+   "card": "Open Return Requests",
+   "doctype": "Number Card Link"
+  },
+  {
+   "card": "Delivered Orders",
+   "doctype": "Number Card Link"
+  },
+  {
+   "card": "Wallet Liability",
+   "doctype": "Number Card Link"
+  },
+  {
+   "card": "Available to Withdraw",
+   "doctype": "Number Card Link"
+  },
+  {
+   "card": "Funds on Hold",
+   "doctype": "Number Card Link"
+  },
+  {
+   "card": "Pending Withdrawals",
+   "doctype": "Number Card Link"
+  },
+  {
+   "card": "Paid Out",
+   "doctype": "Number Card Link"
+  },
+  {
+   "card": "Shipments In Transit",
+   "doctype": "Number Card Link"
+  },
+  {
+   "card": "Failed Deliveries",
+   "doctype": "Number Card Link"
+  },
+  {
+   "card": "COD Awaiting Remittance",
+   "doctype": "Number Card Link"
+  },
+  {
+   "card": "Active Campaigns",
+   "doctype": "Number Card Link"
+  },
+  {
+   "card": "Scheduled Campaigns",
+   "doctype": "Number Card Link"
+  },
+  {
+   "card": "Running Ads",
+   "doctype": "Number Card Link"
+  },
+  {
+   "card": "Active Subscriptions",
+   "doctype": "Number Card Link"
+  }
+ ],
+ "charts": [
+  {
+   "chart": "Sellers by Status",
+   "doctype": "Dashboard Chart Link",
+   "width": "Half"
+  },
+  {
+   "chart": "Listings by Status",
+   "doctype": "Dashboard Chart Link",
+   "width": "Half"
+  },
+  {
+   "chart": "Orders by Status",
+   "doctype": "Dashboard Chart Link",
+   "width": "Half"
+  },
+  {
+   "chart": "Marketplace Sales by Month",
+   "doctype": "Dashboard Chart Link",
+   "width": "Half"
+  },
+  {
+   "chart": "Commission Earned by Month",
+   "doctype": "Dashboard Chart Link",
+   "width": "Half"
+  },
+  {
+   "chart": "Withdrawals by Status",
+   "doctype": "Dashboard Chart Link",
+   "width": "Half"
+  },
+  {
+   "chart": "Payouts by Month",
+   "doctype": "Dashboard Chart Link",
+   "width": "Half"
+  },
+  {
+   "chart": "Shipments by Status",
+   "doctype": "Dashboard Chart Link",
+   "width": "Half"
+  },
+  {
+   "chart": "Shipments by Courier",
+   "doctype": "Dashboard Chart Link",
+   "width": "Half"
+  },
+  {
+   "chart": "Campaigns by Status",
+   "doctype": "Dashboard Chart Link",
+   "width": "Half"
+  }
+ ],
+ "creation": "2026-10-11 09:00:00.000000",
+ "dashboard_name": "Marketplace",
+ "docstatus": 0,
+ "doctype": "Dashboard",
+ "idx": 0,
+ "is_default": 0,
+ "is_standard": 1,
+ "modified": "2026-10-11 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace",
+ "name": "Marketplace",
+ "owner": "Administrator"
+}

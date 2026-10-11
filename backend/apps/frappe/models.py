@@ -29,7 +29,7 @@ class Series(models.Model):
 class Singles(models.Model):
     doctype = models.CharField(max_length=140)
     field = models.CharField(max_length=140)
-    value = models.TextField(blank=True, default="")
+    value = models.TextField(blank=True, default="", null=True)
 
     class Meta:
         db_table = "tabSingles"

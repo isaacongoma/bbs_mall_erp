@@ -1,0 +1,21 @@
+{
+ "action": "Create Entry",
+ "action_label": "Add Seller",
+ "creation": "2026-10-11 09:00:00.000000",
+ "description": "Link a tenant customer, verify KYC and payout accounts, then approve the seller. See [Sellers](/desk/marketplace-seller).",
+ "docstatus": 0,
+ "doctype": "Onboarding Step",
+ "idx": 0,
+ "is_complete": 0,
+ "is_single": 0,
+ "is_skipped": 0,
+ "modified": "2026-10-11 09:00:00.000000",
+ "modified_by": "Administrator",
+ "name": "Onboard a Seller",
+ "owner": "Administrator",
+ "reference_document": "Marketplace Seller",
+ "show_form_tour": 0,
+ "show_full_form": 1,
+ "title": "Register a tenant as a seller",
+ "validate_action": 1
+}

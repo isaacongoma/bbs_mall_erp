@@ -1,0 +1,268 @@
+{
+ "actions": [],
+ "creation": "2026-10-12 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "marketplace_order",
+  "seller_order",
+  "customer",
+  "seller",
+  "column_break_32",
+  "status",
+  "reason",
+  "resolution",
+  "seller_liable",
+  "details_section",
+  "details",
+  "evidence",
+  "items",
+  "refund_section",
+  "refund_amount",
+  "refund_method",
+  "refund_phone",
+  "column_break_33",
+  "reverse_journal",
+  "refund_entry",
+  "credit_note",
+  "decision_note",
+  "decided_by",
+  "status_log"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "RMA-.YYYY.-",
+   "default": "RMA-.YYYY.-",
+   "hidden": 1
+  },
+  {
+   "fieldname": "marketplace_order",
+   "fieldtype": "Link",
+   "label": "Order",
+   "options": "Marketplace Order",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "seller_order",
+   "fieldtype": "Link",
+   "label": "Seller Order",
+   "options": "Seller Order",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Buyer",
+   "options": "Customer",
+   "fetch_from": "marketplace_order.customer",
+   "read_only": 1
+  },
+  {
+   "fieldname": "seller",
+   "fieldtype": "Link",
+   "label": "Seller",
+   "options": "Marketplace Seller",
+   "fetch_from": "seller_order.seller",
+   "read_only": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "column_break_32",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Requested\nApproved\nRejected\nPickup Scheduled\nReceived\nRefunded\nClosed",
+   "default": "Requested",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "reason",
+   "fieldtype": "Select",
+   "label": "Reason",
+   "options": "Damaged on Arrival\nWrong Item\nNot as Described\nFaulty\nChanged Mind\nLate Delivery\nMissing Parts\nOther",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "resolution",
+   "fieldtype": "Select",
+   "label": "Resolution",
+   "options": "Refund\nReplacement\nStore Credit",
+   "default": "Refund"
+  },
+  {
+   "fieldname": "seller_liable",
+   "fieldtype": "Check",
+   "label": "Seller Liable",
+   "description": "Refund comes out of the seller's wallet when set"
+  },
+  {
+   "fieldname": "details_section",
+   "fieldtype": "Section Break",
+   "label": "Details"
+  },
+  {
+   "fieldname": "details",
+   "fieldtype": "Small Text",
+   "label": "Buyer's Description"
+  },
+  {
+   "fieldname": "evidence",
+   "fieldtype": "Attach Image",
+   "label": "Photo Evidence"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "Return Request Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "refund_section",
+   "fieldtype": "Section Break",
+   "label": "Refund"
+  },
+  {
+   "fieldname": "refund_amount",
+   "fieldtype": "Currency",
+   "label": "Refund Amount",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "refund_method",
+   "fieldtype": "Select",
+   "label": "Refund To",
+   "options": "Original Method\nM-Pesa\nBank Transfer\nBuyer Store Credit"
+  },
+  {
+   "fieldname": "refund_phone",
+   "fieldtype": "Data",
+   "label": "Refund Phone"
+  },
+  {
+   "fieldname": "column_break_33",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "reverse_journal",
+   "fieldtype": "Link",
+   "label": "Reversal Journal",
+   "options": "Journal Entry",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "refund_entry",
+   "fieldtype": "Link",
+   "label": "Refund Payment",
+   "options": "Payment Entry",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "credit_note",
+   "fieldtype": "Link",
+   "label": "Credit Note (Own Stock)",
+   "options": "Sales Invoice",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "decision_note",
+   "fieldtype": "Small Text",
+   "label": "Decision Note"
+  },
+  {
+   "fieldname": "decided_by",
+   "fieldtype": "Link",
+   "label": "Decided By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "status_log",
+   "fieldtype": "Table",
+   "label": "Status Log",
+   "options": "Order Status Event",
+   "read_only": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-12 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace",
+ "name": "Return Request",
+ "owner": "Administrator",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Operations",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Catalog Moderator",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  },
+  {
+   "role": "Marketplace Finance",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  }
+ ],
+ "track_changes": 1,
+ "autoname": "naming_series:",
+ "naming_rule": "By \"Naming Series\" field"
+}

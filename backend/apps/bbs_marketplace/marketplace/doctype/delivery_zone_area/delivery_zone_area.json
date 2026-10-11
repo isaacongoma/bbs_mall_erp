@@ -1,0 +1,44 @@
+{
+ "actions": [],
+ "creation": "2026-10-12 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "county",
+  "town",
+  "territory"
+ ],
+ "fields": [
+  {
+   "fieldname": "county",
+   "fieldtype": "Data",
+   "label": "County",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "town",
+   "fieldtype": "Data",
+   "label": "Town or Estate",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "territory",
+   "fieldtype": "Link",
+   "label": "Territory",
+   "options": "Territory",
+   "in_list_view": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-12 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace",
+ "name": "Delivery Zone Area",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "editable_grid": 1,
+ "permissions": [],
+ "istable": 1
+}

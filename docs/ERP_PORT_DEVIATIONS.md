@@ -138,3 +138,13 @@ Django rejects model field names ending in an underscore; the reference field `v
 - Existing scaffolds `apps/property` and `apps/leasing` (plain Django models, no UI) are left untouched and unused.
 - `Database.savepoint`, `release_savepoint` and `rollback(save_point=...)` (`backend/apps/frappe/runtime.py`) do nothing outside an atomic block; PostgreSQL rejects SAVEPOINT in autocommit and that returned 500 from `get_open_count` on form dashboards.
 - `add_home_page` (`backend/apps/frappe/boot.py`) falls back to the "desktop" page when no `desktop:home_page` default exists; a fresh database (production) has none and `frappe.sessions.get` returned 500, which left the apps page with only the module apps.
+
+
+## 2026-10-11 Marketplace (new app, no upstream)
+- `backend/apps/bbs_marketplace` (modules Marketplace, Marketplace Orders, Seller Wallet, Marketplace Logistics, Marketplace Promotions) is a BBS Mall addition with no upstream. Doctype JSON is generated from `backend/scripts/marketplace/` (`build.py` for doctypes, `artifacts.py` for workspaces, sidebars, dock, cards, charts, dashboard, onboarding and script reports); controllers and APIs are hand written. Registered like bbs_property and set up with `manage.py setup_marketplace`.
+- Reuses Customer, Item, Item Group, Brand, Warehouse, Price List, Item Price, Supplier, Journal Entry, Payment Entry, Sales Invoice and the shared Daraja client (`erpnext_integrations/mpesa`). The earlier copy of a Daraja client inside the app was removed; STK push and B2C go through `DarajaClient`, and a doc event on M-Pesa Transaction updates the marketplace payment or withdrawal.
+- The shipment doctype is named "Marketplace Shipment" because ERPNext already owns `tabShipment`.
+- Item Price has no minimum quantity, so only the base price is synced to the Marketplace Retail and Wholesale price lists; bulk tiers stay on the listing.
+- Custom fields: Customer (`marketplace_user`, `marketplace_buyer_type`, `marketplace_seller`), Item (`marketplace_seller`, `marketplace_listing`), Warehouse (`marketplace_seller`), Journal Entry (`marketplace_reference`) and Coupon Code / Pricing Rule links to campaigns.
+- Seller side lives in the tenant portal (`frontend/src/modules/tenant`, routes `/tenant/shop/*`) on `marketplace/seller_portal.py`. Sellers are identified through the same Tenant Portal User link as rent payments; payout accounts need verification by staff before a withdrawal can use them.
+- Desk action methods on the marketplace controllers are whitelisted with `check_permission("write")` so form buttons can call them.

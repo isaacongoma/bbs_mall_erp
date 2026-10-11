@@ -1,0 +1,76 @@
+{
+ "actions": [],
+ "creation": "2026-10-12 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "method",
+  "account_label",
+  "mpesa_number",
+  "bank_account",
+  "account_holder",
+  "is_default",
+  "verified"
+ ],
+ "fields": [
+  {
+   "fieldname": "method",
+   "fieldtype": "Select",
+   "label": "Method",
+   "options": "M-Pesa\nBank Transfer",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "account_label",
+   "fieldtype": "Data",
+   "label": "Label",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "mpesa_number",
+   "fieldtype": "Data",
+   "label": "M-Pesa Number",
+   "depends_on": "eval:doc.method=='M-Pesa'",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "bank_account",
+   "fieldtype": "Link",
+   "label": "Bank Account",
+   "options": "Bank Account",
+   "depends_on": "eval:doc.method=='Bank Transfer'",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "account_holder",
+   "fieldtype": "Data",
+   "label": "Account Holder",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "is_default",
+   "fieldtype": "Check",
+   "label": "Default",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "verified",
+   "fieldtype": "Check",
+   "label": "Verified",
+   "in_list_view": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-12 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace",
+ "name": "Seller Payout Account",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "editable_grid": 1,
+ "permissions": [],
+ "istable": 1
+}

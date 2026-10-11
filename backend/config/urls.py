@@ -34,6 +34,7 @@ urlpatterns = [
     path("api/crm/", include("apps.crm.urls")),
     path("api/property/", include("apps.property.urls")),
     path("api/property-mgmt/", include("apps.bbs_property.urls")),
+    path("api/marketplace/", include("apps.bbs_marketplace.urls")),
     path("api/leasing/", include("apps.leasing.urls")),
     path("api/iot/", include("apps.iot.urls")),
     # Literal path -- frappe-ui's FileUploadHandler hits this exact URL

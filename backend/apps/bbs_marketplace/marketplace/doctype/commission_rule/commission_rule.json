@@ -1,0 +1,225 @@
+{
+ "actions": [],
+ "creation": "2026-10-12 09:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "title",
+  "enabled",
+  "applies_to",
+  "priority",
+  "column_break_41",
+  "buyer_type",
+  "item_group",
+  "seller",
+  "brand",
+  "rate_section",
+  "rate_percent",
+  "fixed_fee",
+  "column_break_42",
+  "min_fee",
+  "max_fee",
+  "validity_section",
+  "valid_from",
+  "valid_upto"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "COM-RULE-.####",
+   "default": "COM-RULE-.####",
+   "hidden": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "applies_to",
+   "fieldtype": "Select",
+   "label": "Applies To",
+   "options": "Everything\nCategory\nSeller\nBrand\nCategory and Seller",
+   "default": "Category",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "priority",
+   "fieldtype": "Int",
+   "label": "Priority",
+   "default": "10",
+   "in_list_view": 1,
+   "description": "Highest priority that matches wins"
+  },
+  {
+   "fieldname": "column_break_41",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "buyer_type",
+   "fieldtype": "Select",
+   "label": "Buyer Type",
+   "options": "Both\nB2C\nB2B",
+   "default": "Both",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "label": "Category",
+   "options": "Item Group",
+   "depends_on": "eval:['Category','Category and Seller'].includes(doc.applies_to)"
+  },
+  {
+   "fieldname": "seller",
+   "fieldtype": "Link",
+   "label": "Seller",
+   "options": "Marketplace Seller",
+   "depends_on": "eval:['Seller','Category and Seller'].includes(doc.applies_to)"
+  },
+  {
+   "fieldname": "brand",
+   "fieldtype": "Link",
+   "label": "Brand",
+   "options": "Brand",
+   "depends_on": "eval:doc.applies_to=='Brand'"
+  },
+  {
+   "fieldname": "rate_section",
+   "fieldtype": "Section Break",
+   "label": "Rate"
+  },
+  {
+   "fieldname": "rate_percent",
+   "fieldtype": "Percent",
+   "label": "Commission %",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "fixed_fee",
+   "fieldtype": "Currency",
+   "label": "Fixed Fee per Item"
+  },
+  {
+   "fieldname": "column_break_42",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "min_fee",
+   "fieldtype": "Currency",
+   "label": "Minimum Fee"
+  },
+  {
+   "fieldname": "max_fee",
+   "fieldtype": "Currency",
+   "label": "Maximum Fee"
+  },
+  {
+   "fieldname": "validity_section",
+   "fieldtype": "Section Break",
+   "label": "Validity"
+  },
+  {
+   "fieldname": "valid_from",
+   "fieldtype": "Date",
+   "label": "Valid From"
+  },
+  {
+   "fieldname": "valid_upto",
+   "fieldtype": "Date",
+   "label": "Valid Until"
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-12 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Marketplace",
+ "name": "Commission Rule",
+ "owner": "Administrator",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Marketplace Finance",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Accounts Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "share": 1
+  },
+  {
+   "role": "Accounts User",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  },
+  {
+   "role": "Marketplace Operations",
+   "read": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "email": 1
+  }
+ ],
+ "track_changes": 1,
+ "title_field": "title",
+ "autoname": "naming_series:",
+ "naming_rule": "By \"Naming Series\" field"
+}

@@ -174,7 +174,7 @@ class TemplatePage(BaseTemplatePage):
         self.context.name = self.name
         self.context.path = self.path
         self.context.route = self.path
-        self.context.template = self.template_path
+        self.context.template = self.template_path.replace(chr(92), "/") if self.template_path else self.template_path
 
     def set_properties_from_source(self):
         if not self.source:

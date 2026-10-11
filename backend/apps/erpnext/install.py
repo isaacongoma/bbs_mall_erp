@@ -213,7 +213,9 @@ def install_base_fixtures(country="Kenya"):
             install_roles()
             install_sequences()
             install_user_types()
-            frappe.db.set_global("installed_apps", json.dumps(["frappe", "erpnext", "hrms"]))
+            existing = json.loads(frappe.db.get_global("installed_apps") or "[]")
+            base = ["frappe", "erpnext", "hrms"]
+            frappe.db.set_global("installed_apps", json.dumps(base + [name for name in existing if name not in base]))
             install_system_users()
             install_system_settings_defaults()
             install_user_types()
@@ -230,6 +232,11 @@ def install_base_fixtures(country="Kenya"):
 
                 install_property.after_install()
                 Series.objects.get_or_create(name="__bbs_property_installed__", defaults={"current": 1})
+            if not Series.objects.filter(name="__bbs_marketplace_installed__").exists():
+                from apps.bbs_marketplace import setup as install_marketplace
+
+                install_marketplace.after_install()
+                Series.objects.get_or_create(name="__bbs_marketplace_installed__", defaults={"current": 1})
             if not Series.objects.filter(name="__frappe_after_install__").exists():
                 install_frappe_defaults()
                 Series.objects.get_or_create(name="__frappe_after_install__", defaults={"current": 1})
