@@ -305,3 +305,47 @@ export interface ItemAttribute {
   values: string[]
   use_for_variants?: number
 }
+
+export interface VoucherRow {
+  name: string
+  coupon_code: string
+  description?: string | null
+  voucher_status: string
+  voucher_type: string
+  voucher_discount_type: string
+  voucher_discount_value: number
+  voucher_max_discount: number
+  voucher_min_order: number
+  voucher_applies_to: string
+  valid_from?: string | null
+  valid_upto: string
+  maximum_use: number
+  used: number
+  voucher_per_customer_limit: number
+  voucher_first_order_only: number
+  voucher_exclude_campaign_items: number
+  voucher_show_on_shop: number
+  voucher_must_collect: number
+  voucher_total_discount: number
+  listings: string[]
+}
+
+export interface VoucherInput {
+  coupon_code?: string
+  description?: string
+  voucher_type: string
+  discount_type: string
+  discount_value: number
+  max_discount?: number
+  min_order?: number
+  applies_to: string
+  listings?: string[]
+  valid_from?: string
+  valid_upto: string
+  usage_limit?: number
+  per_customer_limit?: number
+  first_order_only?: number
+  exclude_campaign_items?: number
+  show_on_shop?: number
+  must_collect?: number
+}

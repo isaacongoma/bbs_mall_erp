@@ -74,6 +74,7 @@ CARDS = {
         ("Scheduled Campaigns", "Marketplace Campaign", "Count", None, [["status", "=", "Scheduled"]], "#2563eb"),
         ("Running Ads", "Seller Ad", "Count", None, [["status", "=", "Active"]], "#f97316"),
         ("Active Subscriptions", "Seller Subscription", "Count", None, [["status", "=", "Active"]], "#7c3aed"),
+        ("Active Vouchers", "Coupon Code", "Count", None, [["voucher_marketplace", "=", 1], ["voucher_status", "=", "Active"]], "#16a34a"),
     ],
 }
 
@@ -207,12 +208,16 @@ SIDEBARS = {
         ("Banners", "DocType", "Marketplace Banner", "image"),
         ("Ad Packages", "DocType", "Ad Package", "megaphone"),
         ("Seller Ads", "DocType", "Seller Ad", "badge-dollar-sign"),
-        ("Coupon Codes", "DocType", "Coupon Code", "ticket"),
+        ("Vouchers", "DocType", "Coupon Code", "ticket", [["Coupon Code", "voucher_marketplace", "=", 1, False]]),
+        ("Voucher Redemptions", "DocType", "Marketplace Voucher Redemption", "receipt-text"),
+        ("Voucher Claims", "DocType", "Marketplace Voucher Claim", "hand-coins"),
+        ("Reports", "Section", None, "notepad-text"),
+        ("Voucher Usage", "Report", "Voucher Usage", None),
         ("Pricing Rules", "DocType", "Pricing Rule", "badge-percent"),
     ],
 }
 
-CARD_WIDTHS = {"Seller Wallet": [2, 3, 2, 3, 2], "Marketplace": [2, 3, 2, 3, 2]}
+CARD_WIDTHS = {"Seller Wallet": [2, 3, 2, 3, 2], "Marketplace": [2, 3, 2, 3, 2], "Marketplace Promotions": [2, 3, 2, 3, 2]}
 
 DOCK_ORDER = ["Marketplace", "Marketplace Orders", "Seller Wallet", "Marketplace Logistics", "Marketplace Promotions"]
 
@@ -385,6 +390,33 @@ REPORTS = [
             ("status", "t.status = %(status)s"),
             ("from_date", "t.posting_date::date >= %(from_date)s"),
             ("to_date", "t.posting_date::date <= %(to_date)s"),
+        ],
+    },
+    {
+        "name": "Voucher Usage",
+        "module": "Marketplace Promotions",
+        "ref_doctype": "Coupon Code",
+        "total": 1,
+        "columns": [
+            D("Voucher", "voucher", "Link", options="Coupon Code", width=180),
+            D("Code", "code", "Data", width=130),
+            D("Issued By", "seller", "Link", options="Marketplace Seller", width=170),
+            D("Type", "voucher_type", "Data", width=130),
+            D("Status", "voucher_status", "Data", width=110),
+            D("Valid From", "valid_from", "Date", width=100),
+            D("Valid Until", "valid_upto", "Date", width=100),
+            D("Times Used", "used", "Int", width=100),
+            D("Limit", "maximum_use", "Int", width=80),
+            D("Total Discount Given", "voucher_total_discount", "Currency", width=160),
+        ],
+        "select": "c.name as voucher, c.coupon_code as code, c.marketplace_seller as seller, c.voucher_type, c.voucher_status, c.valid_from, c.valid_upto, c.used, c.maximum_use, c.voucher_total_discount",
+        "from": 'from "tabCoupon Code" c',
+        "order": "order by c.voucher_total_discount desc",
+        "base": ["c.voucher_marketplace = 1"],
+        "conditions": [
+            ("seller", "c.marketplace_seller = %(seller)s"),
+            ("status", "c.voucher_status = %(status)s"),
+            ("voucher_type", "c.voucher_type = %(voucher_type)s"),
         ],
     },
     {

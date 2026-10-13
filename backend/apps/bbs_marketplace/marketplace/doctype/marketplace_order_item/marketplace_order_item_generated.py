@@ -20,6 +20,7 @@ class MarketplaceOrderItemGenerated(FrappeChildModel):
     discount_amount = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     amount = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     returned_qty = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
+    voucher_discount = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     download_count = models.IntegerField(null=True, blank=True)
     status = models.CharField(max_length=140, blank=True, null=True, default='')
 

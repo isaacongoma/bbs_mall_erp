@@ -3,7 +3,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import cint, flt, now_datetime
 
-from apps.bbs_marketplace.marketplace import orders
+from apps.bbs_marketplace.marketplace import orders, vouchers
 from apps.bbs_marketplace.marketplace.utils import get_settings, log_event
 
 
@@ -82,6 +82,7 @@ class MarketplaceOrder(Document):
         if self.status not in ("Pending Payment", "Cancelled", "Failed"):
             frappe.throw(_("Orders that were paid cannot be deleted"))
         orders.release_stock(self)
+        vouchers.release(self.name)
 
     @frappe.whitelist()
     def cancel_marketplace_order(self, reason=None):

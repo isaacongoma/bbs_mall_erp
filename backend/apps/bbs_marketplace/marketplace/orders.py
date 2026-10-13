@@ -4,7 +4,7 @@ import frappe
 from frappe import _
 from frappe.utils import add_to_date, cint, flt, now_datetime
 
-from apps.bbs_marketplace.marketplace import accounting, inventory, logistics, pricing, variants
+from apps.bbs_marketplace.marketplace import accounting, inventory, logistics, pricing, variants, vouchers
 from apps.bbs_marketplace.marketplace import commission as commission_rules
 from apps.bbs_marketplace.marketplace.utils import get_settings, log_event, vat_split
 
@@ -29,7 +29,8 @@ def validate_buyer(doc):
 def price_order(doc):
     validate_buyer(doc)
     subtotal = vat_total = campaign_discount = 0.0
-    for row in doc.items:
+    on_campaign = set()
+    for position, row in enumerate(doc.items):
         listing = frappe.get_doc("Marketplace Listing", row.listing)
         if listing.status != "Published":
             frappe.throw(_("{0} is not available for sale").format(listing.listing_title))
@@ -58,43 +59,49 @@ def price_order(doc):
         row.vat_amount = amounts["vat"]
         row.discount_amount = amounts["discount"]
         row.amount = amounts["amount"]
+        row.voucher_discount = 0
+        if price.get("campaign"):
+            on_campaign.add(position)
         subtotal += amounts["net"]
         vat_total += amounts["vat"]
         campaign_discount += amounts["discount"]
-    items_total = flt(sum(flt(r.amount) for r in doc.items), 2)
-    coupon = pricing.apply_coupon(doc.coupon_code, items_total)
-    allocate_coupon(doc, coupon, items_total)
-    shipping = 0.0
+    voucher_rows = [
+        {"key": position, "listing": row.listing, "seller": row.seller, "amount": flt(row.amount), "on_campaign": position in on_campaign}
+        for position, row in enumerate(doc.items)
+    ]
+    result = vouchers.evaluate(doc.coupon_code, voucher_rows, doc.customer, doc.buyer_type, doc.payment_method, doc.name)
+    allocate_coupon(doc, result)
+    shipping = delivery_cut = 0.0
     if doc.delivery_method not in NO_SHIPPING:
-        for seller, rows in seller_groups(doc).items():
-            shipping += seller_shipping(doc, rows, seller)["fee"]
+        fees = {seller: seller_shipping(doc, rows, seller)["fee"] for seller, rows in seller_groups(doc).items()}
+        cuts = vouchers.delivery_discounts(doc.coupon_code, fees)
+        delivery_cut = sum(cuts.values())
+        shipping = sum(fees.values()) - delivery_cut
     doc.subtotal = flt(subtotal, 2)
     doc.vat_total = flt(vat_total, 2)
-    doc.discount_total = flt(campaign_discount + coupon["discount"], 2)
+    doc.discount_total = flt(campaign_discount + result["discount"], 2)
+    doc.shipping_discount = flt(delivery_cut, 2)
     doc.shipping_total = flt(shipping, 2)
     doc.grand_total = flt(sum(flt(r.amount) for r in doc.items) + shipping, 2)
     doc.outstanding_amount = flt(doc.grand_total - flt(doc.paid_amount), 2)
 
 
-def allocate_coupon(doc, coupon, items_total):
-    discount = flt(coupon["discount"])
-    seller_funded = coupon["funded_by_seller"]
+def allocate_coupon(doc, result):
     doc.platform_discount = 0.0
     doc.seller_discount = 0.0
-    if not discount or not items_total:
-        return
-    remaining = discount
-    rows = list(doc.items)
-    for index, row in enumerate(rows):
-        share = flt(discount * flt(row.amount) / items_total, 2) if index < len(rows) - 1 else flt(remaining, 2)
-        share = min(share, flt(row.amount))
-        remaining -= share
-        row.discount_amount = flt(flt(row.discount_amount) + share, 2)
-        row.amount = flt(flt(row.amount) - share, 2)
-    if seller_funded:
-        doc.seller_discount = flt(discount, 2)
-    else:
-        doc.platform_discount = flt(discount, 2)
+    total = 0.0
+    for position, row in enumerate(doc.items):
+        share = flt(result["lines"].get(position, 0.0), 2)
+        row.voucher_discount = share
+        if share:
+            row.discount_amount = flt(flt(row.discount_amount) + share, 2)
+            row.amount = flt(flt(row.amount) - share, 2)
+            total += share
+    if total:
+        if result.get("seller"):
+            doc.seller_discount = flt(total, 2)
+        else:
+            doc.platform_discount = flt(total, 2)
 
 
 def is_digital(listing):
@@ -157,6 +164,7 @@ def needs_payment_first(doc):
 
 def after_placement(doc):
     reserve_stock(doc)
+    vouchers.record(doc)
     if not needs_payment_first(doc):
         confirm_order(doc.name)
 
@@ -168,10 +176,14 @@ def confirm_order(name):
     if frappe.db.exists("Seller Order", {"marketplace_order": order.name}):
         return order
     settings = get_settings()
-    discount_share_platform = flt(order.platform_discount)
-    items_total_all = flt(sum(flt(r.amount) for r in order.items))
+    platform_funded = flt(order.platform_discount) > 0
+    seller_funded = flt(order.seller_discount) > 0
+    groups = seller_groups(order)
+    fees = {seller: seller_shipping(order, rows, seller)["fee"] for seller, rows in groups.items()} if order.delivery_method not in NO_SHIPPING else {}
+    delivery_cuts = vouchers.delivery_discounts(order.coupon_code, fees)
+    delivery_by_seller = bool(order.coupon_code) and frappe.db.get_value("Coupon Code", order.coupon_code, "marketplace_seller")
     first = None
-    for seller, rows in seller_groups(order).items():
+    for seller, rows in groups.items():
         seller_doc = frappe.get_doc("Marketplace Seller", seller)
         info = seller_shipping(order, rows, seller)
         so = frappe.new_doc("Seller Order")
@@ -180,16 +192,20 @@ def confirm_order(name):
         so.status = "New"
         so.fulfilment_mode = seller_doc.fulfilment_mode
         so.courier = info["courier"]
-        so.shipping_fee = info["fee"]
+        cut = flt(delivery_cuts.get(seller, 0.0), 2)
+        so.shipping_fee = flt(info["fee"] - cut, 2)
+        so.shipping_discount = cut
+        so.shipping_subsidy = cut if delivery_by_seller else 0.0
         so.sla_due = add_to_date(now_datetime(), hours=cint(settings.seller_accept_hours or 24))
         group_total = flt(sum(flt(r.amount) for r in rows))
-        platform_share = flt(discount_share_platform * group_total / items_total_all, 2) if items_total_all else 0.0
+        group_voucher = flt(sum(flt(r.voucher_discount) for r in rows), 2)
+        platform_share = group_voucher if platform_funded else 0.0
         seller_discount = 0.0
         vat_total = 0.0
         for row in rows:
             listing = frappe.get_doc("Marketplace Listing", row.listing)
             terms = commission_rules.resolve(seller, listing.item_group, listing.brand, order.buyer_type)
-            share = flt(platform_share * flt(row.amount) / group_total, 2) if group_total else 0.0
+            share = flt(row.voucher_discount, 2) if platform_funded else 0.0
             basis_gross = flt(row.amount) + share
             net_basis = basis_gross / (1 + flt(row.vat_rate) / 100.0)
             fee = commission_rules.fee_for(terms, net_basis, row.qty)
@@ -214,11 +230,11 @@ def confirm_order(name):
         so.items_total = flt(group_total, 2)
         so.vat_total = flt(vat_total, 2)
         so.platform_discount = platform_share
-        so.seller_discount = flt(order.seller_discount * group_total / items_total_all, 2) if items_total_all else 0.0
+        so.seller_discount = group_voucher if seller_funded else 0.0
         so.commission_rate = flt(sum(flt(i.commission_rate) for i in so.items) / len(so.items), 2) if so.items else 0
         so.commission_amount = flt(sum(flt(i.commission) for i in so.items), 2)
         so.commission_vat = flt(so.commission_amount * flt(settings.commission_vat_rate) / 100.0, 2)
-        so.seller_net = flt(group_total + platform_share - so.commission_amount - so.commission_vat, 2)
+        so.seller_net = flt(group_total + platform_share - so.commission_amount - so.commission_vat - flt(so.shipping_subsidy), 2)
         log_event(so, "New", _("Order paid and passed to the seller"))
         so.flags.ignore_permissions = True
         so.insert()
@@ -284,6 +300,7 @@ def cancel_order_now(name, reason=None):
     order.payment_status = "Refunded" if paid > 0 else order.payment_status
     order.paid_amount = 0 if paid > 0 else order.paid_amount
     order.outstanding_amount = 0
+    vouchers.release(name)
     log_event(order, "Cancelled", reason)
     order.flags.ignore_permissions = True
     order.save()

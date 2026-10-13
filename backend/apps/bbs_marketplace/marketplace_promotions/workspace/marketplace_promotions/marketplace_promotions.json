@@ -17,7 +17,7 @@
    "parenttype": "Workspace"
   }
  ],
- "content": "[{\"id\": \"d48dd88b72\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Active Campaigns\", \"col\": 3}}, {\"id\": \"6df3ad4fcf\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Scheduled Campaigns\", \"col\": 3}}, {\"id\": \"dfdb3c09eb\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Running Ads\", \"col\": 3}}, {\"id\": \"e94d53d787\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Active Subscriptions\", \"col\": 3}}, {\"id\": \"db89f5b660\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Campaigns by Status\", \"col\": 12}}]",
+ "content": "[{\"id\": \"d48dd88b72\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Active Campaigns\", \"col\": 2}}, {\"id\": \"6df3ad4fcf\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Scheduled Campaigns\", \"col\": 3}}, {\"id\": \"dfdb3c09eb\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Running Ads\", \"col\": 2}}, {\"id\": \"e94d53d787\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Active Subscriptions\", \"col\": 3}}, {\"id\": \"513935b062\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Active Vouchers\", \"col\": 2}}, {\"id\": \"db89f5b660\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Campaigns by Status\", \"col\": 12}}]",
  "creation": "2026-10-11 09:00:00.000000",
  "custom_blocks": [],
  "docstatus": 0,
@@ -89,6 +89,21 @@
    "modified_by": "Administrator",
    "name": "marketplace_promotions-number_cards3",
    "number_card_name": "Active Subscriptions",
+   "owner": "Administrator",
+   "parent": "Marketplace Promotions",
+   "parentfield": "number_cards",
+   "parenttype": "Workspace"
+  },
+  {
+   "creation": "2026-10-11 09:00:00.000000",
+   "docstatus": 0,
+   "doctype": "Workspace Number Card",
+   "idx": 5,
+   "label": "Active Vouchers",
+   "modified": "2026-10-11 09:00:00.000000",
+   "modified_by": "Administrator",
+   "name": "marketplace_promotions-number_cards4",
+   "number_card_name": "Active Vouchers",
    "owner": "Administrator",
    "parent": "Marketplace Promotions",
    "parentfield": "number_cards",

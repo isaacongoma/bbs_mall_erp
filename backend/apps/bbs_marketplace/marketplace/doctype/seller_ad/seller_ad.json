@@ -8,7 +8,7 @@
   "seller",
   "package",
   "status",
-  "column_break_57",
+  "column_break_58",
   "start_date",
   "end_date",
   "ad_listings_section",
@@ -17,7 +17,7 @@
   "amount",
   "vat_amount",
   "total",
-  "column_break_58",
+  "column_break_59",
   "paid_on",
   "journal_entry"
  ],
@@ -57,7 +57,7 @@
    "in_standard_filter": 1
   },
   {
-   "fieldname": "column_break_57",
+   "fieldname": "column_break_58",
    "fieldtype": "Column Break"
   },
   {
@@ -107,7 +107,7 @@
    "read_only": 1
   },
   {
-   "fieldname": "column_break_58",
+   "fieldname": "column_break_59",
    "fieldtype": "Column Break"
   },
   {

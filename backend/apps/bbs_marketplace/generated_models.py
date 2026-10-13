@@ -31,6 +31,8 @@ from apps.bbs_marketplace.marketplace.doctype.marketplace_seller.marketplace_sel
 from apps.bbs_marketplace.marketplace.doctype.marketplace_seller_follow.marketplace_seller_follow_generated import MarketplaceSellerFollowGenerated
 from apps.bbs_marketplace.marketplace.doctype.marketplace_shipment.marketplace_shipment_generated import MarketplaceShipmentGenerated
 from apps.bbs_marketplace.marketplace.doctype.marketplace_size_chart.marketplace_size_chart_generated import MarketplaceSizeChartGenerated
+from apps.bbs_marketplace.marketplace.doctype.marketplace_voucher_claim.marketplace_voucher_claim_generated import MarketplaceVoucherClaimGenerated
+from apps.bbs_marketplace.marketplace.doctype.marketplace_voucher_redemption.marketplace_voucher_redemption_generated import MarketplaceVoucherRedemptionGenerated
 from apps.bbs_marketplace.marketplace.doctype.marketplace_wishlist_item.marketplace_wishlist_item_generated import MarketplaceWishlistItemGenerated
 from apps.bbs_marketplace.marketplace.doctype.order_status_event.order_status_event_generated import OrderStatusEventGenerated
 from apps.bbs_marketplace.marketplace.doctype.pickup_station.pickup_station_generated import PickupStationGenerated
@@ -57,6 +59,7 @@ from apps.bbs_marketplace.marketplace.doctype.seller_withdrawal.seller_withdrawa
 from apps.bbs_marketplace.marketplace.doctype.seller_working_hours.seller_working_hours_generated import SellerWorkingHoursGenerated
 from apps.bbs_marketplace.marketplace.doctype.shipment_event.shipment_event_generated import ShipmentEventGenerated
 from apps.bbs_marketplace.marketplace.doctype.size_chart_row.size_chart_row_generated import SizeChartRowGenerated
+from apps.bbs_marketplace.marketplace.doctype.voucher_product.voucher_product_generated import VoucherProductGenerated
 from apps.bbs_marketplace.marketplace.doctype.wallet_bill_invoice.wallet_bill_invoice_generated import WalletBillInvoiceGenerated
 from apps.bbs_marketplace.marketplace.doctype.wallet_bill_payment.wallet_bill_payment_generated import WalletBillPaymentGenerated
 
@@ -277,6 +280,20 @@ class MarketplaceSizeChart(MarketplaceSizeChartGenerated):
         ordering = ['-modified']
 
 
+class MarketplaceVoucherClaim(MarketplaceVoucherClaimGenerated):
+    class Meta:
+        db_table = 'tabMarketplace Voucher Claim'
+        verbose_name = 'Marketplace Voucher Claim'
+        ordering = ['-modified']
+
+
+class MarketplaceVoucherRedemption(MarketplaceVoucherRedemptionGenerated):
+    class Meta:
+        db_table = 'tabMarketplace Voucher Redemption'
+        verbose_name = 'Marketplace Voucher Redemption'
+        ordering = ['-modified']
+
+
 class MarketplaceWishlistItem(MarketplaceWishlistItemGenerated):
     class Meta:
         db_table = 'tabMarketplace Wishlist Item'
@@ -456,6 +473,13 @@ class SizeChartRow(SizeChartRowGenerated):
     class Meta:
         db_table = 'tabSize Chart Row'
         verbose_name = 'Size Chart Row'
+        ordering = ['-creation']
+
+
+class VoucherProduct(VoucherProductGenerated):
+    class Meta:
+        db_table = 'tabVoucher Product'
+        verbose_name = 'Voucher Product'
         ordering = ['-creation']
 
 

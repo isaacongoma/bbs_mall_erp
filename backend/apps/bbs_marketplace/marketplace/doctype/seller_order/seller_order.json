@@ -23,6 +23,8 @@
   "platform_discount",
   "column_break_27",
   "shipping_fee",
+  "shipping_discount",
+  "shipping_subsidy",
   "commission_rate",
   "commission_amount",
   "commission_vat",
@@ -175,6 +177,18 @@
    "fieldname": "shipping_fee",
    "fieldtype": "Currency",
    "label": "Delivery Fee Charged",
+   "read_only": 1
+  },
+  {
+   "fieldname": "shipping_discount",
+   "fieldtype": "Currency",
+   "label": "Delivery Discount (Voucher)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "shipping_subsidy",
+   "fieldtype": "Currency",
+   "label": "Delivery Discount Paid by Seller",
    "read_only": 1
   },
   {

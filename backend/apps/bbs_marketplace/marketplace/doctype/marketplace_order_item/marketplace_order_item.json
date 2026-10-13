@@ -19,6 +19,7 @@
   "discount_amount",
   "amount",
   "returned_qty",
+  "voucher_discount",
   "download_count",
   "status"
  ],
@@ -119,6 +120,12 @@
    "fieldname": "returned_qty",
    "fieldtype": "Float",
    "label": "Returned",
+   "read_only": 1
+  },
+  {
+   "fieldname": "voucher_discount",
+   "fieldtype": "Currency",
+   "label": "Voucher Discount",
    "read_only": 1
   },
   {

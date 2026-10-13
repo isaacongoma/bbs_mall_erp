@@ -27,6 +27,8 @@
   "seller_accept_hours",
   "seller_ship_hours",
   "cart_expiry_hours",
+  "seller_voucher_max_percent",
+  "require_voucher_approval",
   "cart_reminders_enabled",
   "cart_first_reminder_hours",
   "cart_second_reminder_hours",
@@ -210,6 +212,18 @@
    "fieldtype": "Int",
    "label": "Abandon Carts After (hours)",
    "default": "72"
+  },
+  {
+   "fieldname": "seller_voucher_max_percent",
+   "fieldtype": "Percent",
+   "label": "Highest Seller Voucher %",
+   "default": "50",
+   "description": "Sellers cannot issue a percentage voucher above this"
+  },
+  {
+   "fieldname": "require_voucher_approval",
+   "fieldtype": "Check",
+   "label": "Seller Vouchers Need Approval"
   },
   {
    "fieldname": "cart_reminders_enabled",

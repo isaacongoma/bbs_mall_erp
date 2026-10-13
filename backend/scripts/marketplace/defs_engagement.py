@@ -158,6 +158,40 @@ def defs():
         title_field="title",
         sort_field="modified",
     ))
+    out.append(doctype("Voucher Product", [
+        F("listing", "Link", "Product", options="Marketplace Listing", reqd=1, in_list_view=1),
+        F("title", "Data", "Title", fetch_from="listing.listing_title", read_only=1, in_list_view=1),
+    ], istable=1))
+    out.append(doctype(
+        "Marketplace Voucher Redemption",
+        [
+            F("voucher", "Link", "Voucher", options="Coupon Code", reqd=1, in_list_view=1, in_standard_filter=1),
+            F("customer", "Link", "Customer", options="Customer", in_list_view=1, in_standard_filter=1),
+            F("marketplace_order", "Link", "Order", options="Marketplace Order", in_list_view=1, in_standard_filter=1),
+            F("status", "Select", "Status", options="Applied\nReleased", default="Applied", in_list_view=1, in_standard_filter=1),
+            CB(),
+            F("seller", "Link", "Funded By Seller", options="Marketplace Seller"),
+            F("discount_amount", "Currency", "Item Discount", in_list_view=1),
+            F("shipping_discount", "Currency", "Delivery Discount", in_list_view=1),
+            F("redeemed_on", "Datetime", "Redeemed On", in_list_view=1),
+        ],
+        kind="readonly",
+        autoname="hash",
+        naming_rule="Random",
+        sort_field="modified",
+    ))
+    out.append(doctype(
+        "Marketplace Voucher Claim",
+        [
+            F("voucher", "Link", "Voucher", options="Coupon Code", reqd=1, in_list_view=1, in_standard_filter=1),
+            F("customer", "Link", "Customer", options="Customer", reqd=1, in_list_view=1, in_standard_filter=1),
+            F("claimed_on", "Datetime", "Claimed On", in_list_view=1),
+        ],
+        kind="readonly",
+        autoname="hash",
+        naming_rule="Random",
+        sort_field="modified",
+    ))
     out.append(doctype(
         "Seller Plan",
         [

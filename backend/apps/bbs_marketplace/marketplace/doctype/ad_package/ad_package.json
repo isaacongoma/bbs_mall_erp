@@ -7,7 +7,7 @@
   "package_name",
   "enabled",
   "placement",
-  "column_break_56",
+  "column_break_57",
   "price",
   "duration_days",
   "max_listings",
@@ -39,7 +39,7 @@
    "in_list_view": 1
   },
   {
-   "fieldname": "column_break_56",
+   "fieldname": "column_break_57",
    "fieldtype": "Column Break"
   },
   {

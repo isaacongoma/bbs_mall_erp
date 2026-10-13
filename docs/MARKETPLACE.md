@@ -220,6 +220,26 @@ Not brought over because they are not e-commerce features: blogs, careers, landi
 
 Tests: `apps.bbs_marketplace.tests.test_variants` and `test_community`.
 
-## 18. Not in this release
+## 18. Vouchers
+
+Vouchers extend ERPNext's own **Coupon Code** (no separate voucher doctype). A Coupon Code with **Marketplace Voucher** ticked gets the marketplace rules below; ordinary ERPNext coupons keep working as before. Every voucher must have a **Valid Until** date.
+
+**Who issues them.** BBS Mall (platform vouchers, paid for by the marketplace and booked to Promotion Expense) or a seller (paid for by the seller, who simply receives less). Sellers create their own from the tenant portal under **Vouchers**, can pause or resume them, and see how often each was used and how much was given. Marketplace Settings caps the percentage a seller may offer and can require approval of seller vouchers.
+
+**What they can do**
+- Money off as a percentage (with an optional maximum discount) or a fixed amount.
+- **Delivery discount** vouchers, up to free delivery. A platform delivery voucher lowers the fee the buyer pays; a seller-issued one is deducted from that seller's payout.
+- Minimum spend on the eligible items.
+- Apply to everything, selected products, a category (with its sub-categories) or a brand. A seller voucher only ever applies to that seller's items.
+- Limits: total uses, uses per customer, new customers only, one buyer type (B2C or B2B), one payment method, and skip items already on a promotion.
+- Visibility: shown on the shop and product pages, or kept private by code. Optional **collect first**: shoppers press Collect, it goes into their voucher wallet, and only then can they use it.
+
+**Accounting.** Platform-funded discounts debit Promotion Expense and the seller is credited the full amount; commission is worked out before the voucher. Seller-funded discounts reduce what the buyer pays and what the seller receives. Seller-funded delivery discounts are deducted from the seller net while delivery income is still booked in full. Settlement journals stay balanced.
+
+**Redemption tracking.** Each use is a **Marketplace Voucher Redemption**. A cancelled or expired order releases its use so the voucher can be used again. The Voucher Usage report shows uses and the total given per voucher.
+
+Storefront API (`bbs_marketplace.marketplace.vouchers`): `get_vouchers` (for a shop or a product), `claim_voucher`, `get_my_vouchers`. The cart applies a typed code through `apply_cart_coupon`, and the cart shows the discount or the reason a voucher cannot be used.
+
+## 19. Not in this release
 
 Still to build from the reference systems: loyalty points and cashback, referral and affiliate programmes, auctions, pre-orders, flash-deal timers on the storefront (campaigns exist), a point-of-sale screen, shipping label printing, seller-to-admin chat, and live courier API connectors. The shopper website and app are built later.

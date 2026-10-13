@@ -25,6 +25,7 @@ after_migrate = "bbs_marketplace.setup.after_migrate"
 code_only_modules = {}
 
 doc_events = {
+    "Coupon Code": {"validate": "bbs_marketplace.marketplace.vouchers.validate_coupon"},
     "Marketplace Order": {"on_update": "bbs_marketplace.marketplace.notifications.flush"},
     "Seller Order": {"on_update": "bbs_marketplace.marketplace.notifications.flush"},
     "Return Request": {"on_update": "bbs_marketplace.marketplace.notifications.on_field_change"},

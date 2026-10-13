@@ -6,6 +6,8 @@ import type {
   AdRow,
   ItemAttribute,
   OpenBill,
+  VoucherInput,
+  VoucherRow,
   PayoutAccount,
   PlansData,
   SalesSummary,
@@ -64,6 +66,9 @@ export const shopApi = {
   itemAttributes: (category?: string) => call<ItemAttribute[]>('get_item_attributes', { category }),
   generateVariants: (name: string, attributes: Record<string, string[]>) =>
     call<{ created: number; variants: string[] }>('generate_listing_variants', { name, attributes }),
+  vouchers: () => call<VoucherRow[]>('get_vouchers'),
+  saveVoucher: (values: VoucherInput, name?: string) => call<string>('save_voucher', { values, name }),
+  setVoucherStatus: (name: string, status: string) => call<string>('set_voucher_status', { name, status }),
   uploadDigital: (listing: string, filename: string, content: string) =>
     call<string>('upload_digital_file', { listing, filename, content }),
   orders: (status: string, start: number, pageLength: number) =>

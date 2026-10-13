@@ -7,7 +7,7 @@
   "plan_name",
   "enabled",
   "is_default",
-  "column_break_53",
+  "column_break_54",
   "monthly_fee",
   "annual_fee",
   "allowance_section",
@@ -38,7 +38,7 @@
    "label": "Default Plan for New Sellers"
   },
   {
-   "fieldname": "column_break_53",
+   "fieldname": "column_break_54",
    "fieldtype": "Column Break"
   },
   {

@@ -7,7 +7,7 @@
   "event_name",
   "audience",
   "enabled",
-  "column_break_59",
+  "column_break_60",
   "send_email",
   "send_sms",
   "email_section",
@@ -43,7 +43,7 @@
    "in_list_view": 1
   },
   {
-   "fieldname": "column_break_59",
+   "fieldname": "column_break_60",
    "fieldtype": "Column Break"
   },
   {

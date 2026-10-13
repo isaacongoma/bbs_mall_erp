@@ -42,6 +42,7 @@ export const tenantRoutes: ModuleRoute[] = [
   { name: 'Tenant Shop Wallet', path: '/tenant/shop/wallet', meta: bare, component: () => import('./pages/ShopWallet') },
   { name: 'Tenant Shop Profile', path: '/tenant/shop/profile', meta: bare, component: () => import('./pages/ShopProfile') },
   { name: 'Tenant Shop Growth', path: '/tenant/shop/growth', meta: bare, component: () => import('./pages/ShopGrowth') },
+  { name: 'Tenant Shop Vouchers', path: '/tenant/shop/vouchers', meta: bare, component: () => import('./pages/ShopVouchers') },
   { name: 'Tenant Notices', path: '/tenant/notices', meta: bare, component: () => import('./pages/Notices') },
   { name: 'Tenant Team', path: '/tenant/team', meta: bare, component: () => import('./pages/Team') },
   { name: 'Tenant Profile', path: '/tenant/profile', meta: bare, component: () => import('./pages/Profile') },

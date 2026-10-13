@@ -26,6 +26,7 @@ class MarketplaceOrderGenerated(FrappeModel):
     vat_total = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     discount_total = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     shipping_total = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
+    shipping_discount = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     grand_total = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     paid_amount = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     outstanding_amount = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)

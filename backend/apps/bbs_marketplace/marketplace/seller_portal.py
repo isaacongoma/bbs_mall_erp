@@ -770,3 +770,83 @@ def generate_listing_variants(name, attributes):
     if doc.status not in ("Draft", "Rejected", "Paused", "Published", "Approved"):
         frappe.throw(_("A listing in {0} cannot be edited").format(doc.status))
     return variants.generate(doc, attributes)
+
+
+VOUCHER_COLUMNS = [
+    "name", "coupon_code", "description", "voucher_status", "voucher_type", "voucher_discount_type", "voucher_discount_value",
+    "voucher_max_discount", "voucher_min_order", "voucher_applies_to", "voucher_item_group", "voucher_brand", "valid_from",
+    "valid_upto", "maximum_use", "used", "voucher_per_customer_limit", "voucher_first_order_only", "voucher_exclude_campaign_items",
+    "voucher_show_on_shop", "voucher_must_collect", "voucher_buyer_type", "voucher_payment_method", "voucher_total_discount",
+]
+
+
+@frappe.whitelist()
+def get_vouchers():
+    seller = current_seller(active=False)
+    rows = frappe.get_all("Coupon Code", filters={"voucher_marketplace": 1, "marketplace_seller": seller}, fields=VOUCHER_COLUMNS, order_by="creation desc")
+    for row in rows:
+        row["listings"] = frappe.get_all("Voucher Product", filters={"parent": row.name}, pluck="listing")
+    return rows
+
+
+@frappe.whitelist()
+@privileged
+def save_voucher(values, name=None):
+    seller = current_seller()
+    values = as_dict(values)
+    code = (values.get("coupon_code") or "").strip().upper().replace(" ", "")
+    if name:
+        doc = owned("Coupon Code", name, seller, "marketplace_seller")
+    else:
+        if not code:
+            frappe.throw(_("Enter a voucher code"))
+        slug = (frappe.db.get_value("Marketplace Seller", seller, "shop_slug") or seller)[:10].upper().replace(" ", "")
+        doc = frappe.new_doc("Coupon Code")
+        doc.coupon_name = f"V-{slug}-{code}"
+        doc.coupon_code = code
+        doc.marketplace_seller = seller
+        doc.voucher_marketplace = 1
+    mapping = {
+        "description": "description", "voucher_type": "voucher_type", "discount_type": "voucher_discount_type", "discount_value": "voucher_discount_value",
+        "max_discount": "voucher_max_discount", "min_order": "voucher_min_order", "applies_to": "voucher_applies_to", "item_group": "voucher_item_group",
+        "brand": "voucher_brand", "valid_from": "valid_from", "valid_upto": "valid_upto", "usage_limit": "maximum_use",
+        "per_customer_limit": "voucher_per_customer_limit", "first_order_only": "voucher_first_order_only",
+        "exclude_campaign_items": "voucher_exclude_campaign_items", "show_on_shop": "voucher_show_on_shop", "must_collect": "voucher_must_collect",
+        "buyer_type": "voucher_buyer_type", "payment_method": "voucher_payment_method",
+    }
+    for key, field in mapping.items():
+        if key in values:
+            doc.set(field, values[key])
+    if "listings" in values:
+        doc.set("voucher_products", [{"listing": listing} for listing in as_list(values["listings"])])
+    if name and "status" in values and values["status"] in ("Active", "Paused") and doc.voucher_status != "Pending Approval":
+        doc.voucher_status = values["status"]
+    system(doc).save() if name else system(doc).insert()
+    return doc.name
+
+
+@frappe.whitelist()
+@privileged
+def set_voucher_status(name, status):
+    seller = current_seller()
+    doc = owned("Coupon Code", name, seller, "marketplace_seller")
+    if status not in ("Active", "Paused"):
+        frappe.throw(_("Unknown status"))
+    if doc.voucher_status == "Pending Approval":
+        frappe.throw(_("This voucher is waiting for the marketplace team to approve it"))
+    doc.voucher_status = status
+    system(doc).save()
+    return doc.voucher_status
+
+
+@frappe.whitelist()
+def get_voucher_redemptions(name):
+    seller = current_seller(active=False)
+    owned("Coupon Code", name, seller, "marketplace_seller")
+    return frappe.get_all(
+        "Marketplace Voucher Redemption",
+        filters={"voucher": name},
+        fields=["marketplace_order", "status", "discount_amount", "shipping_discount", "redeemed_on"],
+        order_by="redeemed_on desc",
+        limit=100,
+    )

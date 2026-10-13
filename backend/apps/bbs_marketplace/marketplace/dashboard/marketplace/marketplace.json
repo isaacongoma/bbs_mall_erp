@@ -91,6 +91,10 @@
   {
    "card": "Active Subscriptions",
    "doctype": "Number Card Link"
+  },
+  {
+   "card": "Active Vouchers",
+   "doctype": "Number Card Link"
   }
  ],
  "charts": [

@@ -9,7 +9,7 @@
   "audience",
   "channel",
   "status",
-  "column_break_60",
+  "column_break_61",
   "recipient",
   "reference_doctype",
   "reference_name",
@@ -59,7 +59,7 @@
    "in_standard_filter": 1
   },
   {
-   "fieldname": "column_break_60",
+   "fieldname": "column_break_61",
    "fieldtype": "Column Break"
   },
   {

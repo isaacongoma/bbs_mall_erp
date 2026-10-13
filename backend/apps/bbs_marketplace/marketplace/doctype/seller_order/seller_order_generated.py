@@ -19,6 +19,8 @@ class SellerOrderGenerated(FrappeModel):
     seller_discount = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     platform_discount = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     shipping_fee = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
+    shipping_discount = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
+    shipping_subsidy = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     commission_rate = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     commission_amount = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)
     commission_vat = models.DecimalField(max_digits=21, decimal_places=9, null=True, blank=True)

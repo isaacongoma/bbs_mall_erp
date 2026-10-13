@@ -32,6 +32,7 @@
   "discount_total",
   "column_break_23",
   "shipping_total",
+  "shipping_discount",
   "grand_total",
   "paid_amount",
   "outstanding_amount",
@@ -227,6 +228,12 @@
    "fieldname": "shipping_total",
    "fieldtype": "Currency",
    "label": "Delivery Fee",
+   "read_only": 1
+  },
+  {
+   "fieldname": "shipping_discount",
+   "fieldtype": "Currency",
+   "label": "Delivery Discount (Voucher)",
    "read_only": 1
   },
   {

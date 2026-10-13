@@ -9,7 +9,7 @@
   "plan",
   "billing_period",
   "status",
-  "column_break_54",
+  "column_break_55",
   "start_date",
   "end_date",
   "auto_renew",
@@ -17,7 +17,7 @@
   "amount",
   "vat_amount",
   "total",
-  "column_break_55",
+  "column_break_56",
   "paid_on",
   "journal_entry"
  ],
@@ -65,7 +65,7 @@
    "in_standard_filter": 1
   },
   {
-   "fieldname": "column_break_54",
+   "fieldname": "column_break_55",
    "fieldtype": "Column Break"
   },
   {
@@ -110,7 +110,7 @@
    "read_only": 1
   },
   {
-   "fieldname": "column_break_55",
+   "fieldname": "column_break_56",
    "fieldtype": "Column Break"
   },
   {

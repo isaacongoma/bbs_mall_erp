@@ -127,8 +127,10 @@ def settlement_figures(seller_order):
     commission = flt(sum(flt(row.commission) for row in so.items), 2)
     commission_vat = flt(commission * vat_rate / 100.0, 2)
     seller_gross = flt(items_paid + platform_discount, 2)
-    seller_net = flt(seller_gross - commission - commission_vat, 2)
-    shipping = flt(so.shipping_fee, 2)
+    seller_net = flt(seller_gross - commission - commission_vat - flt(so.shipping_subsidy), 2)
+    charged = flt(so.shipping_fee, 2)
+    subsidy = flt(so.shipping_subsidy, 2)
+    shipping = flt(charged + subsidy, 2)
     shipping_vat = flt(shipping * flt(settings.default_vat_rate) / (100.0 + flt(settings.default_vat_rate)), 2) if shipping else 0.0
     return {
         "order": order,
@@ -139,6 +141,7 @@ def settlement_figures(seller_order):
         "seller_gross": seller_gross,
         "seller_net": seller_net,
         "shipping": shipping,
+        "shipping_charged": charged,
         "shipping_vat": shipping_vat,
         "shipping_income": flt(shipping - shipping_vat, 2),
     }
@@ -155,7 +158,7 @@ def settle_seller_order(seller_order_name):
     if not supplier:
         frappe.throw(_("Seller {0} has no wallet supplier").format(so.seller))
     receipts, is_party_account = receipts_account(order)
-    debit_buyer = flt(figures["items_paid"] + figures["shipping"], 2)
+    debit_buyer = flt(figures["items_paid"] + figures["shipping_charged"], 2)
     rows = []
     debit = {"account": receipts, "debit_in_account_currency": debit_buyer}
     if is_party_account:

@@ -4,7 +4,7 @@ import frappe
 from frappe import _
 from frappe.utils import cint, flt, now_datetime
 
-from apps.bbs_marketplace.marketplace import inventory, logistics, mpesa, orders, pricing, variants
+from apps.bbs_marketplace.marketplace import inventory, logistics, mpesa, orders, pricing, variants, vouchers
 from apps.bbs_marketplace.marketplace.utils import buyer_for_user, get_settings
 
 SORTS = {
@@ -318,16 +318,36 @@ def cart_for(create=True, session_key=None):
 
 def cart_payload(cart):
     buyer_type = cart.buyer_type or "B2C"
-    lines, subtotal = [], 0.0
-    for row in cart.items:
+    lines, subtotal, voucher_rows = [], 0.0, []
+    for position, row in enumerate(cart.items):
         price = pricing.listing_price(row.listing, row.qty, buyer_type, row.variant_item)
         amounts = pricing.line_amounts(price, row.qty)
         options = frappe.db.get_value("Listing Variant", {"parent": row.listing, "item_code": row.variant_item}, ["options", "image"], as_dict=True) if row.variant_item else None
         image = (options.image if options and options.image else None) or frappe.db.get_value("Marketplace Listing", row.listing, "primary_image")
         lines.append({"name": row.name, "listing": row.listing, "variant": row.variant_item, "options": options.options if options else None, "title": row.item_name, "qty": flt(row.qty), "unit_price": flt(price["unit_price"] - price["discount_per_unit"], 2), "amount": amounts["amount"], "image": image, "seller": row.seller})
         subtotal += amounts["amount"]
-    coupon = pricing.apply_coupon(cart.coupon_code, subtotal) if cart.coupon_code else {"discount": 0.0}
-    return {"name": cart.name, "buyer_type": buyer_type, "items": lines, "subtotal": flt(subtotal, 2), "discount": coupon["discount"], "coupon_code": cart.coupon_code, "total": flt(subtotal - coupon["discount"], 2)}
+        voucher_rows.append({"key": position, "listing": row.listing, "seller": row.seller, "amount": amounts["amount"], "on_campaign": bool(price.get("campaign"))})
+    result = {"discount": 0.0, "lines": {}, "delivery": False, "voucher": None}
+    voucher_error = None
+    if cart.coupon_code:
+        try:
+            result = vouchers.evaluate(cart.coupon_code, voucher_rows, cart.customer, buyer_type)
+        except frappe.ValidationError as error:
+            voucher_error = str(error)
+    for position, line in enumerate(lines):
+        line["voucher_discount"] = flt(result["lines"].get(position, 0.0), 2)
+    code = frappe.db.get_value("Coupon Code", cart.coupon_code, "coupon_code") if cart.coupon_code else None
+    return {
+        "name": cart.name,
+        "buyer_type": buyer_type,
+        "items": lines,
+        "subtotal": flt(subtotal, 2),
+        "discount": result["discount"],
+        "free_delivery": bool(result.get("delivery")),
+        "coupon_code": code or cart.coupon_code,
+        "voucher_error": voucher_error,
+        "total": flt(subtotal - result["discount"], 2),
+    }
 
 
 def save_cart(cart):
@@ -387,8 +407,16 @@ def apply_cart_coupon(code=None, session_key=None):
     if not cart:
         frappe.throw(_("Your cart is empty"))
     if code:
-        pricing.apply_coupon(code, cart_payload(cart)["subtotal"])
-    cart.coupon_code = code or None
+        name = vouchers.find(code)
+        if not name:
+            frappe.throw(_("Voucher {0} does not exist").format(code))
+        cart.coupon_code = name
+        payload = cart_payload(cart)
+        if payload["voucher_error"]:
+            cart.coupon_code = None
+            frappe.throw(payload["voucher_error"])
+    else:
+        cart.coupon_code = None
     return save_cart(cart)
 
 

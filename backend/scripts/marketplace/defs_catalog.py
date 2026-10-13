@@ -52,6 +52,8 @@ def defs():
             F("seller_accept_hours", "Int", "Seller Must Accept Within (hours)", default="24"),
             F("seller_ship_hours", "Int", "Seller Must Ship Within (hours)", default="48"),
             F("cart_expiry_hours", "Int", "Abandon Carts After (hours)", default="72"),
+            F("seller_voucher_max_percent", "Percent", "Highest Seller Voucher %", default="50", description="Sellers cannot issue a percentage voucher above this"),
+            F("require_voucher_approval", "Check", "Seller Vouchers Need Approval"),
             F("cart_reminders_enabled", "Check", "Email Abandoned Cart Reminders", default="1"),
             F("cart_first_reminder_hours", "Int", "First Reminder After (hours)", default="4"),
             F("cart_second_reminder_hours", "Int", "Second Reminder After (hours)", default="48", description="Set to 0 for one reminder only"),
